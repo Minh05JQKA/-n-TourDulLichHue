@@ -2,6 +2,19 @@
 
 Website đặt tour du lịch Huế bằng Blazor Server và .NET 8 LTS, tổ chức theo Clean Architecture. Dự án gồm tour mẫu, tìm kiếm, chi tiết tour, đặt chỗ theo đoàn, quy tắc giá theo tuổi, tài khoản Customer/Admin và repository cho SQL Server hoặc bộ nhớ.
 
+## Thông tin đồ án
+
+| Mục | Thông tin |
+|---|---|
+| Họ và tên | Lương Quang Hoàng Minh |
+| MSSV | 23K4080038 |
+| Lớp / Khóa | K57HTTTQL |
+| Môn học | Lập Trình Web / Phát Triển Ứng Dụng Web (.NET) |
+| Giảng viên hướng dẫn | Hà Ngọc Long |
+| Khoa / Trường | Khoa Tin Học Kinh Tế, Đại Học Kinh Tế Huế |
+| Ngày hoàn thành / nộp bài | 29/09/2026 |
+| GitHub | [Minh05JQKA](https://github.com/Minh05JQKA) · [Repository Hue Tour](https://github.com/Minh05JQKA/-n-TourDulLichHue) |
+
 ## Mở và chạy
 
 1. Cài .NET 8 SDK và mở `HueTourApp.sln` bằng Visual Studio 2022.
