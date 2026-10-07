@@ -1,0 +1,11 @@
+[
+  {
+    "Name": "Run HueTour.WebApp",
+    "Projects": [
+      {
+        "Path": "HueTour.WebApp\\HueTour.WebApp.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

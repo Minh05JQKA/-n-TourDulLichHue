@@ -18,8 +18,12 @@ Website đặt tour du lịch Huế bằng Blazor Server và .NET 8 LTS, tổ ch
 ## Mở và chạy
 
 1. Cài .NET 8 SDK và mở `HueTourApp.sln` bằng Visual Studio 2022.
-2. Chọn `HueTour.WebApp` làm Startup Project.
+2. Chọn `HueTour.WebApp` làm Startup Project. Project này có biểu tượng web và file `HueTour.WebApp.csproj`.
 3. Nhấn **F5**. Môi trường Development dùng dữ liệu mẫu trong bộ nhớ; ứng dụng không cần SQL Server để xem giao diện.
+
+Nếu Visual Studio báo *“A project with an Output Type of Class Library cannot be started directly”*, hiện bạn đang chạy nhầm một project thư viện. Trong Solution Explorer, nhấp phải `HueTour.WebApp` rồi chọn **Set as Startup Project**, sau đó nhấn **F5**. Các project `CoreBusiness`, `UseCases` và `Plugins` chỉ là thư viện được ứng dụng web sử dụng.
+
+Solution cũng có profile `Run HueTour.WebApp` trong `HueTourApp.slnLaunch` cho Visual Studio 2022 bản 17.11 trở lên khi bật **Enable Multi-Project Launch Profiles**. Nếu profile chưa hiện trên thanh chạy, dùng menu chuột phải **Set as Startup Project** ở trên.
 
 Hoặc chạy từ thư mục dự án:
 
