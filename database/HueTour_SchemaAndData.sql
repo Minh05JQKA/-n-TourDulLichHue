@@ -240,8 +240,38 @@ VALUES
     N'1 Ngày',
     N'Trung tâm TP Huế',
     680000,
-    '/images/bach-ma-national-park.jpg',
+    '/images/bach-ma-panorama-cc0.jpg',
     1
+),
+(
+    'HT-TUDUC07',
+    N'Tour Lăng Tự Đức – Làng Hương Thủy Xuân – Đồi Vọng Cảnh',
+    N'Di tích Cố Đô',
+    N'Khám phá Lăng Tự Đức, sắc màu làng hương Thủy Xuân và ngắm sông Hương từ đồi Vọng Cảnh.',
+    N'Hành trình kết hợp di sản và làng nghề truyền thống. Du khách tham quan lăng Tự Đức, tìm hiểu nghề làm hương tại Thủy Xuân và dừng chân ngắm cảnh sông Hương từ đồi Vọng Cảnh.',
+    N'08:00 Đón khách tại trung tâm Huế -> 08:30 Tham quan Lăng Tự Đức -> 10:30 Ghé làng hương Thủy Xuân, trò chuyện cùng nghệ nhân -> 11:30 Ngắm cảnh tại đồi Vọng Cảnh -> 12:30 Trả khách tại trung tâm.',
+    N'Di tích Lăng Tự Đức; Trải nghiệm làng nghề làm hương; Ngắm sông Hương từ đồi Vọng Cảnh; Hướng dẫn viên địa phương.',
+    N'Nửa Ngày', N'Trung tâm TP Huế', 520000, '/images/tu-duc-tomb.jpg', 1
+),
+(
+    'HT-THANHTOAN08',
+    N'Tour Cầu Ngói Thanh Toàn – Chợ Quê – Làng Hoa Giấy Thanh Tiên',
+    N'Sông Hương & Làng nghề',
+    N'Thăm cây cầu ngói cổ, khám phá nhịp sống chợ quê và tìm hiểu nghề làm hoa giấy truyền thống xứ Huế.',
+    N'Một buổi khám phá vùng quê Huế với kiến trúc cầu ngói Thanh Toàn, không gian chợ quê và hoạt động tìm hiểu nghề làm hoa giấy tại làng Thanh Tiên.',
+    N'08:00 Đón khách tại trung tâm Huế -> 08:45 Tham quan Cầu Ngói Thanh Toàn và nhà trưng bày nông cụ -> 10:00 Dạo chợ quê -> 10:45 Đến làng Thanh Tiên, tìm hiểu cách làm hoa giấy -> 12:00 Thưởng thức bữa trưa địa phương -> 13:00 Trở về trung tâm.',
+    N'Cầu ngói Thanh Toàn; Không gian chợ quê; Gặp gỡ nghệ nhân làng hoa giấy Thanh Tiên; Thưởng thức món ăn địa phương.',
+    N'Nửa Ngày', N'Trung tâm TP Huế', 450000, '/images/thanh-toan-bridge.jpg', 1
+),
+(
+    'HT-LANGCO09',
+    N'Tour Biển Lăng Cô – Đầm Lập An – Hải Vân Quan',
+    N'Sinh thái & Đầm phá',
+    N'Kết hợp biển xanh Lăng Cô, cảnh đầm Lập An dưới chân núi và điểm dừng ngắm cảnh Hải Vân Quan.',
+    N'Khám phá vùng ven biển phía nam Huế với các điểm dừng nổi bật: ngắm cảnh đầm Lập An, thư giãn tại vịnh Lăng Cô và tham quan Hải Vân Quan. Lịch trình có thời gian di chuyển đường dài, phù hợp cho chuyến đi trong ngày.',
+    N'07:00 Đón khách tại trung tâm Huế -> 08:30 Dừng ngắm cảnh tại Hải Vân Quan -> 10:00 Tham quan đầm Lập An -> 11:30 Ăn trưa hải sản tại Lăng Cô -> 13:00 Nghỉ ngơi và dạo biển -> 15:00 Khởi hành về Huế -> 17:00 Trả khách.',
+    N'Vịnh biển Lăng Cô; Cảnh quan đầm Lập An; Hải Vân Quan; Xe đưa đón trong ngày và hướng dẫn viên.',
+    N'1 Ngày', N'Trung tâm TP Huế', 850000, '/images/lang-co-lagoon.jpg', 1
 );
 
 -- Seed Chuyến khởi hành (Departures)
@@ -289,6 +319,16 @@ VALUES (5, DATEADD(DAY, 2, @Now), DATEADD(DAY, 2, DATEADD(HOUR, 4, @Now)), 16, 4
 -- Chuyến cho Tour Bạch Mã Trekking
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (6, DATEADD(DAY, 5, @Now), DATEADD(DAY, 5, DATEADD(HOUR, 10, @Now)), 20, 6, 'Open', N'Trung tâm TP Huế', N'Bùi Quang Dũng', '0905666777');
+
+-- Lịch mẫu cho ba tour mới (ngày giờ chỉ phục vụ demo và kiểm tra luồng đặt chỗ)
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (7, DATEADD(HOUR, 8, DATEADD(DAY, 4, CAST(@Now AS DATE))), DATEADD(MINUTE, 270, DATEADD(HOUR, 8, DATEADD(DAY, 4, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (8, DATEADD(HOUR, 8, DATEADD(DAY, 3, CAST(@Now AS DATE))), DATEADD(HOUR, 13, DATEADD(DAY, 3, CAST(@Now AS DATE))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (9, DATEADD(HOUR, 7, DATEADD(DAY, 5, CAST(@Now AS DATE))), DATEADD(HOUR, 17, DATEADD(DAY, 5, CAST(@Now AS DATE))), 20, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 -- Seed Khách hàng mẫu
 INSERT INTO dbo.Customer (FullName, Email, PhoneNumber, Address)

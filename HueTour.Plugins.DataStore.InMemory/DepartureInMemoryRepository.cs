@@ -38,7 +38,11 @@ public class DepartureInMemoryRepository : IDepartureRepository
             new() { Id = 10, TourId = 5, DepartureDate = now.AddDays(2).Date.AddHours(17).AddMinutes(30), ReturnDate = now.AddDays(2).Date.AddHours(21).AddMinutes(30), MaxCapacity = 16, BookedSeats = 4, Status = "Open", MeetingPoint = "Cổng Khách sạn Hương Giang", TourGuideName = "Võ Thị Mỹ Linh", TourGuidePhone = "0905444333" },
 
             // Tour 6: Bạch Mã Trekking
-            new() { Id = 11, TourId = 6, DepartureDate = now.AddDays(5).Date.AddHours(7).AddMinutes(30), ReturnDate = now.AddDays(5).Date.AddHours(17).AddMinutes(30), MaxCapacity = 20, BookedSeats = 6, Status = "Open", MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Bùi Quang Dũng", TourGuidePhone = "0905666777" }
+            new() { Id = 11, TourId = 6, DepartureDate = now.AddDays(5).Date.AddHours(7).AddMinutes(30), ReturnDate = now.AddDays(5).Date.AddHours(17).AddMinutes(30), MaxCapacity = 20, BookedSeats = 6, Status = "Open", MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Bùi Quang Dũng", TourGuidePhone = "0905666777" },
+            // Lịch mẫu mở bán để có thể xem và thử luồng đặt tour mới.
+            new() { Id = 12, TourId = 7, DepartureDate = now.AddDays(4).Date.AddHours(8), ReturnDate = now.AddDays(4).Date.AddHours(12).AddMinutes(30), MaxCapacity = 18, BookedSeats = 0, Status = "Open", MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Công ty điều phối", TourGuidePhone = null },
+            new() { Id = 13, TourId = 8, DepartureDate = now.AddDays(3).Date.AddHours(8), ReturnDate = now.AddDays(3).Date.AddHours(13), MaxCapacity = 18, BookedSeats = 0, Status = "Open", MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Công ty điều phối", TourGuidePhone = null },
+            new() { Id = 14, TourId = 9, DepartureDate = now.AddDays(5).Date.AddHours(7), ReturnDate = now.AddDays(5).Date.AddHours(17), MaxCapacity = 20, BookedSeats = 0, Status = "Open", MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Công ty điều phối", TourGuidePhone = null }
         };
     }
 

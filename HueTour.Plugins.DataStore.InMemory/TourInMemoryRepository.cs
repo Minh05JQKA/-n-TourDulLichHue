@@ -109,7 +109,58 @@ public class TourInMemoryRepository : ITourRepository
                 Duration = "1 Ngày",
                 StartingLocation = "Trung tâm TP Huế",
                 BasePrice = 680000,
-                ImageUrl = "/images/bach-ma-national-park.jpg",
+                ImageUrl = "/images/bach-ma-panorama-cc0.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 7,
+                Code = "HT-TUDUC07",
+                Title = "Tour Lăng Tự Đức – Làng Hương Thủy Xuân – Đồi Vọng Cảnh",
+                Category = "Di tích Cố Đô",
+                ShortDescription = "Khám phá Lăng Tự Đức, sắc màu làng hương Thủy Xuân và ngắm sông Hương từ đồi Vọng Cảnh.",
+                Description = "Hành trình kết hợp di sản và làng nghề truyền thống. Du khách tham quan lăng Tự Đức, tìm hiểu nghề làm hương tại Thủy Xuân và dừng chân ngắm cảnh sông Hương từ đồi Vọng Cảnh.",
+                Itinerary = "08:00 Đón khách tại trung tâm Huế -> 08:30 Tham quan Lăng Tự Đức -> 10:30 Ghé làng hương Thủy Xuân, trò chuyện cùng nghệ nhân -> 11:30 Ngắm cảnh tại đồi Vọng Cảnh -> 12:30 Trả khách tại trung tâm.",
+                Highlights = "Di tích Lăng Tự Đức; Trải nghiệm làng nghề làm hương; Ngắm sông Hương từ đồi Vọng Cảnh; Hướng dẫn viên địa phương.",
+                Duration = "Nửa Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 520000,
+                ImageUrl = "/images/tu-duc-tomb.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 8,
+                Code = "HT-THANHTOAN08",
+                Title = "Tour Cầu Ngói Thanh Toàn – Chợ Quê – Làng Hoa Giấy Thanh Tiên",
+                Category = "Sông Hương & Làng nghề",
+                ShortDescription = "Thăm cây cầu ngói cổ, khám phá nhịp sống chợ quê và tìm hiểu nghề làm hoa giấy truyền thống xứ Huế.",
+                Description = "Một buổi khám phá vùng quê Huế với kiến trúc cầu ngói Thanh Toàn, không gian chợ quê và hoạt động tìm hiểu nghề làm hoa giấy tại làng Thanh Tiên.",
+                Itinerary = "08:00 Đón khách tại trung tâm Huế -> 08:45 Tham quan Cầu Ngói Thanh Toàn và nhà trưng bày nông cụ -> 10:00 Dạo chợ quê -> 10:45 Đến làng Thanh Tiên, tìm hiểu cách làm hoa giấy -> 12:00 Thưởng thức bữa trưa địa phương -> 13:00 Trở về trung tâm.",
+                Highlights = "Cầu ngói Thanh Toàn; Không gian chợ quê; Gặp gỡ nghệ nhân làng hoa giấy Thanh Tiên; Thưởng thức món ăn địa phương.",
+                Duration = "Nửa Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 450000,
+                ImageUrl = "/images/thanh-toan-bridge.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 9,
+                Code = "HT-LANGCO09",
+                Title = "Tour Biển Lăng Cô – Đầm Lập An – Hải Vân Quan",
+                Category = "Sinh thái & Đầm phá",
+                ShortDescription = "Kết hợp biển xanh Lăng Cô, cảnh đầm Lập An dưới chân núi và điểm dừng ngắm cảnh Hải Vân Quan.",
+                Description = "Khám phá vùng ven biển phía nam Huế với các điểm dừng nổi bật: ngắm cảnh đầm Lập An, thư giãn tại vịnh Lăng Cô và tham quan Hải Vân Quan. Lịch trình có thời gian di chuyển đường dài, phù hợp cho chuyến đi trong ngày.",
+                Itinerary = "07:00 Đón khách tại trung tâm Huế -> 08:30 Dừng ngắm cảnh tại Hải Vân Quan -> 10:00 Tham quan đầm Lập An -> 11:30 Ăn trưa hải sản tại Lăng Cô -> 13:00 Nghỉ ngơi và dạo biển -> 15:00 Khởi hành về Huế -> 17:00 Trả khách.",
+                Highlights = "Vịnh biển Lăng Cô; Cảnh quan đầm Lập An; Hải Vân Quan; Xe đưa đón trong ngày và hướng dẫn viên.",
+                Duration = "1 Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 850000,
+                ImageUrl = "/images/lang-co-lagoon.jpg",
                 IsActive = true,
                 CreatedAt = DateTime.Now
             }
