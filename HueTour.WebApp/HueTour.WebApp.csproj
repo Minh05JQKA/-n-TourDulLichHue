@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\HueTour.UseCases\HueTour.UseCases.csproj" />
+    <ProjectReference Include="..\HueTour.CoreBusiness\HueTour.CoreBusiness.csproj" />
+    <ProjectReference Include="..\HueTour.Plugins.DataStore.SQL\HueTour.Plugins.DataStore.SQL.csproj" />
+    <ProjectReference Include="..\HueTour.Plugins.DataStore.InMemory\HueTour.Plugins.DataStore.InMemory.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

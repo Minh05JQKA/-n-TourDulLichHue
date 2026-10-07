@@ -1,0 +1,173 @@
+@page "/"
+@inject IViewToursUseCase ViewToursUseCase
+@inject ISearchToursUseCase SearchToursUseCase
+@inject NavigationManager NavManager
+
+<PageTitle>Tour Du Lịch Huế - Khám Phá Di Sản Vàng Son</PageTitle>
+
+<!-- Hero Section Hoàng Cung Huế -->
+<section class="hue-hero text-center">
+    <div class="container py-4">
+        <span class="hue-hero-subtitle d-inline-block mb-3">
+            <i class="bi bi-compass-fill me-1"></i>Trải Nghiệm Du Lịch Di Sản UNESCO Cố Đô
+        </span>
+        <h1 class="display-3 fw-bold mb-4 font-serif text-white">
+            Khám Phá Cố Đô Huế <br class="d-none d-md-inline" />
+            <span class="text-gold">Vàng Son &amp; Thơ Mộng</span>
+        </h1>
+        <p class="lead mb-4 mx-auto text-light opacity-90" style="max-width: 720px; font-size: 1.15rem;">
+            Đặt tour trực tuyến tham quan Đại Nội, các lăng tẩm hoàng gia triều Nguyễn, đắm mình trong hoàng hôn phá Tam Giang và thưởng thức ẩm thực Cố Đô trứ danh.
+        </p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="tours" class="btn btn-gold btn-lg rounded-pill px-4 py-3 shadow">
+                <i class="bi bi-compass me-2"></i>Khám Phá Các Hành Trình
+            </a>
+            <a href="ai-consultant" class="btn btn-outline-light btn-lg rounded-pill px-4 py-3">
+                <i class="bi bi-robot me-2"></i>Trợ Lý AI Tư Vấn Tour
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Floating Search Bar Component (K3.1) -->
+<div class="container mb-5">
+    <SearchBarComponent SearchTerm="@searchTerm"
+                        SelectedCategory="@selectedCategory"
+                        OnSearchExecuted="HandleSearch" />
+</div>
+
+<!-- Main Tours Section -->
+<div class="container py-4">
+    <!-- Tiêu đề danh sách -->
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 border-bottom pb-3">
+        <div>
+            <span class="text-gold fw-bold small text-uppercase letter-spacing-1">
+                <i class="bi bi-award-fill me-1"></i>Hành Trình Được Yêu Thích Nhất
+            </span>
+            <h2 class="font-serif fw-bold text-purple mb-0 fs-2">Các Tour Du Lịch Huế Nổi Bật</h2>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <span class="text-muted small">Hiển thị <strong>@displayedTours.Count()</strong> hành trình</span>
+        </div>
+    </div>
+
+    <!-- Tours Grid (K3.1: TourCardComponent) -->
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-purple" role="status"></div>
+            <p class="text-muted mt-2">Đang tải danh sách tour...</p>
+        </div>
+    }
+    else if (!displayedTours.Any())
+    {
+        <div class="card border-0 shadow-sm p-5 text-center my-4" style="border-radius: 16px;">
+            <div class="display-4 text-muted mb-3">🔍</div>
+            <h4 class="fw-bold text-purple">Không tìm thấy tour phù hợp</h4>
+            <p class="text-muted">Không có tour nào khớp với từ khóa "@searchTerm". Quý khách vui lòng thử tìm kiếm khác.</p>
+            <button class="btn btn-royal rounded-pill px-4 mx-auto" @onclick="ResetSearch">Xem tất cả tour</button>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var tour in displayedTours)
+            {
+                <div class="col-lg-4 col-md-6 col-12">
+                    <TourCardComponent Tour="@tour" OnTourSelected="NavigateToTour" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Khối Giới Thiệu 2 Luật Nghiệp Vụ Minh Bạch (K1.3, K3.3) -->
+<section class="py-5 bg-white border-top border-bottom my-5">
+    <div class="container">
+        <div class="text-center mb-5" style="max-width: 700px; margin: 0 auto;">
+            <span class="badge bg-purple px-3 py-2 text-gold mb-2">QUY CHUẨN ĐỒ ÁN CAPSTONE ECO2415</span>
+            <h2 class="font-serif fw-bold text-purple">Cam Kết 2 Luật Nghiệp Vụ Minh Bạch</h2>
+            <p class="text-muted">Hệ thống áp dụng chuẩn kiến trúc Clean Architecture 4 tầng, bảo đảm tính toàn vẹn dữ liệu và trải nghiệm công bằng cho hành khách.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-12">
+                <div class="card h-100 p-4 border-0 shadow-sm" style="border-radius: 16px; background: #fffcf4; border-left: 6px solid var(--hue-gold) !important;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="fs-1 text-gold">🔒</div>
+                        <div>
+                            <span class="badge bg-gold text-dark mb-1">LUẬT NGHIỆP VỤ 1 (K1.3)</span>
+                            <h5 class="fw-bold text-dark mb-0">Kiểm Soát Sức Chứa &amp; Khóa Đặt 24 Giờ</h5>
+                        </div>
+                    </div>
+                    <ul class="text-muted small mb-0" style="line-height: 1.8;">
+                        <li><strong>Không nhận quá chỗ:</strong> Tổng số hành khách đặt mới &le; số chỗ trống còn lại của chuyến (MaxCapacity - BookedSeats).</li>
+                        <li><strong>Khóa đặt trước 24 giờ:</strong> Hệ thống tự động chặn mọi yêu cầu đặt vé mới khi thời gian khởi hành còn dưới 24 tiếng, bảo đảm điều hành chuẩn bị xe và hướng dẫn viên chu đáo.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-12">
+                <div class="card h-100 p-4 border-0 shadow-sm" style="border-radius: 16px; background: #fcf6fc; border-left: 6px solid var(--hue-purple) !important;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="fs-1 text-purple">🏷️</div>
+                        <div>
+                            <span class="badge bg-purple text-gold mb-1">LUẬT NGHIỆP VỤ 2 (K1.3)</span>
+                            <h5 class="fw-bold text-dark mb-0">Biểu Giá Theo Độ Tuổi &amp; Tổng Booking</h5>
+                        </div>
+                    </div>
+                    <ul class="text-muted small mb-0" style="line-height: 1.8;">
+                        <li><strong>Em bé dưới 5 tuổi:</strong> Miễn phí 100% giá vé (0 VNĐ).</li>
+                        <li><strong>Trẻ em từ 5 đến 11 tuổi:</strong> Tính 50% giá vé người lớn (cấu hình trong PriceRule).</li>
+                        <li><strong>Người lớn (&ge; 12 tuổi):</strong> Tính 100% giá vé niêm yết.</li>
+                        <li><strong>Tổng booking = &Sigma; vé:</strong> Tổng tiền toàn đơn bằng chính xác tổng giá vé từng hành khách.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private IEnumerable<Tour> allTours = Enumerable.Empty<Tour>();
+    private IEnumerable<Tour> displayedTours = Enumerable.Empty<Tour>();
+    private string searchTerm = string.Empty;
+    private string selectedCategory = "Tất cả";
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            allTours = await ViewToursUseCase.ExecuteAsync(activeOnly: true);
+            displayedTours = allTours;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSearch((string search, string category) filter)
+    {
+        searchTerm = filter.search;
+        selectedCategory = filter.category;
+        isLoading = true;
+
+        displayedTours = await SearchToursUseCase.ExecuteAsync(searchTerm, selectedCategory);
+        isLoading = false;
+    }
+
+    private void ResetSearch()
+    {
+        searchTerm = string.Empty;
+        selectedCategory = "Tất cả";
+        displayedTours = allTours;
+    }
+
+    private void NavigateToTour(int tourId)
+    {
+        NavManager.NavigateTo($"/tour/{tourId}");
+    }
+}

@@ -1,0 +1,206 @@
+@page "/tour/{id:int}"
+@inject IViewTourDetailsUseCase ViewTourDetailsUseCase
+@inject NavigationManager NavManager
+
+<PageTitle>@(tour?.Title ?? "Chi Tiết Tour") - Tour Du Lịch Huế</PageTitle>
+
+@if (isLoading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-purple" role="status"></div>
+        <p class="text-muted mt-2">Đang tải thông tin tour...</p>
+    </div>
+}
+else if (tour == null)
+{
+    <div class="container py-5 text-center">
+        <h3 class="text-danger fw-bold">Không tìm thấy thông tin tour</h3>
+        <p class="text-muted">Tour du lịch này không tồn tại hoặc đã ngừng mở bán.</p>
+        <a href="/tours" class="btn btn-royal rounded-pill px-4">Quay lại danh sách tour</a>
+    </div>
+}
+else
+{
+    <!-- Breadcrumb & Header -->
+    <div class="container py-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-3">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-purple">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/tours" class="text-decoration-none text-purple">Tour Du Lịch</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@tour.Code</li>
+            </ol>
+        </nav>
+
+        <div class="row g-4">
+            <!-- Cột trái: Ảnh & Nội dung chi tiết -->
+            <div class="col-lg-8 col-12">
+                <!-- Banner ảnh -->
+                <div class="position-relative mb-4 rounded-4 overflow-hidden shadow-sm" style="height: 380px;">
+                    <img src="@tour.ImageUrl" alt="@tour.Title" class="w-100 h-100 object-fit-cover" />
+                    <span class="tour-category-badge">@tour.Category</span>
+                    <span class="tour-duration-badge fs-6 px-3 py-1">
+                        <i class="bi bi-clock me-1"></i>@tour.Duration
+                    </span>
+                </div>
+
+                <h1 class="font-serif fw-bold text-purple mb-3">@tour.Title</h1>
+
+                <!-- Thông số nhanh -->
+                <div class="row g-2 mb-4">
+                    <div class="col-sm-4 col-12">
+                        <div class="p-3 bg-white rounded-3 border shadow-sm">
+                            <span class="text-muted small d-block"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Điểm khởi hành</span>
+                            <strong class="text-dark small">@tour.StartingLocation</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-12">
+                        <div class="p-3 bg-white rounded-3 border shadow-sm">
+                            <span class="text-muted small d-block"><i class="bi bi-clock-history text-primary me-1"></i>Thời lượng</span>
+                            <strong class="text-dark small">@tour.Duration</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-12">
+                        <div class="p-3 bg-white rounded-3 border shadow-sm">
+                            <span class="text-muted small d-block"><i class="bi bi-cash-stack text-success me-1"></i>Giá khởi điểm</span>
+                            <strong class="text-purple fs-6">@tour.BasePrice.ToString("N0") đ</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Giới thiệu tổng quan -->
+                <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+                    <h5 class="fw-bold text-purple border-bottom pb-2 mb-3">
+                        <i class="bi bi-info-circle-fill text-gold me-2"></i>Tổng Quan Hành Trình
+                    </h5>
+                    <p class="lead fs-6 text-secondary mb-3">@tour.ShortDescription</p>
+                    <p class="text-muted" style="white-space: pre-line;">@tour.Description</p>
+                </div>
+
+                <!-- Điểm nổi bật -->
+                <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+                    <h5 class="fw-bold text-purple border-bottom pb-2 mb-3">
+                        <i class="bi bi-stars text-gold me-2"></i>Điểm Nhấn Nổi Bật Của Tour
+                    </h5>
+                    <div class="row g-2">
+                        @foreach (var highlight in tour.Highlights.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <div class="col-md-6 col-12">
+                                <div class="d-flex align-items-center gap-2 text-dark small py-1">
+                                    <i class="bi bi-check-circle-fill text-success fs-6"></i>
+                                    <span>@highlight.Trim()</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Lịch trình chi tiết -->
+                <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+                    <h5 class="fw-bold text-purple border-bottom pb-2 mb-3">
+                        <i class="bi bi-map-fill text-gold me-2"></i>Lịch Trình Chi Tiết
+                    </h5>
+                    <div class="timeline ps-2">
+                        @foreach (var step in tour.Itinerary.Split("->", StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <div class="d-flex gap-3 mb-3">
+                                <div class="text-gold fs-5">🚩</div>
+                                <div class="p-3 bg-light rounded-3 border flex-grow-1">
+                                    <span class="text-dark fw-medium">@step.Trim()</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải: Chọn chuyến khởi hành & Đặt chỗ -->
+            <div class="col-lg-4 col-12">
+                <div class="card border-0 shadow-sm p-4 sticky-top" style="top: 20px; border-radius: 16px; background: #ffffff;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small">Giá từ</span>
+                        <span class="fs-4 fw-bold text-purple">
+                            @tour.BasePrice.ToString("N0") <small class="fs-6 text-muted">đ/khách</small>
+                        </span>
+                    </div>
+
+                    <!-- Component Chọn chuyến khởi hành (K3.1) -->
+                    <div class="mb-4">
+                        <DepartureSelectorComponent Departures="@tour.Departures"
+                                                    SelectedDepartureId="@selectedDepartureId"
+                                                    OnDepartureChanged="HandleDepartureSelected" />
+                    </div>
+
+                    <!-- Thông báo luật nghiệp vụ 1 nhắc nhở -->
+                    <div class="alert alert-info py-2 px-3 small mb-4" style="border-radius: 10px;">
+                        <i class="bi bi-shield-exclamation me-1"></i>
+                        <strong>Quy định:</strong> Khóa đặt vé trước giờ khởi hành 24 tiếng. Vui lòng chọn chuyến có trạng thái mở.
+                    </div>
+
+                    <!-- Nút Tiến hành đặt chỗ -->
+                    <button type="button" class="btn btn-royal btn-lg w-100 rounded-pill py-3 fw-bold"
+                            disabled="@(selectedDepartureId <= 0)"
+                            @onclick="ProceedToBooking">
+                        <i class="bi bi-cart-plus-fill me-2"></i>Tiến Hành Đặt Chỗ
+                    </button>
+
+                    @if (selectedDepartureId <= 0)
+                    {
+                        <small class="text-danger d-block text-center mt-2">
+                            * Vui lòng chọn một chuyến khởi hành còn chỗ phía trên để tiếp tục
+                        </small>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Tour? tour;
+    private int selectedDepartureId = 0;
+    private Departure? selectedDeparture;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            tour = await ViewTourDetailsUseCase.ExecuteAsync(Id);
+            if (tour?.Departures != null)
+            {
+                // Tự động chọn chuyến đầu tiên còn chỗ và > 24h
+                var validDep = tour.Departures.FirstOrDefault(d =>
+                    !d.IsFullyBooked &&
+                    !d.IsClosed &&
+                    (d.DepartureDate - DateTime.Now).TotalHours >= 24);
+                if (validDep != null)
+                {
+                    selectedDepartureId = validDep.Id;
+                    selectedDeparture = validDep;
+                }
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleDepartureSelected(Departure departure)
+    {
+        selectedDepartureId = departure.Id;
+        selectedDeparture = departure;
+    }
+
+    private void ProceedToBooking()
+    {
+        if (selectedDepartureId > 0)
+        {
+            NavManager.NavigateTo($"/booking/{selectedDepartureId}");
+        }
+    }
+}

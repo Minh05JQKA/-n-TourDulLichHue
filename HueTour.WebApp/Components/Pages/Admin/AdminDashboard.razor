@@ -1,0 +1,204 @@
+@page "/admin"
+@attribute [Authorize(Roles = "Admin")]
+@inject IViewToursUseCase ViewToursUseCase
+@inject IManageDeparturesUseCase ManageDeparturesUseCase
+@inject IManageBookingsUseCase ManageBookingsUseCase
+
+<PageTitle>Quản Trị Hệ Thống - Hue Tour Operator Portal</PageTitle>
+
+<div class="container-fluid py-4 px-md-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <span class="badge bg-purple text-gold mb-1">CỔNG ĐIỀU HÀNH TOUR HUẾ</span>
+            <h2 class="font-serif fw-bold text-purple mb-0">Bảng Điều Khiển Tổng Quan (Dashboard)</h2>
+        </div>
+        <div class="d-flex gap-2 mt-2 mt-md-0">
+            <a href="admin/tours" class="btn btn-outline-royal rounded-pill btn-sm">
+                <i class="bi bi-map me-1"></i>Quản lý Tour
+            </a>
+            <a href="admin/departures" class="btn btn-outline-royal rounded-pill btn-sm">
+                <i class="bi bi-calendar-event me-1"></i>Quản lý Chuyến
+            </a>
+            <a href="admin/bookings" class="btn btn-royal rounded-pill btn-sm">
+                <i class="bi bi-receipt me-1"></i>Quản lý Đơn Booking
+            </a>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-purple" role="status"></div>
+            <p class="text-muted mt-2">Đang tải dữ liệu tổng quan...</p>
+        </div>
+    }
+    else
+    {
+        <!-- Thống kê chỉ số thẻ card -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6 col-12">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 16px; border-left: 5px solid var(--hue-purple) !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small fw-bold text-uppercase">Tổng Tour Mở Bán</span>
+                            <h3 class="fw-bold text-purple mt-1 mb-0">@totalTours</h3>
+                        </div>
+                        <div class="fs-1 text-purple opacity-50"><i class="bi bi-map"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 col-12">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 16px; border-left: 5px solid var(--hue-gold) !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small fw-bold text-uppercase">Chuyến Khởi Hành</span>
+                            <h3 class="fw-bold text-gold mt-1 mb-0">@totalDepartures</h3>
+                        </div>
+                        <div class="fs-1 text-gold opacity-50"><i class="bi bi-calendar-check"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 col-12">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 16px; border-left: 5px solid #0f4c5c !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small fw-bold text-uppercase">Tổng Đơn Đặt Tour</span>
+                            <h3 class="fw-bold text-jade mt-1 mb-0">@totalBookings</h3>
+                        </div>
+                        <div class="fs-1 text-jade opacity-50"><i class="bi bi-ticket-perforated"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 col-12">
+                <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 16px; border-left: 5px solid #28a745 !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small fw-bold text-uppercase">Doanh Thu Ghi Nhận</span>
+                            <h3 class="fw-bold text-success mt-1 mb-0">@totalRevenue.ToString("N0") <small class="fs-6">đ</small></h3>
+                        </div>
+                        <div class="fs-1 text-success opacity-50"><i class="bi bi-cash-coin"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng đơn đặt tour gần đây -->
+        <div class="row g-4">
+            <div class="col-lg-8 col-12">
+                <div class="card border-0 shadow-sm p-4" style="border-radius: 16px;">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                        <h5 class="fw-bold text-purple mb-0">
+                            <i class="bi bi-clock-history me-2 text-gold"></i>Đơn Đặt Chỗ Gần Đây
+                        </h5>
+                        <a href="admin/bookings" class="small text-purple text-decoration-none fw-semibold">Xem tất cả &rarr;</a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Mã Đơn</th>
+                                    <th>Khách Hàng</th>
+                                    <th>Khởi Hành</th>
+                                    <th>Số Tiền (Luật 2)</th>
+                                    <th>Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var b in recentBookings)
+                                {
+                                    <tr>
+                                        <td><a href="/booking-confirmation/@b.BookingCode" class="fw-bold text-purple text-decoration-none">@b.BookingCode</a></td>
+                                        <td>@b.Customer?.FullName</td>
+                                        <td class="small">@b.Departure?.DepartureDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td class="fw-bold text-purple">@b.TotalAmount.ToString("N0") đ</td>
+                                        <td>
+                                            <span class="badge @(b.Status == "Confirmed" ? "bg-success" : b.Status == "Cancelled" ? "bg-danger" : "bg-warning text-dark")">
+                                                @b.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chuyến sắp khởi hành -->
+            <div class="col-lg-4 col-12">
+                <div class="card border-0 shadow-sm p-4" style="border-radius: 16px;">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                        <h5 class="fw-bold text-purple mb-0">
+                            <i class="bi bi-bell-fill me-2 text-gold"></i>Chuyến Sắp Khởi Hành
+                        </h5>
+                        <a href="admin/departures" class="small text-purple text-decoration-none fw-semibold">Quản lý &rarr;</a>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var dep in upcomingDepartures)
+                        {
+                            bool isCutoff = (dep.DepartureDate - DateTime.Now).TotalHours < 24;
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h6 class="fw-bold text-dark mb-0 small">@(dep.Tour?.Title ?? $"Tour #{dep.TourId}")</h6>
+                                    @if (isCutoff)
+                                    {
+                                        <span class="badge bg-warning text-dark small" title="Đã khóa đặt theo Luật 1">Khóa &lt;24h</span>
+                                    }
+                                </div>
+                                <div class="small text-muted mb-2">
+                                    <i class="bi bi-clock me-1"></i>@dep.DepartureDate.ToString("HH:mm - dd/MM/yyyy")
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small badge bg-secondary">
+                                        Đã đặt @dep.BookedSeats / @dep.MaxCapacity ghế
+                                    </span>
+                                    <a href="admin/passengers/@dep.Id" class="btn btn-outline-royal btn-sm py-0 px-2 small">
+                                        Danh sách đoàn
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private int totalTours = 0;
+    private int totalDepartures = 0;
+    private int totalBookings = 0;
+    private decimal totalRevenue = 0;
+    private List<TourBooking> recentBookings = new();
+    private List<Departure> upcomingDepartures = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var tours = await ViewToursUseCase.ExecuteAsync(false);
+            totalTours = tours.Count();
+
+            var departures = await ManageDeparturesUseCase.GetAllDeparturesAsync();
+            totalDepartures = departures.Count();
+            upcomingDepartures = departures.Where(d => d.DepartureDate >= DateTime.Now).OrderBy(d => d.DepartureDate).Take(4).ToList();
+
+            var bookings = await ManageBookingsUseCase.GetAllBookingsAsync();
+            totalBookings = bookings.Count();
+            totalRevenue = bookings.Where(b => b.Status != "Cancelled").Sum(b => b.TotalAmount);
+            recentBookings = bookings.Take(5).ToList();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

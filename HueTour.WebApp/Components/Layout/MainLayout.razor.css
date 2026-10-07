@@ -1,0 +1,30 @@
+/* Custom MainLayout Styles */
+.navbar-brand-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.top-bar-notice {
+    background-color: var(--hue-purple-dark);
+    font-size: 0.8rem;
+    color: #e0d0e0;
+}
+
+.footer-royal {
+    background-color: #1a061c;
+    color: #c9b4ca;
+    padding-top: 60px;
+    padding-bottom: 30px;
+    margin-top: 80px;
+}
+
+.footer-royal a {
+    color: #c9b4ca;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-royal a:hover {
+    color: var(--hue-gold-light);
+}

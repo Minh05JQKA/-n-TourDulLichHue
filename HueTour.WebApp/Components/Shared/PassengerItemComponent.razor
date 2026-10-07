@@ -1,0 +1,169 @@
+@using HueTour.CoreBusiness
+@using HueTour.CoreBusiness.BusinessRules
+
+<div class="passenger-item-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0 text-purple">
+            <i class="bi bi-person-fill me-1"></i>Hành khách #@(Index + 1)
+        </h6>
+        @if (CanRemove)
+        {
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-2 py-0"
+                    title="Xóa hành khách này"
+                    @onclick="RemovePassenger">
+                <i class="bi bi-trash3 me-1"></i>Xóa
+            </button>
+        }
+    </div>
+
+    <div class="row g-2 align-items-center">
+        <!-- Họ và tên -->
+        <div class="col-md-5 col-12">
+            <label class="form-label small fw-semibold text-muted mb-1">Họ và tên hành khách <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm"
+                   placeholder="VD: Nguyễn Thị Hương"
+                   value="@Passenger.FullName"
+                   @oninput="(e) => OnNameChanged(e.Value?.ToString())" />
+        </div>
+
+        <!-- Giới tính -->
+        <div class="col-md-2 col-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Giới tính</label>
+            <select class="form-select form-select-sm"
+                    value="@Passenger.Gender"
+                    @onchange="(e) => OnGenderChanged(e.Value?.ToString())">
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
+            </select>
+        </div>
+
+        <!-- Loại khách (Luật 2) -->
+        <div class="col-md-3 col-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Đối tượng (Luật 2)</label>
+            <select class="form-select form-select-sm"
+                    value="@Passenger.PassengerType"
+                    @onchange="(e) => OnTypeChanged(e.Value?.ToString())">
+                <option value="Adult">Người lớn (100%)</option>
+                <option value="Child">Trẻ em 5-11t (50%)</option>
+                <option value="Infant">Em bé &lt;5t (Miễn phí)</option>
+            </select>
+        </div>
+
+        <!-- Năm sinh -->
+        <div class="col-md-2 col-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Năm sinh</label>
+            <input type="number" class="form-control form-control-sm"
+                   min="1920" max="@DateTime.Now.Year"
+                   value="@Passenger.BirthYear"
+                   @oninput="(e) => OnBirthYearChanged(e.Value?.ToString())" />
+        </div>
+    </div>
+
+    <!-- Hiển thị giá vé tính theo Luật 2 -->
+    <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+        <div class="small">
+            @if (Passenger.PassengerType == "Infant")
+            {
+                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                    <i class="bi bi-gift-fill me-1"></i>Áp dụng Luật 2: Miễn phí 100%
+                </span>
+            }
+            else if (Passenger.PassengerType == "Child")
+            {
+                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
+                    <i class="bi bi-percent me-1"></i>Áp dụng Luật 2: Giảm 50% vé trẻ em
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-light text-muted border">
+                    Giá vé tiêu chuẩn
+                </span>
+            }
+        </div>
+        <div class="text-end">
+            <span class="small text-muted me-1">Giá vé:</span>
+            <span class="fw-bold @(Passenger.Price == 0 ? "text-success" : "text-purple")">
+                @(Passenger.Price == 0 ? "0 VNĐ (Miễn phí)" : $"{Passenger.Price:N0} đ")
+            </span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public PassengerTicket Passenger { get; set; } = null!;
+
+    [Parameter]
+    public int Index { get; set; }
+
+    [Parameter]
+    public bool CanRemove { get; set; } = true;
+
+    [Parameter]
+    public decimal BasePrice { get; set; }
+
+    [Parameter]
+    public IEnumerable<PriceRule>? PriceRules { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnRemovePassenger { get; set; }
+
+    [Parameter]
+    public EventCallback OnPassengerUpdated { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        CalculatePrice();
+    }
+
+    private void CalculatePrice()
+    {
+        Passenger.Price = BookingBusinessRules.CalculatePassengerFare(BasePrice, Passenger.PassengerType, PriceRules);
+    }
+
+    private async Task OnNameChanged(string? value)
+    {
+        Passenger.FullName = value ?? string.Empty;
+        await NotifyUpdate();
+    }
+
+    private async Task OnGenderChanged(string? value)
+    {
+        Passenger.Gender = value ?? "Nam";
+        await NotifyUpdate();
+    }
+
+    private async Task OnTypeChanged(string? value)
+    {
+        Passenger.PassengerType = value ?? "Adult";
+        CalculatePrice();
+        await NotifyUpdate();
+    }
+
+    private async Task OnBirthYearChanged(string? value)
+    {
+        if (int.TryParse(value, out int year))
+        {
+            Passenger.BirthYear = year;
+        }
+        await NotifyUpdate();
+    }
+
+    private async Task RemovePassenger()
+    {
+        if (OnRemovePassenger.HasDelegate)
+        {
+            await OnRemovePassenger.InvokeAsync(Index);
+        }
+    }
+
+    private async Task NotifyUpdate()
+    {
+        if (OnPassengerUpdated.HasDelegate)
+        {
+            await OnPassengerUpdated.InvokeAsync();
+        }
+    }
+}

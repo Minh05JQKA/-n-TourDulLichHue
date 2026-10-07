@@ -1,0 +1,32 @@
+# Sơ đồ Use Case Hue Tour
+
+```plantuml
+@startuml
+left to right direction
+actor Visitor as Visitor
+actor Customer as Customer
+actor Admin as Admin
+Customer --|> Visitor
+rectangle "Hue Tour Booking" {
+  usecase "Xem / tìm tour" as UC1
+  usecase "Xem chi tiết tour" as UC2
+  usecase "Đặt tour và nhập hành khách" as UC3
+  usecase "Tính giá theo độ tuổi" as UC4
+  usecase "Tra cứu booking" as UC5
+  usecase "Đăng nhập" as UC6
+  usecase "Quản lý tour" as UC7
+  usecase "Quản lý chuyến khởi hành" as UC8
+  usecase "Quản lý booking" as UC9
+}
+Visitor --> UC1
+Visitor --> UC2
+Visitor --> UC3
+Visitor --> UC4
+Customer --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+UC3 .> UC4 : <<include>>
+@enduml
+```

@@ -1,0 +1,403 @@
+@page "/booking/{departureId:int}"
+@using System.ComponentModel.DataAnnotations
+@using HueTour.CoreBusiness
+@using HueTour.CoreBusiness.BusinessRules
+@inject IGetDepartureDetailsUseCase GetDepartureDetailsUseCase
+@inject ICalculateBookingPricingUseCase CalculateBookingPricingUseCase
+@inject IPlaceTourBookingUseCase PlaceTourBookingUseCase
+@inject IBookingCartStateService CartStateService
+@inject NavigationManager NavManager
+
+<PageTitle>Đặt Tour - Điền Thông Tin Đoàn Khách</PageTitle>
+
+@if (isLoading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-purple" role="status"></div>
+        <p class="text-muted mt-2">Đang tải thông tin chuyến khởi hành...</p>
+    </div>
+}
+else if (departure == null || departure.Tour == null)
+{
+    <div class="container py-5 text-center">
+        <div class="alert alert-danger p-4 mx-auto" style="max-width: 600px; border-radius: 16px;">
+            <h4 class="fw-bold">Chuyến Khởi Hành Không Tồn Tại</h4>
+            <p class="mb-3">Không tìm thấy thông tin chuyến du lịch bạn vừa chọn.</p>
+            <a href="/tours" class="btn btn-royal rounded-pill px-4">Xem danh sách các tour</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-3">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-purple">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/tours" class="text-decoration-none text-purple">Tour Du Lịch</a></li>
+                <li class="breadcrumb-item"><a href="/tour/@departure.TourId" class="text-decoration-none text-purple">@departure.Tour.Code</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Đặt Chỗ &amp; Điền Thông Tin</li>
+            </ol>
+        </nav>
+
+        <!-- Banner tiêu đề -->
+        <div class="bg-royal-gradient p-4 rounded-4 shadow-sm mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <span class="badge bg-gold text-dark mb-2">ĐẶT TOUR TRỰC TUYẾN</span>
+                    <h3 class="font-serif fw-bold text-white mb-1">@departure.Tour.Title</h3>
+                    <div class="text-light opacity-90 small">
+                        <i class="bi bi-calendar3 me-1 text-gold"></i>Khởi hành lúc: <strong>@departure.DepartureDate.ToString("HH:mm - dd/MM/yyyy")</strong>
+                        <span class="mx-2">•</span>
+                        <i class="bi bi-geo-alt me-1 text-gold"></i>Tập trung tại: <strong>@departure.MeetingPoint</strong>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <span class="badge @(departure.AvailableSeats > 5 ? "bg-success" : "bg-warning text-dark") fs-6 px-3 py-2 rounded-pill">
+                        <i class="bi bi-people-fill me-1"></i>Còn @departure.AvailableSeats / @departure.MaxCapacity chỗ
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- THÔNG BÁO KIỂM SOÁT LUẬT NGHIỆP VỤ (K3.3: Thân thiện, không văng lỗi) -->
+        @if (!string.IsNullOrEmpty(ruleErrorMessage))
+        {
+            <div class="rule-alert rule-alert-danger animate__animated animate__fadeIn">
+                <i class="bi bi-exclamation-triangle-fill fs-3 text-danger flex-shrink-0"></i>
+                <div>
+                    <h6 class="fw-bold text-danger mb-1">Cảnh Báo Vi Phạm Quy Định Đặt Tour</h6>
+                    <div class="small">@ruleErrorMessage</div>
+                    <div class="small text-muted mt-1">
+                        <em>(Được kiểm tra bởi BookingBusinessRules ở tầng CoreBusiness / UseCases - Tiêu chuẩn K1.3 &amp; K3.3)</em>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (isWithin24hCutoff)
+        {
+            <div class="rule-alert rule-alert-warning">
+                <i class="bi bi-lock-fill fs-3 text-warning flex-shrink-0"></i>
+                <div>
+                    <h6 class="fw-bold text-dark mb-1">Khóa Đặt Vé Tự Động (Luật Nghiệp Vụ 1 - K1.3)</h6>
+                    <div class="small">
+                        Chuyến đi sẽ khởi hành lúc <strong>@departure.DepartureDate.ToString("HH:mm - dd/MM/yyyy")</strong> (còn dưới 24 giờ).
+                        Theo quy định, hệ thống đã tạm đóng tiếp nhận đăng ký cho chuyến này để điều hành xe và hướng dẫn viên.
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="row g-4">
+            <!-- Cột trái: Form thông tin liên hệ và danh sách hành khách động -->
+            <div class="col-lg-8 col-12">
+                <EditForm Model="@formModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <!-- 1. Thông tin người đặt tour -->
+                    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+                        <h5 class="fw-bold text-purple border-bottom pb-2 mb-3">
+                            <i class="bi bi-person-lines-fill text-gold me-2"></i>1. Thông Tin Người Đại Diện Đặt Tour
+                        </h5>
+
+                        <div class="row g-3">
+                            <div class="col-md-6 col-12">
+                                <label class="form-label small fw-bold text-muted">Họ và tên người đặt <span class="text-danger">*</span></label>
+                                <InputText class="form-control" placeholder="VD: Nguyễn Văn Hoàng" @bind-Value="formModel.CustomerFullName" />
+                                <ValidationMessage For="@(() => formModel.CustomerFullName)" class="validation-message" />
+                            </div>
+
+                            <div class="col-md-6 col-12">
+                                <label class="form-label small fw-bold text-muted">Số điện thoại liên hệ <span class="text-danger">*</span></label>
+                                <InputText class="form-control" placeholder="VD: 0905123456" @bind-Value="formModel.CustomerPhone" />
+                                <ValidationMessage For="@(() => formModel.CustomerPhone)" class="validation-message" />
+                            </div>
+
+                            <div class="col-md-6 col-12">
+                                <label class="form-label small fw-bold text-muted">Email nhận vé điện tử <span class="text-danger">*</span></label>
+                                <InputText class="form-control" type="email" placeholder="VD: hoang.nguyen@gmail.com" @bind-Value="formModel.CustomerEmail" />
+                                <ValidationMessage For="@(() => formModel.CustomerEmail)" class="validation-message" />
+                            </div>
+
+                            <div class="col-md-6 col-12">
+                                <label class="form-label small fw-bold text-muted">Địa chỉ liên hệ <span class="text-danger">*</span></label>
+                                <InputText class="form-control" placeholder="VD: 12 Lê Lợi, TP Huế" @bind-Value="formModel.CustomerAddress" />
+                                <ValidationMessage For="@(() => formModel.CustomerAddress)" class="validation-message" />
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">Ghi chú hoặc yêu cầu đặc biệt (Ăn chay, dị ứng...)</label>
+                                <InputTextArea class="form-control" rows="2" placeholder="VD: Có người ăn chay, đón tại khách sạn Hương Giang..." @bind-Value="formModel.Notes" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Danh sách hành khách động (K3.1, K3.2: Thêm/Xóa dòng động trong EditForm) -->
+                    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
+                            <div>
+                                <h5 class="fw-bold text-purple mb-0">
+                                    <i class="bi bi-people text-gold me-2"></i>2. Danh Sách Hành Khách Tham Gia Tour
+                                </h5>
+                                <small class="text-muted">Áp dụng tính giá vé động theo độ tuổi (Luật nghiệp vụ 2)</small>
+                            </div>
+                            <button type="button" class="btn btn-outline-royal btn-sm rounded-pill px-3 mt-2 mt-sm-0"
+                                    @onclick="AddNewPassenger">
+                                <i class="bi bi-person-plus-fill me-1"></i>+ Thêm hành khách
+                            </button>
+                        </div>
+
+                        <!-- Cảnh báo nếu số hành khách vượt quá số chỗ trống (Luật 1) -->
+                        @if (formModel.Passengers.Count > departure.AvailableSeats)
+                        {
+                            <div class="alert alert-danger py-2 small mb-3">
+                                <i class="bi bi-exclamation-octagon-fill me-1"></i>
+                                <strong>Cảnh báo Luật 1:</strong> Bạn đang chọn <strong>@formModel.Passengers.Count khách</strong>,
+                                nhưng chuyến chỉ còn <strong>@departure.AvailableSeats chỗ trống</strong>! Vui lòng bớt số lượng hoặc chọn chuyến khác.
+                            </div>
+                        }
+
+                        <!-- Lặp các dòng hành khách động -->
+                        @for (int i = 0; i < formModel.Passengers.Count; i++)
+                        {
+                            int index = i;
+                            <PassengerItemComponent Passenger="@formModel.Passengers[index]"
+                                                    Index="@index"
+                                                    BasePrice="@departure.Tour.BasePrice"
+                                                    PriceRules="@priceRules"
+                                                    CanRemove="@(formModel.Passengers.Count > 1)"
+                                                    OnRemovePassenger="HandleRemovePassenger"
+                                                    OnPassengerUpdated="RecalculateTotal" />
+                        }
+
+                        <!-- Tóm tắt số lượng đối tượng -->
+                        <div class="bg-light p-3 rounded-3 mt-2 d-flex flex-wrap justify-content-between align-items-center small text-muted">
+                            <div>
+                                <span>Đoàn hiện tại: </span>
+                                <strong class="text-dark">@formModel.Passengers.Count() khách</strong>
+                                (<span>@formModel.Passengers.Count(p => p.PassengerType == "Adult") Người lớn</span>,
+                                <span>@formModel.Passengers.Count(p => p.PassengerType == "Child") Trẻ em</span>,
+                                <span>@formModel.Passengers.Count(p => p.PassengerType == "Infant") Em bé</span>)
+                            </div>
+                            <div class="text-purple fw-bold">
+                                Tính theo công thức: Tổng booking = &Sigma; vé hành khách
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Phương thức thanh toán -->
+                    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+                        <h5 class="fw-bold text-purple border-bottom pb-2 mb-3">
+                            <i class="bi bi-credit-card-2-front text-gold me-2"></i>3. Phương Thức Thanh Toán
+                        </h5>
+                        <div class="row g-2">
+                            <div class="col-md-6 col-12">
+                                <div class="p-3 border rounded-3 bg-light d-flex align-items-center gap-2">
+                                    <input type="radio" id="pay1" name="payment" checked />
+                                    <label for="pay1" class="small fw-bold mb-0">Chuyển khoản Quét mã VietQR (Tự động kích hoạt vé)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-12">
+                                <div class="p-3 border rounded-3 bg-light d-flex align-items-center gap-2">
+                                    <input type="radio" id="pay2" name="payment" />
+                                    <label for="pay2" class="small fw-bold mb-0">Thanh toán tiền mặt khi lên xe / Gặp HDV</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden submit button triggered by summary component -->
+                    <button type="submit" id="hiddenSubmitBtn" style="display: none;"></button>
+                </EditForm>
+            </div>
+
+            <!-- Cột phải: Summary Component (K3.1) -->
+            <div class="col-lg-4 col-12">
+                <TourBookingSummaryComponent Tour="@departure.Tour"
+                                            Departure="@departure"
+                                            Passengers="@formModel.Passengers"
+                                            TotalAmount="@currentTotalAmount"
+                                            IsSubmitting="@isSubmitting"
+                                            OnSubmitBooking="TriggerFormSubmit" />
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int DepartureId { get; set; }
+
+    private Departure? departure;
+    private IEnumerable<PriceRule> priceRules = Enumerable.Empty<PriceRule>();
+    private BookingFormViewModel formModel = new();
+    private decimal currentTotalAmount = 0;
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private string? ruleErrorMessage = null;
+    private bool isWithin24hCutoff = false;
+
+    public class BookingFormViewModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập họ và tên người đặt tour")]
+        public string CustomerFullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
+        [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+        public string CustomerPhone { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng nhập email")]
+        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ")]
+        public string CustomerEmail { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng nhập địa chỉ liên hệ")]
+        public string CustomerAddress { get; set; } = string.Empty;
+
+        public string? Notes { get; set; }
+        public string PaymentMethod { get; set; } = "Chuyển khoản VietQR";
+
+        public List<PassengerTicket> Passengers { get; set; } = new();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            departure = await GetDepartureDetailsUseCase.ExecuteAsync(DepartureId);
+            priceRules = await CalculateBookingPricingUseCase.GetPriceRulesAsync();
+
+            if (departure != null)
+            {
+                // Kiểm tra sơ bộ Luật 1 (Khóa trước 24h)
+                isWithin24hCutoff = (departure.DepartureDate - DateTime.Now).TotalHours < 24;
+
+                // Khởi tạo ít nhất 1 hành khách người lớn
+                if (!formModel.Passengers.Any())
+                {
+                    formModel.Passengers.Add(new PassengerTicket
+                    {
+                        FullName = string.Empty,
+                        Gender = "Nam",
+                        PassengerType = "Adult",
+                        BirthYear = DateTime.Now.Year - 25,
+                        Price = departure.Tour?.BasePrice ?? 0
+                    });
+                }
+
+                RecalculateTotal();
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AddNewPassenger()
+    {
+        if (departure?.Tour != null)
+        {
+            formModel.Passengers.Add(new PassengerTicket
+            {
+                FullName = string.Empty,
+                Gender = "Nam",
+                PassengerType = "Adult",
+                BirthYear = DateTime.Now.Year - 20,
+                Price = departure.Tour.BasePrice
+            });
+            RecalculateTotal();
+        }
+    }
+
+    private void HandleRemovePassenger(int index)
+    {
+        if (index >= 0 && index < formModel.Passengers.Count && formModel.Passengers.Count > 1)
+        {
+            formModel.Passengers.RemoveAt(index);
+            RecalculateTotal();
+        }
+    }
+
+    private void RecalculateTotal()
+    {
+        if (departure?.Tour == null) return;
+
+        decimal total = 0;
+        foreach (var p in formModel.Passengers)
+        {
+            p.Price = BookingBusinessRules.CalculatePassengerFare(departure.Tour.BasePrice, p.PassengerType, priceRules);
+            total += p.Price;
+        }
+        currentTotalAmount = total;
+        StateHasChanged();
+    }
+
+    private async Task TriggerFormSubmit()
+    {
+        ruleErrorMessage = null;
+
+        // Kiểm tra xem đã điền tên các hành khách chưa
+        for (int i = 0; i < formModel.Passengers.Count; i++)
+        {
+            if (string.IsNullOrWhiteSpace(formModel.Passengers[i].FullName))
+            {
+                ruleErrorMessage = $"Hành khách #{i + 1} chưa điền họ và tên. Vui lòng nhập đầy đủ để xuất vé.";
+                return;
+            }
+        }
+
+        // Gọi form validation
+        await HandleValidSubmit();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (departure == null || departure.Tour == null) return;
+
+        ruleErrorMessage = null;
+        isSubmitting = true;
+
+        try
+        {
+            var customer = new Customer
+            {
+                FullName = formModel.CustomerFullName,
+                PhoneNumber = formModel.CustomerPhone,
+                Email = formModel.CustomerEmail,
+                Address = formModel.CustomerAddress
+            };
+
+            // THỰC THI USECASE ĐẶT TOUR:
+            // Sẽ gọi các luật nghiệp vụ K1.3 (BookingBusinessRules.ValidateDepartureCapacityAndCutoff & ValidateBookingFares)
+            // và lưu CSDL trong 1 Transaction (K2.2)
+            var result = await PlaceTourBookingUseCase.ExecuteAsync(
+                departureId: departure.Id,
+                customer: customer,
+                passengers: formModel.Passengers,
+                notes: formModel.Notes,
+                paymentMethod: formModel.PaymentMethod
+            );
+
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.BookingCode))
+            {
+                // Đặt thành công -> chuyển hướng sang trang xác nhận vé
+                NavManager.NavigateTo($"/booking-confirmation/{result.BookingCode}");
+            }
+            else
+            {
+                // Báo lỗi thân thiện khi vi phạm Luật 1 hoặc Luật 2 (K3.3)
+                ruleErrorMessage = result.ErrorMessage;
+            }
+        }
+        catch (Exception ex)
+        {
+            ruleErrorMessage = $"Đã xảy ra sự cố trong quá trình ghi nhận đơn: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

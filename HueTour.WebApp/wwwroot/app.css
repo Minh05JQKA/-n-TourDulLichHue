@@ -1,0 +1,279 @@
+/* ==========================================================================
+   HUE TOUR BOOKING - DESIGN SYSTEM (THEME: HOÀNG CUNG CỐ ĐÔ HUẾ)
+   ========================================================================== */
+
+:root {
+    --hue-purple: #4a154b;
+    --hue-purple-dark: #320d33;
+    --hue-purple-light: #672269;
+    --hue-gold: #c59b27;
+    --hue-gold-light: #f3ca52;
+    --hue-gold-gradient: linear-gradient(135deg, #c59b27 0%, #e0bb43 100%);
+    --hue-royal-gradient: linear-gradient(135deg, #4a154b 0%, #1f0820 100%);
+    --hue-jade: #0f4c5c;
+    --hue-sand: #fbf8f2;
+    --hue-surface: #ffffff;
+    --hue-text-main: #2b2b2b;
+    --hue-text-muted: #666666;
+    --hue-border: #ede7db;
+    --hue-shadow-sm: 0 4px 12px rgba(74, 21, 75, 0.06);
+    --hue-shadow-md: 0 8px 24px rgba(74, 21, 75, 0.10);
+    --hue-shadow-lg: 0 16px 40px rgba(74, 21, 75, 0.14);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--hue-sand);
+    color: var(--hue-text-main);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, .font-serif, .tour-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.02em;
+}
+
+/* Brand Colors & Utilities */
+.text-purple { color: var(--hue-purple) !important; }
+.text-gold { color: var(--hue-gold) !important; }
+.text-jade { color: var(--hue-jade) !important; }
+.bg-purple { background-color: var(--hue-purple) !important; }
+.bg-gold { background-color: var(--hue-gold) !important; }
+.bg-sand { background-color: var(--hue-sand) !important; }
+
+.bg-royal-gradient {
+    background: var(--hue-royal-gradient) !important;
+    color: #ffffff;
+}
+
+.bg-gold-gradient {
+    background: var(--hue-gold-gradient) !important;
+    color: #2b2b2b;
+}
+
+/* Custom Buttons */
+.btn-royal {
+    background-color: var(--hue-purple);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-royal:hover {
+    background-color: var(--hue-purple-light);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(74, 21, 75, 0.25);
+}
+
+.btn-gold {
+    background-color: var(--hue-gold);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-gold:hover {
+    background-color: #a8821c;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(197, 155, 39, 0.3);
+}
+
+.btn-outline-royal {
+    border: 2px solid var(--hue-purple);
+    color: var(--hue-purple);
+    background: transparent;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.btn-outline-royal:hover {
+    background-color: var(--hue-purple);
+    color: #ffffff;
+}
+
+/* Cards & Elevated Containers */
+.tour-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid var(--hue-border);
+    box-shadow: var(--hue-shadow-sm);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tour-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--hue-shadow-md);
+    border-color: #d8cebc;
+}
+
+.tour-card-img-wrap {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+
+.tour-card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.tour-card:hover .tour-card-img-wrap img {
+    transform: scale(1.06);
+}
+
+.tour-category-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(74, 21, 75, 0.88);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.tour-duration-badge {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+/* Hero Section */
+.hue-hero {
+    position: relative;
+    background: linear-gradient(rgba(31, 8, 32, 0.75), rgba(74, 21, 75, 0.82)),
+                url('/images/ngo-mon-gate.jpg') center/cover no-repeat;
+    color: #ffffff;
+    padding: 90px 0 110px 0;
+    border-radius: 0 0 32px 32px;
+}
+
+.hue-hero-subtitle {
+    color: var(--hue-gold-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+}
+
+/* Search Box Floating */
+.search-floating-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--hue-shadow-lg);
+    border: 1px solid var(--hue-border);
+    margin-top: -55px;
+    position: relative;
+    z-index: 10;
+}
+
+/* Validation & Form Styles (K3.2, K3.3) */
+.validation-message {
+    color: #dc3545;
+    font-size: 0.825rem;
+    font-weight: 600;
+    margin-top: 4px;
+    display: block;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--hue-purple);
+    box-shadow: 0 0 0 0.2rem rgba(74, 21, 75, 0.15);
+}
+
+.rule-alert {
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.rule-alert-warning {
+    background-color: #fff9e6;
+    border-left: 5px solid var(--hue-gold);
+    color: #8a6a10;
+}
+
+.rule-alert-danger {
+    background-color: #fdf2f2;
+    border-left: 5px solid #dc3545;
+    color: #9f1c28;
+}
+
+.rule-alert-success {
+    background-color: #eafaf1;
+    border-left: 5px solid #28a745;
+    color: #155724;
+}
+
+/* Dynamic Passenger Item Box (K3.1, K3.2) */
+.passenger-item-card {
+    background: #ffffff;
+    border: 1px solid var(--hue-border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 14px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.passenger-item-card:hover {
+    border-color: #d1c7b7;
+    box-shadow: var(--hue-shadow-sm);
+}
+
+/* Confirmation Ticket Styling */
+.ticket-voucher {
+    background: #ffffff;
+    border: 2px dashed #c59b27;
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    box-shadow: var(--hue-shadow-md);
+}
+
+/* Mobile Responsive Optimization (K3.4) */
+@media (max-width: 576px) {
+    .hue-hero {
+        padding: 50px 0 70px 0;
+        border-radius: 0 0 20px 20px;
+    }
+    .search-floating-card {
+        margin-top: -35px;
+        padding: 16px;
+    }
+    .tour-card-img-wrap {
+        height: 180px;
+    }
+}

@@ -1,0 +1,230 @@
+@page "/admin/tours"
+@attribute [Authorize(Roles = "Admin")]
+@inject IViewToursUseCase ViewToursUseCase
+@inject IManageToursUseCase ManageToursUseCase
+
+<PageTitle>Quản Lý Tour Du Lịch - Admin</PageTitle>
+
+<div class="container-fluid py-4 px-md-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <span class="badge bg-purple text-gold mb-1">DANH MỤC TOUR</span>
+            <h2 class="font-serif fw-bold text-purple mb-0">Quản Lý Tuyến Điểm &amp; Tour Huế</h2>
+        </div>
+        <button class="btn btn-royal rounded-pill px-4 mt-2 mt-md-0" @onclick="OpenAddModal">
+            <i class="bi bi-plus-lg me-1"></i>Thêm Tour Mới
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-purple" role="status"></div>
+            <p class="text-muted mt-2">Đang tải danh sách tour...</p>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm p-4" style="border-radius: 16px;">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Mã</th>
+                            <th>Tên Tour</th>
+                            <th>Danh Mục</th>
+                            <th>Thời Lượng</th>
+                            <th>Giá Gốc</th>
+                            <th>Trạng Thái</th>
+                            <th class="text-end">Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var t in tours)
+                        {
+                            <tr>
+                                <td style="width: 70px;">
+                                    <img src="@t.ImageUrl" alt="@t.Title" class="rounded-2 object-fit-cover" style="width: 60px; height: 45px;" />
+                                </td>
+                                <td><code class="fw-bold text-purple">@t.Code</code></td>
+                                <td class="fw-semibold">@t.Title</td>
+                                <td><span class="badge bg-purple text-gold">@t.Category</span></td>
+                                <td class="small">@t.Duration</td>
+                                <td class="fw-bold text-purple">@t.BasePrice.ToString("N0") đ</td>
+                                <td>
+                                    <span class="badge @(t.IsActive ? "bg-success" : "bg-secondary")">
+                                        @(t.IsActive ? "Mở bán" : "Tạm dừng")
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3 me-1" @onclick="() => EditTour(t)">
+                                        <i class="bi bi-pencil-square me-1"></i>Sửa
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill px-2" @onclick="() => DeleteTour(t.Id)">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal Thêm / Sửa Tour -->
+@if (showModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px;">
+                <div class="modal-header bg-purple text-white">
+                    <h5 class="modal-title font-serif fw-bold">@(editingTour.Id == 0 ? "Thêm Tour Du Lịch Mới" : "Chỉnh Sửa Thông Tin Tour")</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Mã Tour:</label>
+                            <input type="text" class="form-control" @bind="editingTour.Code" placeholder="HT-XXXX" />
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold">Tên Tour:</label>
+                            <input type="text" class="form-control" @bind="editingTour.Title" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Danh Mục:</label>
+                            <select class="form-select" @bind="editingTour.Category">
+                                <option value="Di tích Cố Đô">Di tích Cố Đô</option>
+                                <option value="Sinh thái & Đầm phá">Sinh thái & Đầm phá</option>
+                                <option value="Sông Hương & Làng nghề">Sông Hương & Làng nghề</option>
+                                <option value="Văn hóa & Ẩm thực">Văn hóa & Ẩm thực</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Giá Gốc (VNĐ):</label>
+                            <input type="number" class="form-control" step="10000" @bind="editingTour.BasePrice" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Thời Lượng:</label>
+                            <input type="text" class="form-control" @bind="editingTour.Duration" placeholder="1 Ngày" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Điểm Xuất Phát:</label>
+                            <input type="text" class="form-control" @bind="editingTour.StartingLocation" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Link Ảnh Bìa (URL):</label>
+                            <input type="text" class="form-control" @bind="editingTour.ImageUrl" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Mô Tả Ngắn:</label>
+                            <textarea class="form-control" rows="2" @bind="editingTour.ShortDescription"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Điểm Nổi Bật (phân cách dấu chấm phẩy ;):</label>
+                            <input type="text" class="form-control" @bind="editingTour.Highlights" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Lịch Trình Tóm Tắt (phân cách mũi tên ->):</label>
+                            <input type="text" class="form-control" @bind="editingTour.Itinerary" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" @onclick="CloseModal">Hủy</button>
+                    <button type="button" class="btn btn-royal rounded-pill px-4" @onclick="SaveTour">Lưu Tour</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Tour> tours = new();
+    private bool isLoading = true;
+    private bool showModal = false;
+    private Tour editingTour = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTours();
+    }
+
+    private async Task LoadTours()
+    {
+        isLoading = true;
+        try
+        {
+            var data = await ViewToursUseCase.ExecuteAsync(false);
+            tours = data.ToList();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenAddModal()
+    {
+        editingTour = new Tour
+        {
+            Code = $"HT-NEW{tours.Count + 1:D2}",
+            ImageUrl = "/images/ngo-mon-gate.jpg",
+            BasePrice = 500000,
+            Duration = "1 Ngày",
+            StartingLocation = "Trung tâm TP Huế",
+            Highlights = "Xe đưa đón; Vé tham quan; HDV nhiệt tình",
+            Itinerary = "08:00 Đón khách -> 11:30 Ăn trưa -> 17:00 Trả khách"
+        };
+        showModal = true;
+    }
+
+    private void EditTour(Tour tour)
+    {
+        editingTour = new Tour
+        {
+            Id = tour.Id,
+            Code = tour.Code,
+            Title = tour.Title,
+            Category = tour.Category,
+            BasePrice = tour.BasePrice,
+            Duration = tour.Duration,
+            StartingLocation = tour.StartingLocation,
+            ImageUrl = tour.ImageUrl,
+            ShortDescription = tour.ShortDescription,
+            Description = tour.Description,
+            Highlights = tour.Highlights,
+            Itinerary = tour.Itinerary,
+            IsActive = tour.IsActive
+        };
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+    }
+
+    private async Task SaveTour()
+    {
+        if (editingTour.Id == 0)
+        {
+            await ManageToursUseCase.AddTourAsync(editingTour);
+        }
+        else
+        {
+            await ManageToursUseCase.UpdateTourAsync(editingTour);
+        }
+        showModal = false;
+        await LoadTours();
+    }
+
+    private async Task DeleteTour(int id)
+    {
+        await ManageToursUseCase.DeleteTourAsync(id);
+        await LoadTours();
+    }
+}

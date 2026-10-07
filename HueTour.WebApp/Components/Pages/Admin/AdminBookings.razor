@@ -1,0 +1,36 @@
+@page "/admin/bookings"
+@attribute [Authorize(Roles = "Admin")]
+@using HueTour.CoreBusiness
+@inject IManageBookingsUseCase ManageBookings
+
+<PageTitle>Quản lý đơn đặt tour - Hue Tour</PageTitle>
+
+<div class="container py-4">
+    <div class="mb-4"><span class="badge bg-purple text-gold">ĐIỀU HÀNH</span><h2 class="font-serif fw-bold text-purple mb-0">Đơn đặt tour</h2></div>
+    @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
+    <div class="card border-0 shadow-sm p-3"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tour / ngày đi</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+        <tbody>@foreach (var booking in bookings)
+        {
+            <tr><td class="fw-bold text-purple">@booking.BookingCode</td><td>@booking.Customer?.FullName<br /><small class="text-muted">@booking.Customer?.PhoneNumber</small></td>
+                <td>@booking.Departure?.Tour?.Title<br /><small class="text-muted">@booking.Departure?.DepartureDate.ToString("dd/MM/yyyy HH:mm")</small></td>
+                <td>@booking.BookingDate.ToString("dd/MM/yyyy HH:mm")</td><td>@booking.TotalAmount.ToString("N0") đ</td><td>@booking.Status</td>
+                <td class="text-nowrap">
+                    @if (booking.Status == "Pending") { <button class="btn btn-sm btn-outline-success me-1" @onclick="() => Confirm(booking.Id)">Xác nhận</button> }
+                    @if (booking.Status is "Pending" or "Confirmed") { <button class="btn btn-sm btn-outline-danger me-1" @onclick="() => Cancel(booking.Id)">Hủy</button> }
+                    @if (booking.Status == "Confirmed") { <button class="btn btn-sm btn-outline-primary" @onclick="() => Complete(booking.Id)">Hoàn tất</button> }
+                </td>
+            </tr>
+        }</tbody>
+    </table></div></div>
+</div>
+
+@code {
+    private List<TourBooking> bookings = new();
+    private string? message;
+    protected override async Task OnInitializedAsync() => await Load();
+    private async Task Load() => bookings = (await ManageBookings.GetAllBookingsAsync()).ToList();
+    private async Task Confirm(int id) { await ManageBookings.ConfirmBookingAsync(id); message = "Đã xác nhận đơn đặt tour."; await Load(); }
+    private async Task Cancel(int id) { await ManageBookings.CancelBookingAsync(id); message = "Đã hủy đơn và cập nhật số chỗ."; await Load(); }
+    private async Task Complete(int id) { await ManageBookings.CompleteBookingAsync(id); message = "Đã hoàn tất đơn."; await Load(); }
+}

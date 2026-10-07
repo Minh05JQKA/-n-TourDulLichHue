@@ -1,0 +1,130 @@
+@using HueTour.CoreBusiness
+
+<div class="card border-0 shadow-sm p-4 sticky-top" style="top: 20px; border-radius: 16px; background: #ffffff;">
+    <h5 class="fw-bold text-purple border-bottom pb-3 mb-3">
+        <i class="bi bi-receipt me-2"></i>Tóm Tắt Đặt Tour
+    </h5>
+
+    @if (Tour != null)
+    {
+        <div class="mb-3">
+            <h6 class="fw-bold text-dark mb-1">@Tour.Title</h6>
+            <div class="small text-muted mb-2">Mã tour: <span class="badge bg-light text-dark border">@Tour.Code</span></div>
+            <div class="small text-muted"><i class="bi bi-geo-alt me-1 text-danger"></i>Khởi hành: @Tour.StartingLocation</div>
+            <div class="small text-muted"><i class="bi bi-clock me-1 text-primary"></i>Thời lượng: @Tour.Duration</div>
+        </div>
+    }
+
+    @if (Departure != null)
+    {
+        <div class="bg-light p-3 rounded mb-3 border">
+            <div class="small fw-bold text-purple mb-1">
+                <i class="bi bi-calendar3 me-1"></i>Lịch khởi hành đã chọn:
+            </div>
+            <div class="fw-bold text-dark">
+                @Departure.DepartureDate.ToString("HH:mm - dd/MM/yyyy")
+            </div>
+            <div class="small text-muted">
+                Dự kiến về: @Departure.ReturnDate.ToString("HH:mm - dd/MM/yyyy")
+            </div>
+        </div>
+    }
+
+    <!-- Chi tiết hành khách (Luật 2: tổng booking = Sigma vé) -->
+    <div class="border-top pt-3 mb-3">
+        <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Tổng số hành khách:</span>
+            <span class="fw-bold text-dark">@(Passengers?.Count ?? 0) khách</span>
+        </div>
+
+        @if (Passengers != null)
+        {
+            int adultCount = Passengers.Count(p => p.PassengerType == "Adult");
+            int childCount = Passengers.Count(p => p.PassengerType == "Child");
+            int infantCount = Passengers.Count(p => p.PassengerType == "Infant");
+
+            if (adultCount > 0)
+            {
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>• Người lớn (100%):</span>
+                    <span>@adultCount x @((Tour?.BasePrice ?? 0).ToString("N0")) đ</span>
+                </div>
+            }
+            if (childCount > 0)
+            {
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>• Trẻ em 5-11t (50%):</span>
+                    <span>@childCount x @(((Tour?.BasePrice ?? 0) * 0.5m).ToString("N0")) đ</span>
+                </div>
+            }
+            if (infantCount > 0)
+            {
+                <div class="d-flex justify-content-between small text-success">
+                    <span>• Em bé &lt;5t (Miễn phí):</span>
+                    <span>@infantCount x 0 đ</span>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Tổng tiền -->
+    <div class="border-top pt-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="d-block text-muted small">Tổng tiền thanh toán</span>
+                <span class="badge bg-warning text-dark small">Theo Luật 2 (Σ vé)</span>
+            </div>
+            <span class="fs-4 fw-bold text-purple">
+                @TotalAmount.ToString("N0") <small class="fs-6">VNĐ</small>
+            </span>
+        </div>
+    </div>
+
+    <!-- Nút Đặt Tour -->
+    <button type="button" class="btn btn-royal btn-lg w-100 rounded-pill py-3 fw-bold"
+            disabled="@(IsSubmitting || TotalAmount <= 0)"
+            @onclick="SubmitBooking">
+        @if (IsSubmitting)
+        {
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <span>Đang xử lý đặt tour...</span>
+        }
+        else
+        {
+            <i class="bi bi-shield-check me-2"></i>
+            <span>Xác Nhận Đặt Tour</span>
+        }
+    </button>
+
+    <div class="text-center mt-3 small text-muted">
+        <i class="bi bi-lock me-1"></i>Bảo mật thông tin • Xác nhận tức thì
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Tour? Tour { get; set; }
+
+    [Parameter]
+    public Departure? Departure { get; set; }
+
+    [Parameter]
+    public List<PassengerTicket>? Passengers { get; set; }
+
+    [Parameter]
+    public decimal TotalAmount { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmitBooking { get; set; }
+
+    [Parameter]
+    public bool IsSubmitting { get; set; }
+
+    private async Task SubmitBooking()
+    {
+        if (OnSubmitBooking.HasDelegate)
+        {
+            await OnSubmitBooking.InvokeAsync();
+        }
+    }
+}

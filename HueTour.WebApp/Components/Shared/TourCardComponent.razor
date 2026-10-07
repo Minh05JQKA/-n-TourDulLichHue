@@ -1,0 +1,43 @@
+@using HueTour.CoreBusiness
+
+<div class="tour-card">
+    <div class="tour-card-img-wrap">
+        <img src="@Tour.ImageUrl" alt="@Tour.Title" loading="lazy" />
+        <span class="tour-category-badge">@Tour.Category</span>
+        <span class="tour-duration-badge">
+            <i class="bi bi-clock me-1"></i>@Tour.Duration
+        </span>
+    </div>
+    <div class="p-4 d-flex flex-column flex-grow-1">
+        <div class="text-muted small mb-2 d-flex align-items-center">
+            <i class="bi bi-geo-alt text-danger me-1"></i>
+            <span class="text-truncate">@Tour.StartingLocation</span>
+        </div>
+        <h5 class="fw-bold tour-title mb-2" style="font-size: 1.15rem; min-height: 2.8rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+            <a href="/tour/@Tour.Id" class="text-decoration-none text-dark">@Tour.Title</a>
+        </h5>
+        <p class="text-muted small mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+            @Tour.ShortDescription
+        </p>
+
+        <div class="border-top pt-3 d-flex align-items-center justify-content-between mt-auto">
+            <div>
+                <span class="text-muted small d-block">Giá khởi điểm</span>
+                <span class="fw-bold text-purple fs-5">
+                    @Tour.BasePrice.ToString("N0") <small class="text-muted fs-6">đ/khách</small>
+                </span>
+            </div>
+            <a href="/tour/@Tour.Id" class="btn btn-royal rounded-pill px-3 py-2 btn-sm">
+                Chi tiết <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Tour Tour { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<int> OnTourSelected { get; set; }
+}

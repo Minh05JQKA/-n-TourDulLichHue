@@ -1,0 +1,17 @@
+@page "/logout"
+@inject NavigationManager NavManager
+
+<PageTitle>Đang Đăng Xuất...</PageTitle>
+
+<div class="container py-5 text-center">
+    <div class="spinner-border text-purple mb-3" role="status"></div>
+    <p class="text-muted">Đang đăng xuất khỏi hệ thống...</p>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Chuyển hướng tới endpoint xóa cookie
+        NavManager.NavigateTo("/auth/logout", forceLoad: true);
+    }
+}

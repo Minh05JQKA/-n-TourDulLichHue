@@ -1,0 +1,58 @@
+@page "/admin/departures"
+@attribute [Authorize(Roles = "Admin")]
+@using HueTour.CoreBusiness
+@inject IManageDeparturesUseCase ManageDepartures
+@inject IViewToursUseCase ViewTours
+
+<PageTitle>Quản lý chuyến khởi hành - Hue Tour</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div><span class="badge bg-purple text-gold">ĐIỀU HÀNH</span><h2 class="font-serif fw-bold text-purple mb-0">Chuyến khởi hành</h2></div>
+        <button class="btn btn-royal rounded-pill px-4" @onclick="OpenCreate">+ Thêm chuyến</button>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
+    @if (editing is not null)
+    {
+        <EditForm Model="editing" OnValidSubmit="Save" class="card border-0 shadow-sm p-3 mb-4">
+            <DataAnnotationsValidator />
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Tour</label><InputSelect class="form-select" @bind-Value="editing.TourId"><option value="0">Chọn tour</option>@foreach (var tour in tours) { <option value="@tour.Id">@tour.Title</option> }</InputSelect></div>
+                <div class="col-md-6"><label class="form-label">Ngày khởi hành</label><InputDate class="form-control" Type="InputDateType.DateTimeLocal" @bind-Value="editing.DepartureDate" /></div>
+                <div class="col-md-6"><label class="form-label">Ngày về</label><InputDate class="form-control" Type="InputDateType.DateTimeLocal" @bind-Value="editing.ReturnDate" /></div>
+                <div class="col-md-6"><label class="form-label">Sức chứa</label><InputNumber class="form-control" min="1" @bind-Value="editing.MaxCapacity" /></div>
+                <div class="col-12"><label class="form-label">Điểm tập trung</label><InputText class="form-control" @bind-Value="editing.MeetingPoint" /></div>
+                <div class="col-12 d-flex gap-2"><button class="btn btn-royal" type="submit">Lưu chuyến</button><button class="btn btn-outline-secondary" type="button" @onclick="() => editing = null">Hủy</button></div>
+            </div>
+        </EditForm>
+    }
+    <div class="card border-0 shadow-sm p-3"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Tour</th><th>Khởi hành</th><th>Điểm tập trung</th><th>Chỗ</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+        <tbody>@foreach (var departure in departures)
+        {
+            <tr><td class="fw-semibold">@departure.Tour?.Title</td><td>@departure.DepartureDate.ToString("dd/MM/yyyy HH:mm")</td><td>@departure.MeetingPoint</td><td>@departure.BookedSeats / @departure.MaxCapacity</td><td>@departure.Status</td>
+            <td class="text-nowrap">
+                @if (departure.Status == "Open") { <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Close(departure.Id)">Chốt</button><button class="btn btn-sm btn-outline-danger" @onclick="() => Cancel(departure.Id)">Hủy chuyến</button> }
+            </td></tr>
+        }</tbody>
+    </table></div></div>
+</div>
+
+@code {
+    private List<Departure> departures = new();
+    private List<Tour> tours = new();
+    private Departure? editing;
+    private string? message;
+
+    protected override async Task OnInitializedAsync() { tours = (await ViewTours.ExecuteAsync(false)).ToList(); await Load(); }
+    private async Task Load() => departures = (await ManageDepartures.GetAllDeparturesAsync()).ToList();
+    private void OpenCreate() => editing = new Departure { DepartureDate = DateTime.Now.AddDays(7), ReturnDate = DateTime.Now.AddDays(8), MaxCapacity = 25, MeetingPoint = "Cột cờ Phu Văn Lâu, TP Huế" };
+    private async Task Save()
+    {
+        if (editing is null || editing.TourId <= 0 || editing.ReturnDate <= editing.DepartureDate || editing.MaxCapacity <= 0) { message = "Vui lòng chọn tour, thời gian và sức chứa hợp lệ."; return; }
+        if (editing.Id == 0) await ManageDepartures.AddDepartureAsync(editing); else await ManageDepartures.UpdateDepartureAsync(editing);
+        editing = null; message = "Đã lưu chuyến khởi hành."; await Load();
+    }
+    private async Task Close(int id) { await ManageDepartures.CloseDepartureAsync(id); message = "Đã chốt chuyến."; await Load(); }
+    private async Task Cancel(int id) { await ManageDepartures.CancelDepartureAsync(id); message = "Đã hủy chuyến."; await Load(); }
+}

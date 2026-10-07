@@ -1,0 +1,26 @@
+# Sequence đặt tour
+
+```plantuml
+@startuml
+actor Customer
+boundary BookingPage
+control PlaceTourBookingUseCase
+control BookingBusinessRules
+database DepartureRepository
+database CustomerRepository
+database TourBookingRepository
+Customer -> BookingPage : gửi thông tin đoàn khách
+BookingPage -> PlaceTourBookingUseCase : ExecuteAsync(departure, customer, passengers)
+PlaceTourBookingUseCase -> DepartureRepository : lấy chuyến và số chỗ còn
+DepartureRepository --> PlaceTourBookingUseCase : departure
+PlaceTourBookingUseCase -> BookingBusinessRules : kiểm tra sức chứa / hạn 24 giờ
+BookingBusinessRules --> PlaceTourBookingUseCase : hợp lệ hoặc thông báo lỗi
+PlaceTourBookingUseCase -> CustomerRepository : tìm hoặc tạo khách hàng
+CustomerRepository --> PlaceTourBookingUseCase : customerId
+PlaceTourBookingUseCase -> TourBookingRepository : lưu header + ticket lines (transaction)
+TourBookingRepository --> PlaceTourBookingUseCase : bookingId
+PlaceTourBookingUseCase -> DepartureRepository : cập nhật số chỗ đã đặt
+PlaceTourBookingUseCase --> BookingPage : kết quả đặt tour
+BookingPage --> Customer : xác nhận / lỗi thân thiện
+@enduml
+```

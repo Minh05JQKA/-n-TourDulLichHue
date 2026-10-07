@@ -1,0 +1,198 @@
+@page "/ai-consultant"
+@inject IAiTourAdvisorUseCase AiAdvisorUseCase
+@inject NavigationManager NavManager
+
+<PageTitle>Trợ Lý AI Tư Vấn Tour Du Lịch Huế</PageTitle>
+
+<div class="bg-purple text-white py-5 mb-4">
+    <div class="container text-center">
+        <span class="badge bg-gold text-dark px-3 py-2 fw-bold text-uppercase mb-2">
+            <i class="bi bi-robot me-1"></i>TÍNH NĂNG NÂNG CAO (K4.3 - ECO2415)
+        </span>
+        <h1 class="font-serif fw-bold display-5 mt-1">Trợ Lý AI Du Lịch Cố Đô</h1>
+        <p class="text-light opacity-90 mx-auto mb-0" style="max-width: 650px;">
+            Nhập nhu cầu về sở thích, thời gian hoặc ngân sách dự kiến của đoàn. Trợ lý thông minh sẽ phân tích và đề xuất hành trình tối ưu từ dữ liệu thực tế trong CSDL!
+        </p>
+    </div>
+</div>
+
+<div class="container py-3">
+    <div class="row g-4 justify-content-center">
+        <!-- Form nhập câu hỏi / thông tin đoàn -->
+        <div class="col-lg-5 col-12">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 16px;">
+                <h5 class="fw-bold text-purple mb-3 border-bottom pb-2">
+                    <i class="bi bi-chat-dots-fill text-gold me-2"></i>Nhu Cầu Của Quý Khách
+                </h5>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Mô tả mong muốn hoặc sở thích của bạn:</label>
+                    <textarea class="form-control" rows="3"
+                              placeholder="VD: Gia đình tôi muốn đi tour lăng tẩm hoàng cung trong 1 ngày, hoặc ngắm hoàng hôn Tam Giang..."
+                              @bind="prompt"></textarea>
+                </div>
+
+                <!-- Gợi ý nhanh -->
+                <div class="mb-3">
+                    <span class="small text-muted d-block mb-1">Gợi ý nhanh:</span>
+                    <div class="d-flex flex-wrap gap-1">
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
+                                @onclick='() => SetPrompt("Tôi muốn tìm tour 1 ngày tham quan Đại Nội và các lăng tẩm triều Nguyễn")'>
+                            👑 Đại Nội & Lăng Tẩm
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
+                                @onclick='() => SetPrompt("Muốn ngắm hoàng hôn lãng mạn trên đầm phá Tam Giang và chèo Sup")'>
+                            🌅 Đầm phá Tam Giang
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
+                                @onclick='() => SetPrompt("Tour buổi tối nghe Ca Huế trên sông Hương và ăn đặc sản Huế")'>
+                            🎶 Ca Huế Sông Hương
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold text-muted">Số người lớn:</label>
+                        <input type="number" class="form-control" min="1" max="50" @bind="adults" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold text-muted">Số trẻ em (&lt;12t):</label>
+                        <input type="number" class="form-control" min="0" max="50" @bind="children" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Ngân sách tối đa toàn đoàn (VNĐ):</label>
+                    <input type="number" class="form-control" step="100000" placeholder="VD: 1500000" @bind="maxBudget" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-muted">Thời lượng mong muốn:</label>
+                    <select class="form-select" @bind="duration">
+                        <option value="">Tất cả thời lượng</option>
+                        <option value="Nửa Ngày">Nửa Ngày</option>
+                        <option value="1 Ngày">1 Ngày trọn vẹn</option>
+                        <option value="3 Giờ">Tour ngắn (3 - 4 giờ)</option>
+                    </select>
+                </div>
+
+                <button type="button" class="btn btn-royal btn-lg rounded-pill w-100 fw-bold"
+                        disabled="@isThinking"
+                        @onclick="AskAi">
+                    @if (isThinking)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>AI Đang Phân Tích CSDL...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-magic me-2"></i>
+                        <span>Gợi Ý Tour Tối Ưu</span>
+                    }
+                </button>
+            </div>
+        </div>
+
+        <!-- Kết quả gợi ý từ AI -->
+        <div class="col-lg-7 col-12">
+            @if (response != null)
+            {
+                <div class="card border-0 shadow-sm p-4 bg-white animate__animated animate__fadeIn" style="border-radius: 16px;">
+                    <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-3">
+                        <div class="fs-2 text-gold">🤖</div>
+                        <div>
+                            <h5 class="fw-bold text-purple mb-0">Phản Hồi Từ Trợ Lý AI</h5>
+                            <small class="text-muted">Được chọn lọc trực tiếp từ CSDL Tours &amp; Departures</small>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 mb-4 text-dark small border" style="line-height: 1.7;">
+                        @response.AdviceMessage
+                    </div>
+
+                    <h6 class="fw-bold text-purple mb-3">
+                        <i class="bi bi-card-checklist text-gold me-2"></i>Các Tour Phù Hợp Nhất Đề Xuất Cho Bạn:
+                    </h6>
+
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var rec in response.RecommendedTours)
+                        {
+                            <div class="card border p-3 rounded-3 shadow-none hover-shadow">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-sm-4 col-12">
+                                        <img src="@rec.Tour.ImageUrl" alt="@rec.Tour.Title" class="img-fluid rounded-3 object-fit-cover w-100" style="height: 120px;" />
+                                    </div>
+                                    <div class="col-sm-8 col-12">
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <h6 class="fw-bold text-dark mb-0">@rec.Tour.Title</h6>
+                                            <span class="badge bg-purple text-gold">@rec.Tour.Category</span>
+                                        </div>
+                                        <p class="small text-muted mb-2">@rec.WhyRecommended</p>
+
+                                        <div class="d-flex flex-wrap justify-content-between align-items-center border-top pt-2 mt-2">
+                                            <div>
+                                                <span class="small text-muted d-block">Tổng chi phí đoàn dự kiến:</span>
+                                                <strong class="text-purple">@rec.EstimatedTotalCost.ToString("N0") VNĐ</strong>
+                                            </div>
+                                            <a href="/tour/@rec.Tour.Id" class="btn btn-gold btn-sm rounded-pill px-3">
+                                                Xem Tour &amp; Đặt <i class="bi bi-arrow-right ms-1"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 shadow-sm p-5 text-center bg-white h-100 d-flex flex-column justify-content-center" style="border-radius: 16px;">
+                    <div class="display-3 text-gold mb-3">✨</div>
+                    <h4 class="font-serif fw-bold text-purple">Trợ Lý Sẵn Sàng Phục Vụ</h4>
+                    <p class="text-muted mx-auto" style="max-width: 450px;">
+                        Điền nhu cầu của bạn ở bảng bên cạnh và bấm "Gợi Ý Tour Tối Ưu" để AI tìm kiếm và tính toán chi phí chính xác cho đoàn của bạn.
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string prompt = "Tôi muốn tìm tour 1 ngày ngắm cảnh lịch sử và lăng tẩm hoàng cung Huế";
+    private int adults = 2;
+    private int children = 1;
+    private decimal? maxBudget = 2000000;
+    private string duration = "1 Ngày";
+    private bool isThinking = false;
+    private AiAdviceResponse? response;
+
+    private void SetPrompt(string text)
+    {
+        prompt = text;
+    }
+
+    private async Task AskAi()
+    {
+        isThinking = true;
+        try
+        {
+            var req = new AiAdviceRequest
+            {
+                UserPrompt = prompt,
+                AdultCount = adults,
+                ChildCount = children,
+                MaxBudget = maxBudget,
+                PreferredDuration = duration
+            };
+
+            response = await AiAdvisorUseCase.GetTourAdviceAsync(req);
+        }
+        finally
+        {
+            isThinking = false;
+        }
+    }
+}

@@ -1,0 +1,31 @@
+# Sơ đồ Class (các lớp miền và ranh giới chính)
+
+```plantuml
+@startuml
+class Tour
+class Departure
+class Customer
+class TourBooking
+class PassengerTicket
+class PriceRule
+class UserAccount
+interface ITourRepository
+interface IDepartureRepository
+interface ICustomerRepository
+interface ITourBookingRepository
+interface IUserAccountRepository
+class PlaceTourBookingUseCase
+class BookingBusinessRules
+class TourBookingRepository
+Tour "1" -- "0..*" Departure
+Tour "1" -- "0..*" PriceRule
+Departure "1" -- "0..*" TourBooking
+Customer "1" -- "0..*" TourBooking
+TourBooking "1" *-- "1..*" PassengerTicket
+PlaceTourBookingUseCase ..> BookingBusinessRules
+PlaceTourBookingUseCase ..> IDepartureRepository
+PlaceTourBookingUseCase ..> ICustomerRepository
+PlaceTourBookingUseCase ..> ITourBookingRepository
+TourBookingRepository ..|> ITourBookingRepository
+@enduml
+```

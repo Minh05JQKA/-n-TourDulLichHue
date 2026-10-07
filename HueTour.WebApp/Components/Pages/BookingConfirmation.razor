@@ -1,0 +1,184 @@
+@page "/booking-confirmation/{bookingCode}"
+@inject IViewBookingConfirmationUseCase ViewBookingConfirmationUseCase
+@inject NavigationManager NavManager
+
+<PageTitle>Xác Nhận Đặt Tour Thành Công - @BookingCode</PageTitle>
+
+@if (isLoading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-purple" role="status"></div>
+        <p class="text-muted mt-2">Đang tải thông tin vé xác nhận...</p>
+    </div>
+}
+else if (booking == null)
+{
+    <div class="container py-5 text-center">
+        <div class="alert alert-warning p-4 mx-auto" style="max-width: 600px; border-radius: 16px;">
+            <h4 class="fw-bold">Không Tìm Thấy Mã Booking</h4>
+            <p class="mb-3">Mã đơn đặt tour <strong>@BookingCode</strong> không tồn tại trong hệ thống.</p>
+            <a href="/" class="btn btn-royal rounded-pill px-4">Trở về trang chủ</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container py-4">
+        <!-- Banner thành công -->
+        <div class="card border-0 shadow-sm p-4 p-md-5 mb-4 text-center bg-white" style="border-radius: 20px;">
+            <div class="mb-3">
+                <span class="badge bg-success-subtle text-success border border-success-subtle p-3 rounded-circle fs-2">
+                    <i class="bi bi-check2-circle"></i>
+                </span>
+            </div>
+            <h2 class="font-serif fw-bold text-purple mb-2">ĐẶT TOUR THÀNH CÔNG!</h2>
+            <p class="text-muted mx-auto mb-3" style="max-width: 600px;">
+                Cảm ơn Quý khách <strong>@(booking.Customer?.FullName)</strong> đã tin tưởng lựa chọn dịch vụ của Hue Tour Booking.
+                Hệ thống đã ghi nhận đơn đặt tour và xác thực chỗ thành công.
+            </p>
+            <div class="d-inline-flex align-items-center gap-2 p-2 px-4 rounded-pill bg-light border mx-auto">
+                <span class="small text-muted">Mã Đặt Chỗ (Booking Code):</span>
+                <strong class="fs-5 text-purple">@booking.BookingCode</strong>
+            </div>
+        </div>
+
+        <!-- Ticket Voucher Chi Tiết -->
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-10 col-12">
+                <div class="ticket-voucher">
+                    <!-- Header vé -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-start border-bottom pb-3 mb-4 gap-2">
+                        <div>
+                            <span class="badge bg-purple text-gold mb-1">PHIẾU XÁC NHẬN TOUR CỐ ĐÔ HUẾ</span>
+                            <h4 class="font-serif fw-bold text-purple mb-1">@(booking.Departure?.Tour?.Title ?? "Tour Du Lịch Huế")</h4>
+                            <div class="small text-muted">
+                                Mã tour: <strong class="text-dark">@(booking.Departure?.Tour?.Code)</strong> •
+                                Ngày đặt: <strong>@booking.BookingDate.ToString("HH:mm - dd/MM/yyyy")</strong>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge @(booking.Status == "Confirmed" ? "bg-success" : "bg-warning text-dark") fs-6 px-3 py-2 rounded-pill">
+                                @(booking.Status == "Confirmed" ? "Đã xác nhận" : "Chờ xác nhận")
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin chuyến & Khách hàng -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 col-12">
+                            <div class="p-3 bg-light rounded-3 h-100 border">
+                                <h6 class="fw-bold text-purple mb-2"><i class="bi bi-calendar-event me-2 text-gold"></i>Thông Tin Chuyến Khởi Hành</h6>
+                                <p class="small mb-1"><strong>Khởi hành:</strong> @(booking.Departure?.DepartureDate.ToString("HH:mm - dd/MM/yyyy"))</p>
+                                <p class="small mb-1"><strong>Dự kiến về:</strong> @(booking.Departure?.ReturnDate.ToString("HH:mm - dd/MM/yyyy"))</p>
+                                <p class="small mb-1"><strong>Điểm đón:</strong> @(booking.Departure?.MeetingPoint)</p>
+                                <p class="small mb-0"><strong>HDV phụ trách:</strong> @(booking.Departure?.TourGuideName ?? "Điều hành cty") (@(booking.Departure?.TourGuidePhone ?? "0905.123.456"))</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-12">
+                            <div class="p-3 bg-light rounded-3 h-100 border">
+                                <h6 class="fw-bold text-purple mb-2"><i class="bi bi-person-badge me-2 text-gold"></i>Thông Tin Khách Đại Diện</h6>
+                                <p class="small mb-1"><strong>Người đặt:</strong> @(booking.Customer?.FullName)</p>
+                                <p class="small mb-1"><strong>Điện thoại:</strong> @(booking.Customer?.PhoneNumber)</p>
+                                <p class="small mb-1"><strong>Email:</strong> @(booking.Customer?.Email)</p>
+                                <p class="small mb-0"><strong>Địa chỉ:</strong> @(booking.Customer?.Address)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách vé hành khách (LineItems) -->
+                    <h6 class="fw-bold text-purple mb-3">
+                        <i class="bi bi-people-fill me-2 text-gold"></i>Danh Sách Vé Hành Khách (@booking.PassengerTickets.Count vé)
+                    </h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr class="small text-muted">
+                                    <th>#</th>
+                                    <th>Mã Vé</th>
+                                    <th>Họ và Tên</th>
+                                    <th>Đối Tượng</th>
+                                    <th>Năm Sinh</th>
+                                    <th>Chỗ Ngồi</th>
+                                    <th class="text-end">Giá Vé</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < booking.PassengerTickets.Count; i++)
+                                {
+                                    var ticket = booking.PassengerTickets[i];
+                                    <tr>
+                                        <td class="small text-muted">@(i + 1)</td>
+                                        <td><code class="fw-bold text-purple">@ticket.TicketCode</code></td>
+                                        <td class="fw-semibold">@ticket.FullName</td>
+                                        <td>
+                                            @if (ticket.PassengerType == "Infant")
+                                            {
+                                                <span class="badge bg-success-subtle text-success">Em bé (&lt;5t - Miễn phí)</span>
+                                            }
+                                            else if (ticket.PassengerType == "Child")
+                                            {
+                                                <span class="badge bg-info-subtle text-info-emphasis">Trẻ em (5-11t - 50%)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-light text-dark border">Người lớn (100%)</span>
+                                            }
+                                        </td>
+                                        <td class="small">@ticket.BirthYear</td>
+                                        <td><span class="badge bg-secondary">@(ticket.SeatNumber ?? "Ghế tự do")</span></td>
+                                        <td class="text-end fw-bold text-purple">
+                                            @(ticket.Price == 0 ? "0 đ (Miễn phí)" : $"{ticket.Price:N0} đ")
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="6" class="text-end fw-bold">Tổng thanh toán (Luật 2: &Sigma; vé):</td>
+                                    <td class="text-end fs-5 fw-bold text-purple">@booking.TotalAmount.ToString("N0") VNĐ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Nút thao tác -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-top pt-3">
+                        <div class="small text-muted">
+                            <i class="bi bi-info-circle me-1"></i>Vui lòng xuất trình mã booking này cho hướng dẫn viên khi lên xe.
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3" onclick="window.print()">
+                                <i class="bi bi-printer me-1"></i>In Phiếu Vé
+                            </button>
+                            <a href="/" class="btn btn-royal rounded-pill px-4">
+                                <i class="bi bi-house-door me-1"></i>Về Trang Chủ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string BookingCode { get; set; } = string.Empty;
+
+    private TourBooking? booking;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            booking = await ViewBookingConfirmationUseCase.ExecuteAsync(BookingCode);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

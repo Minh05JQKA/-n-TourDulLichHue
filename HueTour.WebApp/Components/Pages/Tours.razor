@@ -1,0 +1,147 @@
+@page "/tours"
+@inject IViewToursUseCase ViewToursUseCase
+@inject ISearchToursUseCase SearchToursUseCase
+
+<PageTitle>Danh Sách Tour Du Lịch Huế - Trọn Gói Giá Tốt</PageTitle>
+
+<div class="bg-purple text-white py-5 mb-4">
+    <div class="container text-center">
+        <span class="text-gold-light small fw-bold text-uppercase letter-spacing-1">
+            <i class="bi bi-geo-alt-fill me-1"></i>Điểm Đến Di Sản &amp; Danh Thắng
+        </span>
+        <h1 class="font-serif fw-bold display-5 mt-1">Danh Sách Tour Du Lịch Huế</h1>
+        <p class="text-light opacity-90 mx-auto mb-0" style="max-width: 650px;">
+            Trải nghiệm trọn vẹn văn hóa, lịch sử và cảnh sắc Cố Đô với các tour ghép đoàn khởi hành cố định hàng ngày.
+        </p>
+    </div>
+</div>
+
+<div class="container py-3">
+    <!-- Search & Filter Controls -->
+    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-5 col-12">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0"
+                           placeholder="Tìm theo tên tour, lăng tẩm, điểm đến..."
+                           @bind="searchTerm"
+                           @bind:event="oninput"
+                           @onkeyup="FilterTours" />
+                </div>
+            </div>
+
+            <div class="col-md-4 col-12">
+                <select class="form-select" @bind="selectedCategory" @bind:after="FilterTours">
+                    <option value="Tất cả">Tất cả danh mục (@allTours.Count())</option>
+                    <option value="Di tích Cố Đô">Di tích Cố Đô & Hoàng Thành</option>
+                    <option value="Sinh thái & Đầm phá">Sinh thái & Đầm phá Tam Giang</option>
+                    <option value="Sông Hương & Làng nghề">Sông Hương & Làng Cổ Thủy Biều</option>
+                    <option value="Văn hóa & Ẩm thực">Văn hóa & Ẩm thực đêm Cố Đô</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 col-12">
+                <select class="form-select" @bind="sortBy" @bind:after="ApplySort">
+                    <option value="default">Sắp xếp: Mặc định</option>
+                    <option value="price_asc">Giá: Thấp đến Cao</option>
+                    <option value="price_desc">Giá: Cao đến Thấp</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tours Grid -->
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-purple" role="status"></div>
+            <p class="text-muted mt-2">Đang tải danh sách tour...</p>
+        </div>
+    }
+    else if (!filteredTours.Any())
+    {
+        <div class="text-center py-5 card border-0 p-5 shadow-sm" style="border-radius: 16px;">
+            <div class="fs-1 text-muted mb-2">🔍</div>
+            <h4 class="fw-bold text-purple">Không tìm thấy tour phù hợp</h4>
+            <p class="text-muted">Vui lòng thử tìm với từ khóa khác hoặc danh mục khác.</p>
+            <button class="btn btn-outline-secondary rounded-pill px-4 mx-auto" @onclick="ResetFilter">Đặt lại bộ lọc</button>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var tour in filteredTours)
+            {
+                <div class="col-lg-4 col-md-6 col-12">
+                    <TourCardComponent Tour="@tour" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Tour> allTours = new();
+    private List<Tour> filteredTours = new();
+    private string searchTerm = string.Empty;
+    private string selectedCategory = "Tất cả";
+    private string sortBy = "default";
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var tours = await ViewToursUseCase.ExecuteAsync(activeOnly: true);
+            allTours = tours.ToList();
+            filteredTours = new List<Tour>(allTours);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void FilterTours()
+    {
+        var query = allTours.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            string term = searchTerm.Trim().ToLowerInvariant();
+            query = query.Where(t => t.Title.ToLowerInvariant().Contains(term) ||
+                                     t.ShortDescription.ToLowerInvariant().Contains(term) ||
+                                     t.Highlights.ToLowerInvariant().Contains(term));
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedCategory) && selectedCategory != "Tất cả")
+        {
+            query = query.Where(t => string.Equals(t.Category, selectedCategory, StringComparison.OrdinalIgnoreCase));
+        }
+
+        filteredTours = query.ToList();
+        ApplySort();
+    }
+
+    private void ApplySort()
+    {
+        filteredTours = sortBy switch
+        {
+            "price_asc" => filteredTours.OrderBy(t => t.BasePrice).ToList(),
+            "price_desc" => filteredTours.OrderByDescending(t => t.BasePrice).ToList(),
+            _ => filteredTours.OrderByDescending(t => t.Id).ToList()
+        };
+    }
+
+    private void ResetFilter()
+    {
+        searchTerm = string.Empty;
+        selectedCategory = "Tất cả";
+        sortBy = "default";
+        filteredTours = new List<Tour>(allTours);
+    }
+}

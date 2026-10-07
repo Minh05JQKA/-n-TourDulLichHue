@@ -1,0 +1,132 @@
+@page "/my-booking"
+@inject IViewBookingConfirmationUseCase ViewBookingConfirmationUseCase
+@inject NavigationManager NavManager
+
+<PageTitle>Tra Cứu Thông Tin Vé Tour Huế</PageTitle>
+
+<div class="bg-purple text-white py-5 mb-4">
+    <div class="container text-center">
+        <span class="text-gold-light small fw-bold text-uppercase letter-spacing-1">
+            <i class="bi bi-search me-1"></i>Kiểm Tra Hành Trình
+        </span>
+        <h1 class="font-serif fw-bold display-5 mt-1">Tra Cứu Đơn Đặt Tour</h1>
+        <p class="text-light opacity-90 mx-auto mb-0" style="max-width: 600px;">
+            Nhập mã đặt chỗ (Booking Code) được gửi sau khi hoàn tất đặt vé để kiểm tra lịch trình và danh sách vé.
+        </p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="card border-0 shadow-sm mx-auto p-4 p-md-5 mb-5" style="max-width: 650px; border-radius: 20px;">
+        <h5 class="fw-bold text-purple mb-3 text-center">
+            <i class="bi bi-ticket-detailed me-2 text-gold"></i>Nhập Mã Đơn Đặt Tour
+        </h5>
+
+        <div class="input-group input-group-lg mb-3">
+            <input type="text" class="form-control rounded-start-pill"
+                   placeholder="VD: HUE-202610-001"
+                   @bind="searchCode"
+                   @bind:event="oninput"
+                   @onkeyup="HandleKeyUp" />
+            <button class="btn btn-royal rounded-end-pill px-4" type="button" @onclick="SearchBooking">
+                <i class="bi bi-search me-1"></i>Tra Cứu
+            </button>
+        </div>
+
+        <div class="small text-muted text-center mb-0">
+            💡 Gợi ý mã mẫu sẵn có trong cơ sở dữ liệu:
+            <a href="javascript:void(0)" class="text-purple fw-bold" @onclick="@(() => searchCode = "HUE-202610-001")">HUE-202610-001</a>
+        </div>
+
+        @if (hasSearched && searchResult == null && !isSearching)
+        {
+            <div class="alert alert-danger mt-4 mb-0 small text-center" style="border-radius: 12px;">
+                <i class="bi bi-exclamation-circle-fill me-1"></i>Không tìm thấy đơn đặt tour với mã: <strong>@searchCode</strong>. Vui lòng kiểm tra lại.
+            </div>
+        }
+    </div>
+
+    @if (searchResult != null)
+    {
+        <div class="row justify-content-center">
+            <div class="col-lg-9 col-12">
+                <div class="ticket-voucher animate__animated animate__fadeIn">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                        <div>
+                            <span class="badge bg-purple text-gold">ĐƠN ĐẶT TOUR</span>
+                            <h4 class="font-serif fw-bold text-purple mt-1 mb-0">@(searchResult.Departure?.Tour?.Title)</h4>
+                        </div>
+                        <span class="badge @(searchResult.Status == "Confirmed" ? "bg-success" : "bg-warning text-dark") fs-6 px-3 py-2 rounded-pill">
+                            @searchResult.Status
+                        </span>
+                    </div>
+
+                    <div class="row g-3 mb-3 small">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Khách hàng:</strong> @searchResult.Customer?.FullName</p>
+                            <p class="mb-1"><strong>Điện thoại:</strong> @searchResult.Customer?.PhoneNumber</p>
+                            <p class="mb-0"><strong>Ngày đặt:</strong> @searchResult.BookingDate.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Khởi hành:</strong> @searchResult.Departure?.DepartureDate.ToString("HH:mm - dd/MM/yyyy")</p>
+                            <p class="mb-1"><strong>Điểm đón:</strong> @searchResult.Departure?.MeetingPoint</p>
+                            <p class="mb-0"><strong>Tổng tiền (Luật 2):</strong> <span class="fw-bold text-purple fs-6">@searchResult.TotalAmount.ToString("N0") VNĐ</span></p>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-purple border-top pt-3 mb-2">Danh sách vé hành khách:</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        @foreach (var t in searchResult.PassengerTickets)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <strong>@t.FullName</strong>
+                                    <span class="badge bg-light text-muted border ms-2">@t.TicketCode</span>
+                                    <span class="badge bg-secondary ms-1">@t.PassengerType</span>
+                                </div>
+                                <span class="fw-bold text-purple">@t.Price.ToString("N0") đ</span>
+                            </li>
+                        }
+                    </ul>
+
+                    <div class="text-end">
+                        <a href="/booking-confirmation/@searchResult.BookingCode" class="btn btn-royal rounded-pill px-4 btn-sm">
+                            Xem Chi Tiết Toàn Bộ Phiếu Vé <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string searchCode = string.Empty;
+    private TourBooking? searchResult;
+    private bool hasSearched = false;
+    private bool isSearching = false;
+
+    private async Task SearchBooking()
+    {
+        if (string.IsNullOrWhiteSpace(searchCode)) return;
+
+        isSearching = true;
+        hasSearched = true;
+        try
+        {
+            searchResult = await ViewBookingConfirmationUseCase.ExecuteAsync(searchCode.Trim());
+        }
+        finally
+        {
+            isSearching = false;
+        }
+    }
+
+    private async Task HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchBooking();
+        }
+    }
+}

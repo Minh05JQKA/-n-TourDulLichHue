@@ -1,0 +1,158 @@
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavManager
+
+<div class="d-flex flex-column min-vh-100">
+    <!-- Topbar Thông tin liên hệ -->
+    <div class="top-bar-notice py-2 px-3 border-bottom border-dark border-opacity-25">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <span><i class="bi bi-telephone-fill text-gold me-1"></i>Hotline: <strong>0905.123.456</strong></span>
+                <span class="d-none d-md-inline text-secondary">|</span>
+                <span class="d-none d-md-inline"><i class="bi bi-geo-alt-fill text-gold me-1"></i>49 Lê Lợi, TP Huế</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-gold text-dark fw-bold px-2 py-1">
+                    <i class="bi bi-stars me-1"></i>ECO2415 Đồ Án Capstone 2026
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navbar -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-purple sticky-top shadow-sm py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                <span class="fs-2 text-gold">🏛️</span>
+                <div>
+                    <span class="navbar-brand-title fs-4 d-block text-white">HUẾ TOUR</span>
+                    <small class="text-gold-light d-block" style="font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase;">
+                        Di Sản Hoàng Cung Cố Đô
+                    </small>
+                </div>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#hueNavbar" aria-controls="hueNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="hueNavbar">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-2">
+                    <li class="nav-item">
+                        <NavLink class="nav-link px-3" href="" Match="NavLinkMatch.All">
+                            <i class="bi bi-house-door me-1"></i>Trang Chủ
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link px-3" href="tours">
+                            <i class="bi bi-compass me-1"></i>Tour Du Lịch
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link px-3" href="my-booking">
+                            <i class="bi bi-ticket-perforated me-1"></i>Tra Cứu Vé
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link px-3 text-warning fw-semibold" href="ai-consultant">
+                            <i class="bi bi-robot me-1"></i>Trợ Lý AI Huế
+                        </NavLink>
+                    </li>
+                    <AuthorizeView Roles="Admin">
+                        <Authorized>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-info fw-bold px-3" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-shield-lock-fill me-1"></i>Quản Trị Viên
+                                </a>
+                                <ul class="dropdown-menu shadow">
+                                    <li><a class="dropdown-item" href="admin"><i class="bi bi-speedometer2 me-2"></i>Tổng quan Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="admin/tours"><i class="bi bi-map me-2"></i>Quản lý Tour</a></li>
+                                    <li><a class="dropdown-item" href="admin/departures"><i class="bi bi-calendar-check me-2"></i>Quản lý Chuyến khởi hành</a></li>
+                                    <li><a class="dropdown-item" href="admin/bookings"><i class="bi bi-receipt-cutoff me-2"></i>Quản lý Đơn đặt tour</a></li>
+                                </ul>
+                            </li>
+                        </Authorized>
+                    </AuthorizeView>
+                </ul>
+
+                <!-- User Auth Area (K4.1) -->
+                <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                    <AuthorizeView>
+                        <Authorized>
+                            <span class="text-light small me-2">
+                                <i class="bi bi-person-circle text-gold me-1"></i>@context.User.Identity?.Name
+                            </span>
+                            <a href="/logout" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                                <i class="bi bi-box-arrow-right me-1"></i>Đăng xuất
+                            </a>
+                        </Authorized>
+                        <NotAuthorized>
+                            <a href="/login" class="btn btn-gold btn-sm rounded-pill px-3 shadow-sm">
+                                <i class="bi bi-person-fill me-1"></i>Đăng nhập
+                            </a>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow-1">
+        @Body
+    </main>
+
+    <!-- Footer Hoàng Cung Huế -->
+    <footer class="footer-royal">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="fs-2 text-gold">🏛️</span>
+                        <h5 class="navbar-brand-title text-white mb-0">HUẾ TOUR BOOKING</h5>
+                    </div>
+                    <p class="small text-muted mb-3">
+                        Hệ thống điều hành và đặt tour du lịch Cố Đô Huế hàng đầu. Trải nghiệm tinh hoa di sản kiến trúc triều Nguyễn, vẻ đẹp hữu tình của sông Hương và đầm phá Tam Giang.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-purple border border-secondary text-gold">Đại Nội</span>
+                        <span class="badge bg-purple border border-secondary text-gold">Lăng Tẩm</span>
+                        <span class="badge bg-purple border border-secondary text-gold">Tam Giang</span>
+                        <span class="badge bg-purple border border-secondary text-gold">Ca Huế</span>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <h6 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">
+                        <i class="bi bi-check2-circle text-gold me-2"></i>Quy Định & Luật Nghiệp Vụ (K1.3)
+                    </h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <strong class="text-gold">Luật 1:</strong> Tổng hành khách của chuyến &le; số chỗ tối đa; Hệ thống tự động khóa đặt vé trước giờ khởi hành 24 tiếng.
+                        </li>
+                        <li>
+                            <strong class="text-gold">Luật 2:</strong> Giá vé tính theo loại khách: Người lớn 100%, Trẻ em 5-11 tuổi 50%, Em bé dưới 5 tuổi miễn phí; Tổng booking = &Sigma; vé.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-4 col-md-12">
+                    <h6 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">
+                        <i class="bi bi-headset text-gold me-2"></i>Thông Tin Liên Hệ Điều Hành
+                    </h6>
+                    <p class="small mb-1"><i class="bi bi-building me-2 text-gold"></i>Trụ sở: 49 Lê Lợi, Phường Phú Nhuận, TP Huế</p>
+                    <p class="small mb-1"><i class="bi bi-telephone me-2 text-gold"></i>Điện thoại: (0234) 3888.999 - Hotline: 0905.123.456</p>
+                    <p class="small mb-1"><i class="bi bi-envelope me-2 text-gold"></i>Email: booking@huetour.vn</p>
+                    <p class="small mb-0"><i class="bi bi-clock me-2 text-gold"></i>Thời gian phục vụ: 07:00 - 22:00 hàng ngày</p>
+                </div>
+            </div>
+
+            <div class="border-top border-secondary pt-3 text-center small text-muted">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                    <span>© 2026 Hue Tour Booking. Đồ án Capstone ECO2415 - Kiến trúc Clean Architecture 4 tầng.</span>
+                    <span>Designed for Excellence & Heritage Tourism</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>

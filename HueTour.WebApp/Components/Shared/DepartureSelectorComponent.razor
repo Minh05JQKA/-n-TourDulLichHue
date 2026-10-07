@@ -1,0 +1,96 @@
+@using HueTour.CoreBusiness
+
+<div class="departure-selector">
+    <label class="form-label fw-bold text-purple mb-2">
+        <i class="bi bi-calendar-check me-2"></i>Chọn Chuyến Khởi Hành Cố Định:
+    </label>
+
+    @if (Departures == null || !Departures.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-info-circle me-1"></i> Hiện chưa có lịch khởi hành mở bán cho tour này.
+        </div>
+    }
+    else
+    {
+        <div class="row g-2">
+            @foreach (var dep in Departures)
+            {
+                bool isSelected = dep.Id == SelectedDepartureId;
+                bool isFull = dep.IsFullyBooked;
+                bool isCutoff = (dep.DepartureDate - DateTime.Now).TotalHours < 24;
+                bool isClosed = dep.IsClosed;
+                bool isDisabled = isFull || isCutoff || isClosed;
+
+                <div class="col-md-6 col-12">
+                    <div class="card h-100 p-3 border-2 @(isSelected ? "border-primary bg-light shadow-sm" : "border-light") @(isDisabled ? "opacity-75 bg-light" : "cursor-pointer")"
+                         style="border-radius: 12px; cursor: @(isDisabled ? "not-allowed" : "pointer");"
+                         @onclick="() => SelectDeparture(dep, isDisabled)">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold @(isSelected ? "text-purple" : "text-dark")">
+                                <i class="bi bi-clock me-1"></i>@dep.DepartureDate.ToString("HH:mm - dd/MM/yyyy")
+                            </span>
+                            @if (isSelected)
+                            {
+                                <span class="badge bg-purple"><i class="bi bi-check-circle-fill me-1"></i>Đang chọn</span>
+                            }
+                        </div>
+
+                        <div class="small text-muted mb-2">
+                            <span>Về: @dep.ReturnDate.ToString("HH:mm - dd/MM/yyyy")</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <div>
+                                @if (isFull)
+                                {
+                                    <span class="badge bg-danger">Hết chỗ (0/@dep.MaxCapacity)</span>
+                                }
+                                else if (isCutoff)
+                                {
+                                    <span class="badge bg-warning text-dark" title="Khóa đặt trước 24h theo Luật 1">
+                                        <i class="bi bi-lock-fill me-1"></i>Khóa đặt (&lt;24h)
+                                    </span>
+                                }
+                                else if (isClosed)
+                                {
+                                    <span class="badge bg-secondary">Đã chốt đoàn</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">
+                                        Còn @dep.AvailableSeats/@dep.MaxCapacity chỗ
+                                    </span>
+                                }
+                            </div>
+                            <span class="small text-muted">
+                                <i class="bi bi-person-badge me-1"></i>HDV: @(dep.TourGuideName ?? "Cty điều phối")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<Departure> Departures { get; set; } = Enumerable.Empty<Departure>();
+
+    [Parameter]
+    public int SelectedDepartureId { get; set; }
+
+    [Parameter]
+    public EventCallback<Departure> OnDepartureChanged { get; set; }
+
+    private async Task SelectDeparture(Departure departure, bool isDisabled)
+    {
+        if (isDisabled) return;
+        SelectedDepartureId = departure.Id;
+        if (OnDepartureChanged.HasDelegate)
+        {
+            await OnDepartureChanged.InvokeAsync(departure);
+        }
+    }
+}

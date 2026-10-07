@@ -1,0 +1,63 @@
+<div class="search-floating-card">
+    <div class="row g-3 align-items-center">
+        <!-- Từ khóa -->
+        <div class="col-lg-5 col-md-6 col-12">
+            <label class="form-label small fw-bold text-muted mb-1">
+                <i class="bi bi-search text-purple me-1"></i>Từ khóa hoặc Điểm đến
+            </label>
+            <input type="text" class="form-control form-control-lg rounded-pill"
+                   placeholder="Đại Nội, Tam Giang, Ca Huế, Sông Hương..."
+                   @bind="SearchTerm"
+                   @bind:event="oninput"
+                   @onkeyup="HandleKeyUp" />
+        </div>
+
+        <!-- Danh mục Tour -->
+        <div class="col-lg-4 col-md-6 col-12">
+            <label class="form-label small fw-bold text-muted mb-1">
+                <i class="bi bi-compass text-purple me-1"></i>Loại hình trải nghiệm
+            </label>
+            <select class="form-select form-select-lg rounded-pill" @bind="SelectedCategory">
+                <option value="Tất cả">Tất cả trải nghiệm Cố Đô</option>
+                <option value="Di tích Cố Đô">Di tích Cố Đô & Hoàng Thành</option>
+                <option value="Sinh thái & Đầm phá">Sinh thái & Đầm phá Tam Giang</option>
+                <option value="Sông Hương & Làng nghề">Sông Hương & Làng Cổ Thủy Biều</option>
+                <option value="Văn hóa & Ẩm thực">Văn hóa & Ẩm thực đêm Cố Đô</option>
+            </select>
+        </div>
+
+        <!-- Nút Tìm kiếm -->
+        <div class="col-lg-3 col-12 d-flex align-items-end mt-lg-4">
+            <button type="button" class="btn btn-royal btn-lg rounded-pill w-100 py-2" @onclick="ExecuteSearch">
+                <i class="bi bi-search me-2"></i>Tìm Hành Trình
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string SearchTerm { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SelectedCategory { get; set; } = "Tất cả";
+
+    [Parameter]
+    public EventCallback<(string search, string category)> OnSearchExecuted { get; set; }
+
+    private async Task ExecuteSearch()
+    {
+        if (OnSearchExecuted.HasDelegate)
+        {
+            await OnSearchExecuted.InvokeAsync((SearchTerm, SelectedCategory));
+        }
+    }
+
+    private async Task HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ExecuteSearch();
+        }
+    }
+}
