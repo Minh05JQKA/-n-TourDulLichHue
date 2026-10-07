@@ -22,7 +22,7 @@
                 bool isClosed = dep.IsClosed;
                 bool isDisabled = isFull || isCutoff || isClosed;
 
-                <div class="col-md-6 col-12">
+                <div class="col-12">
                     <div class="card h-100 p-3 border-2 @(isSelected ? "border-primary bg-light shadow-sm" : "border-light") @(isDisabled ? "opacity-75 bg-light" : "cursor-pointer")"
                          style="border-radius: 12px; cursor: @(isDisabled ? "not-allowed" : "pointer");"
                          @onclick="() => SelectDeparture(dep, isDisabled)">

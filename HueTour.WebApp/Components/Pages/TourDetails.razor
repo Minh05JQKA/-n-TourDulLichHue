@@ -35,7 +35,7 @@ else
             <!-- Cột trái: Ảnh & Nội dung chi tiết -->
             <div class="col-lg-8 col-12">
                 <!-- Banner ảnh -->
-                <div class="position-relative mb-4 rounded-4 overflow-hidden shadow-sm" style="height: 380px;">
+                <div class="tour-details-hero position-relative mb-4 rounded-4 overflow-hidden shadow-sm">
                     <img src="@tour.ImageUrl" alt="@tour.Title" class="w-100 h-100 object-fit-cover" />
                     <span class="tour-category-badge">@tour.Category</span>
                     <span class="tour-duration-badge fs-6 px-3 py-1">
@@ -43,7 +43,7 @@ else
                     </span>
                 </div>
 
-                <h1 class="font-serif fw-bold text-purple mb-3">@tour.Title</h1>
+                <h1 class="tour-details-title font-serif fw-bold text-purple mb-3">@tour.Title</h1>
 
                 <!-- Thông số nhanh -->
                 <div class="row g-2 mb-4">

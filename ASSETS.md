@@ -9,7 +9,7 @@ Các ảnh được lưu trong `HueTour.WebApp/wwwroot/images/`, đã đổi kí
 | `tam-giang-lagoon.jpg` | Đầm Tam Giang | yuchinkay, CC BY 2.0 | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Tam_Giang_lagoon.jpg) |
 | `truong-tien-bridge.jpg` | Cầu Trường Tiền | CC BY 4.0 (xem trang tệp) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Truong_Tien_bridge_(I).jpg) |
 | `bun-bo-hue.jpg` | Bún bò Huế | Kham Tran, CC BY 3.0 | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Bun-Bo-Hue-2008.jpg) |
-| `bach-ma-national-park.jpg` | Bạch Mã | CC BY-SA 3.0 (xem trang tệp) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Bach_Ma_National_Park_banner.JPG) |
+| `bach-ma-national-park.jpg` | Dãy núi Bạch Mã nhìn từ cầu Thuận Phước | Lê Đăng Khôi, CC0 1.0 | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:D%C3%A3y_B%E1%BA%A1ch_M%C3%A3.jpg) |
 | `thien-mu-pagoda.jpg` | Chùa Thiên Mụ | Dominik Tefert, public domain | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Hue_Thien_Mu-Pagoda.JPG) |
 
 Các ảnh đã được chỉnh kích thước/chất lượng cho website; nội dung ảnh không được chỉnh sửa có chủ đích. Kiểm tra trang nguồn để biết đầy đủ điều khoản và ghi công trước khi tái sử dụng ngoài đồ án.

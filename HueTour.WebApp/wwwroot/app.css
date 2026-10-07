@@ -164,6 +164,21 @@ h1, h2, h3, .font-serif, .tour-title {
     font-size: 0.75rem;
 }
 
+.tour-details-hero {
+    height: clamp(250px, 34vw, 380px);
+    background: #e9e4da;
+}
+
+.tour-details-hero img {
+    object-position: center 60%;
+}
+
+.tour-details-title {
+    font-size: clamp(1.8rem, 3.1vw, 2.7rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
 /* Hero Section */
 .hue-hero {
     position: relative;
