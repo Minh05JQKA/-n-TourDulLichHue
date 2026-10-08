@@ -30,10 +30,16 @@ public class TourBookingRepository : ITourBookingRepository
             const string reserveSeatsSql = @"
                 UPDATE dbo.Departure
                 SET BookedSeats = BookedSeats + @Seats
-                WHERE Id = @DepartureId AND Status = 'Open'
+                WHERE Id = @DepartureId AND Status = @OpenStatus
                   AND BookedSeats + @Seats <= MaxCapacity
-                  AND DepartureDate >= DATEADD(HOUR, 24, GETDATE());";
-            var reserved = await conn.ExecuteAsync(reserveSeatsSql, new { Seats = seatsToReserve, booking.DepartureId }, transaction);
+                  AND DepartureDate >= DATEADD(HOUR, @CutoffHours, GETDATE());";
+            var reserved = await conn.ExecuteAsync(reserveSeatsSql, new
+            {
+                Seats = seatsToReserve,
+                booking.DepartureId,
+                CutoffHours = BookingBusinessRules.CutoffHoursBeforeDeparture,
+                OpenStatus = DepartureStatus.Open
+            }, transaction);
             if (reserved == 0)
             {
                 transaction.Rollback();

@@ -133,7 +133,7 @@ public class PlaceTourBookingUseCase : IPlaceTourBookingUseCase
             CustomerId = customerId,
             BookingDate = DateTime.Now,
             TotalAmount = 0,
-            Status = "Pending",
+            Status = TourBookingStatus.Pending,
             Notes = notes,
             PaymentMethod = paymentMethod ?? "Thanh toán khi khởi hành / Chuyển khoản QR",
             PassengerTickets = passengers

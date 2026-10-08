@@ -33,7 +33,7 @@
         {
             <tr><td class="fw-semibold">@departure.Tour?.Title</td><td>@departure.DepartureDate.ToString("dd/MM/yyyy HH:mm")</td><td>@departure.MeetingPoint</td><td>@departure.BookedSeats / @departure.MaxCapacity</td><td>@departure.Status</td>
             <td class="text-nowrap">
-                @if (departure.Status == "Open") { <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Close(departure.Id)">Chốt</button><button class="btn btn-sm btn-outline-danger" @onclick="() => Cancel(departure.Id)">Hủy chuyến</button> }
+                @if (departure.Status == DepartureStatus.Open) { <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Close(departure.Id)">Chốt</button><button class="btn btn-sm btn-outline-danger" @onclick="() => Cancel(departure.Id)">Hủy chuyến</button> }
             </td></tr>
         }</tbody>
     </table></div></div>
@@ -51,7 +51,7 @@
     private async Task Save()
     {
         if (editing is null) return;
-        var departure = new Departure { Id = editing.Id, TourId = editing.TourId, DepartureDate = editing.DepartureDate, ReturnDate = editing.ReturnDate, MaxCapacity = editing.MaxCapacity, MeetingPoint = editing.MeetingPoint, Status = "Open" };
+        var departure = new Departure { Id = editing.Id, TourId = editing.TourId, DepartureDate = editing.DepartureDate, ReturnDate = editing.ReturnDate, MaxCapacity = editing.MaxCapacity, MeetingPoint = editing.MeetingPoint, Status = DepartureStatus.Open };
         if (editing.Id == 0) await ManageDepartures.AddDepartureAsync(departure); else await ManageDepartures.UpdateDepartureAsync(departure);
         editing = null; message = "Đã lưu chuyến khởi hành."; await Load();
     }

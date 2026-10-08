@@ -57,8 +57,8 @@ else
                             </div>
                         </div>
                         <div class="text-end">
-                            <span class="badge @(booking.Status == "Confirmed" ? "bg-success" : "bg-warning text-dark") fs-6 px-3 py-2 rounded-pill">
-                                @(booking.Status == "Confirmed" ? "Đã xác nhận" : "Chờ xác nhận")
+                            <span class="badge @(booking.Status == TourBookingStatus.Confirmed ? "bg-success" : "bg-warning text-dark") fs-6 px-3 py-2 rounded-pill">
+                                @(booking.Status == TourBookingStatus.Confirmed ? "Đã xác nhận" : "Chờ xác nhận")
                             </span>
                         </div>
                     </div>

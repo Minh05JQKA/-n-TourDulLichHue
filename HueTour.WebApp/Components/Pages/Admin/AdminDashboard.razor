@@ -117,7 +117,7 @@
                                         <td class="small">@b.Departure?.DepartureDate.ToString("dd/MM/yyyy HH:mm")</td>
                                         <td class="fw-bold text-purple">@b.TotalAmount.ToString("N0") đ</td>
                                         <td>
-                                            <span class="badge @(b.Status == "Confirmed" ? "bg-success" : b.Status == "Cancelled" ? "bg-danger" : "bg-warning text-dark")">
+                                            <span class="badge @(b.Status == TourBookingStatus.Confirmed ? "bg-success" : b.Status == TourBookingStatus.Cancelled ? "bg-danger" : "bg-warning text-dark")">
                                                 @b.Status
                                             </span>
                                         </td>
@@ -191,7 +191,7 @@
 
             var bookings = await ManageBookingsUseCase.GetAllBookingsAsync();
             totalBookings = bookings.Count();
-            totalRevenue = bookings.Where(b => b.Status != "Cancelled").Sum(b => b.TotalAmount);
+            totalRevenue = bookings.Where(b => b.Status != TourBookingStatus.Cancelled).Sum(b => b.TotalAmount);
             recentBookings = bookings.Take(5).ToList();
         }
         finally

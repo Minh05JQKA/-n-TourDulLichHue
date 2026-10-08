@@ -28,7 +28,7 @@ public class TourBookingInMemoryRepository : ITourBookingRepository
                 CustomerId = 1,
                 BookingDate = DateTime.Now.AddDays(-1),
                 TotalAmount = 825000,
-                Status = "Confirmed",
+                Status = TourBookingStatus.Confirmed,
                 Notes = "Khách gia đình có 1 bé nhỏ",
                 SpecialRequests = "Sắp xếp xe ngồi gần cửa sổ",
                 PaymentMethod = "Chuyển khoản QR"

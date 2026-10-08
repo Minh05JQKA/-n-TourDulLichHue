@@ -38,11 +38,11 @@ public class ManageDeparturesUseCase : IManageDeparturesUseCase
 
     public async Task CloseDepartureAsync(int departureId)
     {
-        await _departureRepository.UpdateStatusAsync(departureId, "Closed");
+        await _departureRepository.UpdateStatusAsync(departureId, DepartureStatus.Closed);
     }
 
     public async Task CancelDepartureAsync(int departureId)
     {
-        await _departureRepository.UpdateStatusAsync(departureId, "Cancelled");
+        await _departureRepository.UpdateStatusAsync(departureId, DepartureStatus.Cancelled);
     }
 }
