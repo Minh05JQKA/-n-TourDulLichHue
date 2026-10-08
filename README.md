@@ -60,4 +60,13 @@ Tài khoản được seed trong SQL là `admin` / `Admin@123` và `khachhang` /
 - `GRADING.md`: bảng đối chiếu tiêu chí với vị trí triển khai và phần còn cần xác minh.
 - `HueTour.WebApp/wwwroot/images`: ảnh Huế đã lưu cùng dự án; ghi công tại `ASSETS.md`.
 
-Giỏ đặt chỗ dùng state theo phạm vi phiên Blazor. Hệ thống áp dụng quy tắc không vượt sức chứa, khóa đặt chỗ trước giờ khởi hành 24 tiếng và tính giá trẻ em theo độ tuổi.
+Giỏ đặt chỗ dùng state theo phạm vi phiên Blazor. Hệ thống áp dụng quy tắc không vượt sức chứa, khóa đặt chỗ theo hạn định của luật nghiệp vụ và tính giá trẻ em theo độ tuổi.
+
+## Kiểm chứng đặt tour trên SQL Server
+
+1. Đóng ứng dụng đang chạy để giải phóng các DLL, sau đó chạy `dotnet build HueTourApp.sln -m:1` và xác nhận build hoàn tất không có lỗi.
+2. Chạy `database/HueTour_SchemaAndData.sql` trong SSMS, đặt `UseSqlDatabase=true` trong `HueTour.WebApp/appsettings.Development.json`, rồi chạy ứng dụng.
+3. Chọn chuyến gần đầy hoặc khởi hành trong thời hạn khóa đặt, thử đặt tour và xác nhận thông báo thân thiện xuất hiện, không có booking/vé mới và số ghế không đổi.
+4. Đặt chuyến hợp lệ và xác nhận booking cùng `PassengerTicket` được tạo, đồng thời `Departure.BookedSeats` tăng đúng số hành khách.
+
+SQL Server thật cần thiết để xác minh transaction và truy vấn cập nhật số ghế.

@@ -13,7 +13,7 @@ Customer -> BookingPage : gửi thông tin đoàn khách
 BookingPage -> PlaceTourBookingUseCase : ExecuteAsync(departure, customer, passengers)
 PlaceTourBookingUseCase -> DepartureRepository : lấy chuyến và số chỗ còn
 DepartureRepository --> PlaceTourBookingUseCase : departure
-PlaceTourBookingUseCase -> BookingBusinessRules : kiểm tra sức chứa / hạn 24 giờ
+PlaceTourBookingUseCase -> BookingBusinessRules : kiểm tra sức chứa / hạn đặt
 BookingBusinessRules --> PlaceTourBookingUseCase : hợp lệ hoặc thông báo lỗi
 PlaceTourBookingUseCase -> CustomerRepository : tìm hoặc tạo khách hàng
 CustomerRepository --> PlaceTourBookingUseCase : customerId
