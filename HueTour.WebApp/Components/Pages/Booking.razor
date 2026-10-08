@@ -75,14 +75,14 @@ else
             </div>
         }
 
-        @if (isWithin24hCutoff)
+        @if (isWithinCutoff)
         {
             <div class="rule-alert rule-alert-warning">
                 <i class="bi bi-lock-fill fs-3 text-warning flex-shrink-0"></i>
                 <div>
                     <h6 class="fw-bold text-dark mb-1">Khóa Đặt Vé Tự Động (Luật Nghiệp Vụ 1 - K1.3)</h6>
                     <div class="small">
-                        Chuyến đi sẽ khởi hành lúc <strong>@departure.DepartureDate.ToString("HH:mm - dd/MM/yyyy")</strong> (còn dưới 24 giờ).
+                        Chuyến đi sẽ khởi hành lúc <strong>@departure.DepartureDate.ToString("HH:mm - dd/MM/yyyy")</strong> (còn dưới @BookingBusinessRules.CutoffHoursBeforeDeparture giờ).
                         Theo quy định, hệ thống đã tạm đóng tiếp nhận đăng ký cho chuyến này để điều hành xe và hướng dẫn viên.
                     </div>
                 </div>
@@ -94,6 +94,7 @@ else
             <div class="col-lg-8 col-12">
                 <EditForm Model="@formModel" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
+                    <ValidationSummary class="validation-message mb-3" />
 
                     <!-- 1. Thông tin người đặt tour -->
                     <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
@@ -148,7 +149,7 @@ else
                             </button>
                         </div>
 
-                        <!-- Cảnh báo nếu số hành khách vượt quá số chỗ trống (Luật 1) -->
+                        <!-- Chỉ hiển thị cảnh báo; chặn thật tại PlaceTourBookingUseCase và trong transaction đặt chỗ. -->
                         @if (formModel.Passengers.Count > departure.AvailableSeats)
                         {
                             <div class="alert alert-danger py-2 small mb-3">
@@ -236,7 +237,7 @@ else
     private bool isLoading = true;
     private bool isSubmitting = false;
     private string? ruleErrorMessage = null;
-    private bool isWithin24hCutoff = false;
+    private bool isWithinCutoff = false;
 
     public class BookingFormViewModel
     {
@@ -270,20 +271,27 @@ else
 
             if (departure != null)
             {
-                // Kiểm tra sơ bộ Luật 1 (Khóa trước 24h)
-                isWithin24hCutoff = (departure.DepartureDate - DateTime.Now).TotalHours < 24;
+                // Kiểm tra sơ bộ Luật 1 (theo hạn đặt)
+                isWithinCutoff = (departure.DepartureDate - DateTime.Now).TotalHours < BookingBusinessRules.CutoffHoursBeforeDeparture;
 
                 // Khởi tạo ít nhất 1 hành khách người lớn
                 if (!formModel.Passengers.Any())
                 {
-                    formModel.Passengers.Add(new PassengerTicket
+                    if (CartStateService.SelectedDeparture?.Id == departure.Id && CartStateService.TempPassengers.Any())
                     {
-                        FullName = string.Empty,
-                        Gender = "Nam",
-                        PassengerType = "Adult",
-                        BirthYear = DateTime.Now.Year - 25,
-                        Price = departure.Tour?.BasePrice ?? 0
-                    });
+                        formModel.Passengers = CartStateService.TempPassengers.ToList();
+                    }
+                    else
+                    {
+                        CartStateService.SelectTourAndDeparture(departure.Tour!, departure);
+                        formModel.Passengers = CartStateService.TempPassengers.ToList();
+                    }
+
+                    var savedCustomer = CartStateService.TempCustomer;
+                    formModel.CustomerFullName = savedCustomer.FullName;
+                    formModel.CustomerPhone = savedCustomer.PhoneNumber;
+                    formModel.CustomerEmail = savedCustomer.Email;
+                    formModel.CustomerAddress = savedCustomer.Address;
                 }
 
                 RecalculateTotal();
@@ -338,16 +346,6 @@ else
     {
         ruleErrorMessage = null;
 
-        // Kiểm tra xem đã điền tên các hành khách chưa
-        for (int i = 0; i < formModel.Passengers.Count; i++)
-        {
-            if (string.IsNullOrWhiteSpace(formModel.Passengers[i].FullName))
-            {
-                ruleErrorMessage = $"Hành khách #{i + 1} chưa điền họ và tên. Vui lòng nhập đầy đủ để xuất vé.";
-                return;
-            }
-        }
-
         // Gọi form validation
         await HandleValidSubmit();
     }
@@ -382,6 +380,9 @@ else
 
             if (result.IsSuccess && !string.IsNullOrEmpty(result.BookingCode))
             {
+                CartStateService.SetCustomer(customer);
+                SyncCartPassengers();
+                CartStateService.RecalculateTotal(priceRules);
                 // Đặt thành công -> chuyển hướng sang trang xác nhận vé
                 NavManager.NavigateTo($"/booking-confirmation/{result.BookingCode}");
             }
@@ -399,5 +400,19 @@ else
         {
             isSubmitting = false;
         }
+    }
+
+    private void SyncCartPassengers()
+    {
+        for (var i = 0; i < formModel.Passengers.Count; i++)
+        {
+            if (i < CartStateService.TempPassengers.Count)
+                CartStateService.UpdatePassenger(i, formModel.Passengers[i]);
+            else
+                CartStateService.AddPassenger(formModel.Passengers[i]);
+        }
+
+        while (CartStateService.TempPassengers.Count > formModel.Passengers.Count)
+            CartStateService.RemovePassengerAt(CartStateService.TempPassengers.Count - 1);
     }
 }
