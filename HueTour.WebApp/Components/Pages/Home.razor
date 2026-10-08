@@ -1,3 +1,4 @@
+@using HueTour.CoreBusiness.BusinessRules
 @page "/"
 @inject IViewToursUseCase ViewToursUseCase
 @inject ISearchToursUseCase SearchToursUseCase
@@ -97,12 +98,12 @@
                         <div class="fs-1 text-gold">🔒</div>
                         <div>
                             <span class="badge bg-gold text-dark mb-1">LUẬT NGHIỆP VỤ 1 (K1.3)</span>
-                            <h5 class="fw-bold text-dark mb-0">Kiểm Soát Sức Chứa &amp; Khóa Đặt 24 Giờ</h5>
+                            <h5 class="fw-bold text-dark mb-0">Kiểm Soát Sức Chứa &amp; Khóa Đặt @BookingBusinessRules.CutoffHoursBeforeDeparture Giờ</h5>
                         </div>
                     </div>
                     <ul class="text-muted small mb-0" style="line-height: 1.8;">
                         <li><strong>Không nhận quá chỗ:</strong> Tổng số hành khách đặt mới &le; số chỗ trống còn lại của chuyến (MaxCapacity - BookedSeats).</li>
-                        <li><strong>Khóa đặt trước 24 giờ:</strong> Hệ thống tự động chặn mọi yêu cầu đặt vé mới khi thời gian khởi hành còn dưới 24 tiếng, bảo đảm điều hành chuẩn bị xe và hướng dẫn viên chu đáo.</li>
+                        <li><strong>Khóa đặt trước @BookingBusinessRules.CutoffHoursBeforeDeparture giờ:</strong> Hệ thống tự động chặn mọi yêu cầu đặt vé mới khi thời gian khởi hành còn dưới @BookingBusinessRules.CutoffHoursBeforeDeparture tiếng, bảo đảm điều hành chuẩn bị xe và hướng dẫn viên chu đáo.</li>
                     </ul>
                 </div>
             </div>

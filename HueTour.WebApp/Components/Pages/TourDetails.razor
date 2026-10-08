@@ -1,3 +1,5 @@
+@using HueTour.CoreBusiness.BusinessRules
+@inject IBookingCartStateService CartStateService
 @page "/tour/{id:int}"
 @inject IViewTourDetailsUseCase ViewTourDetailsUseCase
 @inject NavigationManager NavManager
@@ -133,7 +135,7 @@ else
                     <!-- Thông báo luật nghiệp vụ 1 nhắc nhở -->
                     <div class="alert alert-info py-2 px-3 small mb-4" style="border-radius: 10px;">
                         <i class="bi bi-shield-exclamation me-1"></i>
-                        <strong>Quy định:</strong> Khóa đặt vé trước giờ khởi hành 24 tiếng. Vui lòng chọn chuyến có trạng thái mở.
+                        <strong>Quy định:</strong> Khóa đặt vé trước giờ khởi hành @BookingBusinessRules.CutoffHoursBeforeDeparture tiếng. Vui lòng chọn chuyến có trạng thái mở.
                     </div>
 
                     <!-- Nút Tiến hành đặt chỗ -->
@@ -172,11 +174,11 @@ else
             tour = await ViewTourDetailsUseCase.ExecuteAsync(Id);
             if (tour?.Departures != null)
             {
-                // Tự động chọn chuyến đầu tiên còn chỗ và > 24h
+                // Tự động chọn chuyến đầu tiên còn chỗ và qua thời hạn đặt
                 var validDep = tour.Departures.FirstOrDefault(d =>
                     !d.IsFullyBooked &&
                     !d.IsClosed &&
-                    (d.DepartureDate - DateTime.Now).TotalHours >= 24);
+                    (d.DepartureDate - DateTime.Now).TotalHours >= BookingBusinessRules.CutoffHoursBeforeDeparture);
                 if (validDep != null)
                 {
                     selectedDepartureId = validDep.Id;
@@ -198,8 +200,9 @@ else
 
     private void ProceedToBooking()
     {
-        if (selectedDepartureId > 0)
+        if (selectedDepartureId > 0 && tour != null && selectedDeparture != null)
         {
+            CartStateService.SelectTourAndDeparture(tour, selectedDeparture);
             NavManager.NavigateTo($"/booking/{selectedDepartureId}");
         }
     }

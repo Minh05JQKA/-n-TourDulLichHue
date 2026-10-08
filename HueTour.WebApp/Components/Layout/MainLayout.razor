@@ -1,3 +1,4 @@
+@using HueTour.CoreBusiness.BusinessRules
 @inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavManager
@@ -112,7 +113,7 @@
                     </h6>
                     <ul class="list-unstyled small">
                         <li class="mb-2">
-                            <strong class="text-gold">Luật 1:</strong> Tổng hành khách của chuyến &le; số chỗ tối đa; Hệ thống tự động khóa đặt vé trước giờ khởi hành 24 tiếng.
+                            <strong class="text-gold">Luật 1:</strong> Tổng hành khách của chuyến &le; số chỗ tối đa; Hệ thống tự động khóa đặt vé trước giờ khởi hành @BookingBusinessRules.CutoffHoursBeforeDeparture tiếng.
                         </li>
                         <li>
                             <strong class="text-gold">Luật 2:</strong> Giá vé tính theo loại khách: Người lớn 100%, Trẻ em 5-11 tuổi 50%, Em bé dưới 5 tuổi miễn phí; Tổng booking = &Sigma; vé.

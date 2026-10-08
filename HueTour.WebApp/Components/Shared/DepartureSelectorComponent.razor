@@ -1,3 +1,4 @@
+@using HueTour.CoreBusiness.BusinessRules
 @using HueTour.CoreBusiness
 
 <div class="departure-selector">
@@ -18,7 +19,7 @@
             {
                 bool isSelected = dep.Id == SelectedDepartureId;
                 bool isFull = dep.IsFullyBooked;
-                bool isCutoff = (dep.DepartureDate - DateTime.Now).TotalHours < 24;
+                bool isCutoff = (dep.DepartureDate - DateTime.Now).TotalHours < BookingBusinessRules.CutoffHoursBeforeDeparture;
                 bool isClosed = dep.IsClosed;
                 bool isDisabled = isFull || isCutoff || isClosed;
 
@@ -48,8 +49,8 @@
                                 }
                                 else if (isCutoff)
                                 {
-                                    <span class="badge bg-warning text-dark" title="Khóa đặt trước 24h theo Luật 1">
-                                        <i class="bi bi-lock-fill me-1"></i>Khóa đặt (&lt;24h)
+                                    <span class="badge bg-warning text-dark" title="Khóa đặt trước @BookingBusinessRules.CutoffHoursBeforeDeparture giờ theo Luật 1">
+                                        <i class="bi bi-lock-fill me-1"></i>Khóa đặt \(&lt;@BookingBusinessRules.CutoffHoursBeforeDeparture giờ\)
                                     </span>
                                 }
                                 else if (isClosed)
