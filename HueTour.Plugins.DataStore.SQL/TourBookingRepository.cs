@@ -97,6 +97,75 @@ public class TourBookingRepository : ITourBookingRepository
         }
     }
 
+    public async Task<BusinessRuleResult> CancelBookingTransactionalAsync(int bookingId)
+    {
+        using IDbConnection conn = _connectionFactory.CreateConnection();
+        conn.Open();
+
+        using IDbTransaction transaction = conn.BeginTransaction();
+        try
+        {
+            const string lockBookingSql = @"
+                SELECT Id, DepartureId, Status
+                FROM dbo.TourBooking WITH (UPDLOCK, ROWLOCK)
+                WHERE Id = @BookingId;";
+            var booking = await conn.QuerySingleOrDefaultAsync<TourBooking>(
+                lockBookingSql, new { BookingId = bookingId }, transaction);
+            if (booking == null)
+            {
+                transaction.Rollback();
+                return BusinessRuleResult.Failure(BookingBusinessRules.BookingNotFoundMessage, "RULE_CANCEL_BOOKING_NOT_FOUND");
+            }
+
+            if (booking.Status == TourBookingStatus.Cancelled)
+            {
+                transaction.Commit();
+                return BusinessRuleResult.Success();
+            }
+
+            const string countTicketsSql = "SELECT COUNT(*) FROM dbo.PassengerTicket WHERE BookingId = @BookingId";
+            var ticketCount = await conn.ExecuteScalarAsync<int>(countTicketsSql, new { BookingId = bookingId }, transaction);
+
+            const string cancelBookingSql = @"
+                UPDATE dbo.TourBooking
+                SET Status = @CancelledStatus
+                WHERE Id = @BookingId AND Status <> @CancelledStatus;";
+            var bookingUpdated = await conn.ExecuteAsync(cancelBookingSql, new
+            {
+                BookingId = bookingId,
+                CancelledStatus = TourBookingStatus.Cancelled
+            }, transaction);
+            if (bookingUpdated == 0)
+            {
+                transaction.Rollback();
+                return BusinessRuleResult.Failure(BookingBusinessRules.BookingNotFoundMessage, "RULE_CANCEL_BOOKING_NOT_FOUND");
+            }
+
+            const string releaseSeatsSql = @"
+                UPDATE dbo.Departure
+                SET BookedSeats = BookedSeats - @TicketCount
+                WHERE Id = @DepartureId AND BookedSeats >= @TicketCount;";
+            var seatsReleased = await conn.ExecuteAsync(releaseSeatsSql, new
+            {
+                booking.DepartureId,
+                TicketCount = ticketCount
+            }, transaction);
+            if (seatsReleased == 0)
+            {
+                transaction.Rollback();
+                return BusinessRuleResult.Failure(BookingBusinessRules.SeatReleaseFailedMessage, "RULE_CANCEL_SEAT_RELEASE_FAILED");
+            }
+
+            transaction.Commit();
+            return BusinessRuleResult.Success();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
     public async Task<TourBooking?> GetBookingByIdAsync(int id)
     {
         using IDbConnection conn = _connectionFactory.CreateConnection();

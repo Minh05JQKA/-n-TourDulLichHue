@@ -1,4 +1,5 @@
 using HueTour.CoreBusiness;
+using HueTour.CoreBusiness.BusinessRules;
 
 namespace HueTour.UseCases.PluginInterfaces.DataStore;
 
@@ -14,6 +15,7 @@ public interface ITourBookingRepository
     /// K2.2: Cặp header-line (TourBooking - PassengerTicket) được ghi trong 1 transaction CSDL
     /// </summary>
     Task<CreateBookingResult> CreateBookingTransactionalAsync(TourBooking booking, List<PassengerTicket> tickets, int seatsToReserve);
+    Task<BusinessRuleResult> CancelBookingTransactionalAsync(int bookingId);
     Task<TourBooking?> GetBookingByIdAsync(int id);
     Task<TourBooking?> GetBookingByCodeAsync(string bookingCode);
     Task<IEnumerable<TourBooking>> GetAllBookingsAsync();

@@ -18,6 +18,8 @@ public class BusinessRuleResult
 public static class BookingBusinessRules
 {
     public const int CutoffHoursBeforeDeparture = 24;
+    public const string BookingNotFoundMessage = "Không tìm thấy đơn đặt tour cần hủy.";
+    public const string SeatReleaseFailedMessage = "Không thể hoàn chỗ cho đơn đặt tour lúc này. Đơn chưa được hủy; vui lòng thử lại.";
 
     /// <summary>
     /// LUẬT NGHIỆP VỤ 1 (K1.3):
@@ -41,7 +43,7 @@ public static class BookingBusinessRules
         }
 
         // Kiểm tra trạng thái chuyến
-        if (departure.Status != "Open")
+        if (departure.Status != DepartureStatus.Open)
         {
             return BusinessRuleResult.Failure(
                 $"Chuyến khởi hành ngày {departure.DepartureDate:dd/MM/yyyy HH:mm} hiện đang ở trạng thái '{departure.Status}', đã tạm dừng nhận đăng ký.",

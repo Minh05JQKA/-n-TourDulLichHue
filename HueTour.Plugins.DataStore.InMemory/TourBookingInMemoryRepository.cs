@@ -102,6 +102,39 @@ public class TourBookingInMemoryRepository : ITourBookingRepository
         }
     }
 
+    public async Task<BusinessRuleResult> CancelBookingTransactionalAsync(int bookingId)
+    {
+        int departureId;
+        lock (_bookings)
+        {
+            var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+            if (booking == null)
+                return BusinessRuleResult.Failure(BookingBusinessRules.BookingNotFoundMessage, "RULE_CANCEL_BOOKING_NOT_FOUND");
+            if (booking.Status == TourBookingStatus.Cancelled)
+                return BusinessRuleResult.Success();
+            departureId = booking.DepartureId;
+        }
+
+        var departure = await _departureRepository.GetDepartureByIdAsync(departureId);
+
+        lock (_bookings)
+        {
+            var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+            if (booking == null)
+                return BusinessRuleResult.Failure(BookingBusinessRules.BookingNotFoundMessage, "RULE_CANCEL_BOOKING_NOT_FOUND");
+            if (booking.Status == TourBookingStatus.Cancelled)
+                return BusinessRuleResult.Success();
+
+            var ticketCount = _tickets.Count(ticket => ticket.BookingId == bookingId);
+            if (departure == null || departure.BookedSeats < ticketCount)
+                return BusinessRuleResult.Failure(BookingBusinessRules.SeatReleaseFailedMessage, "RULE_CANCEL_SEAT_RELEASE_FAILED");
+
+            booking.Status = TourBookingStatus.Cancelled;
+            departure.BookedSeats -= ticketCount;
+            return BusinessRuleResult.Success();
+        }
+    }
+
     public async Task<TourBooking?> GetBookingByIdAsync(int id)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == id);

@@ -1,5 +1,13 @@
 namespace HueTour.CoreBusiness;
 
+public static class TourBookingStatus
+{
+    public const string Pending = "Pending";
+    public const string Confirmed = "Confirmed";
+    public const string Completed = "Completed";
+    public const string Cancelled = "Cancelled";
+}
+
 public class TourBooking
 {
     public int Id { get; set; }
@@ -10,7 +18,7 @@ public class TourBooking
     public Customer? Customer { get; set; }
     public DateTime BookingDate { get; set; } = DateTime.Now;
     public decimal TotalAmount { get; set; }
-    public string Status { get; set; } = "Pending"; // Pending (Chờ xác nhận), Confirmed (Đã xác nhận), Completed (Hoàn thành), Cancelled (Đã hủy)
+    public string Status { get; set; } = TourBookingStatus.Pending;
     public string? Notes { get; set; }
     public string? SpecialRequests { get; set; }
     public string PaymentMethod { get; set; } = "Thanh toán khi khởi hành / Chuyển khoản QR";

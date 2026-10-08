@@ -31,6 +31,11 @@
     protected override async Task OnInitializedAsync() => await Load();
     private async Task Load() => bookings = (await ManageBookings.GetAllBookingsAsync()).ToList();
     private async Task Confirm(int id) { await ManageBookings.ConfirmBookingAsync(id); message = "Đã xác nhận đơn đặt tour."; await Load(); }
-    private async Task Cancel(int id) { await ManageBookings.CancelBookingAsync(id); message = "Đã hủy đơn và cập nhật số chỗ."; await Load(); }
+    private async Task Cancel(int id)
+    {
+        var result = await ManageBookings.CancelBookingAsync(id);
+        message = result.IsSuccess ? "Đã hủy đơn và cập nhật số chỗ." : result.ErrorMessage;
+        await Load();
+    }
     private async Task Complete(int id) { await ManageBookings.CompleteBookingAsync(id); message = "Đã hoàn tất đơn."; await Load(); }
 }
