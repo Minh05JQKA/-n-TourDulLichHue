@@ -1,6 +1,7 @@
 using System.Data;
 using Dapper;
 using HueTour.CoreBusiness;
+using HueTour.CoreBusiness.BusinessRules;
 using HueTour.UseCases.PluginInterfaces.DataStore;
 
 namespace HueTour.Plugins.DataStore.SQL;
@@ -18,7 +19,7 @@ public class TourBookingRepository : ITourBookingRepository
     /// TIÊU CHÍ K2.2: Ghi cặp Header (TourBooking) và Line (PassengerTicket) trong 1 Transaction CSDL duy nhất.
     /// Đảm bảo tính toàn vẹn ACID, nếu 1 vé thất bại toàn bộ đơn booking sẽ bị Rollback.
     /// </summary>
-    public async Task<string> CreateBookingTransactionalAsync(TourBooking booking, List<PassengerTicket> tickets)
+    public async Task<CreateBookingResult> CreateBookingTransactionalAsync(TourBooking booking, List<PassengerTicket> tickets, int seatsToReserve)
     {
         using IDbConnection conn = _connectionFactory.CreateConnection();
         conn.Open();
@@ -26,6 +27,30 @@ public class TourBookingRepository : ITourBookingRepository
         using IDbTransaction transaction = conn.BeginTransaction();
         try
         {
+            const string reserveSeatsSql = @"
+                UPDATE dbo.Departure
+                SET BookedSeats = BookedSeats + @Seats
+                WHERE Id = @DepartureId AND Status = 'Open'
+                  AND BookedSeats + @Seats <= MaxCapacity
+                  AND DepartureDate >= DATEADD(HOUR, 24, GETDATE());";
+            var reserved = await conn.ExecuteAsync(reserveSeatsSql, new { Seats = seatsToReserve, booking.DepartureId }, transaction);
+            if (reserved == 0)
+            {
+                transaction.Rollback();
+                const string departureSql = "SELECT * FROM dbo.Departure WHERE Id = @DepartureId";
+                var currentDeparture = await conn.QuerySingleOrDefaultAsync<Departure>(departureSql, new { booking.DepartureId });
+                if (currentDeparture == null)
+                    return CreateBookingResult.Failure("Không tìm thấy thông tin chuyến khởi hành.", "RULE1_DEPARTURE_NOT_FOUND");
+
+                var ruleResult = BookingBusinessRules.ValidateDepartureCapacityAndCutoff(currentDeparture, seatsToReserve, DateTime.Now);
+                if (!ruleResult.IsSuccess)
+                    return CreateBookingResult.Failure(ruleResult.ErrorMessage!, ruleResult.RuleCode!);
+
+                return CreateBookingResult.Failure(
+                    "Chuyến khởi hành vừa thay đổi thông tin. Vui lòng tải lại trang và chọn chuyến khác.",
+                    "RULE1_DEPARTURE_CHANGED");
+            }
+
             // 1. Chèn Header: TourBooking
             const string insertHeaderSql = @"
                 INSERT INTO dbo.TourBooking (BookingCode, DepartureId, CustomerId, BookingDate, TotalAmount, Status, Notes, SpecialRequests, PaymentMethod)
@@ -62,7 +87,7 @@ public class TourBookingRepository : ITourBookingRepository
 
             // 3. Commit transaction thành công
             transaction.Commit();
-            return booking.BookingCode;
+            return CreateBookingResult.Success(booking.BookingCode);
         }
         catch
         {

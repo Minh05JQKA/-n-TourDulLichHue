@@ -86,7 +86,6 @@ public class PlaceTourBookingUseCase : IPlaceTourBookingUseCase
 
         // 4. THỰC THI LUẬT NGHIỆP VỤ 2 (K1.3): Tính giá vé theo loại khách & Tổng tiền
         var priceRules = await _priceRuleRepository.GetAllPriceRulesAsync();
-        decimal totalAmount = 0;
         string datePrefix = DateTime.Now.ToString("yyyyMMdd");
         string randomSuffix = Guid.NewGuid().ToString("N")[..4].ToUpperInvariant();
         string bookingCode = $"HUE-{datePrefix}-{randomSuffix}";
@@ -94,18 +93,11 @@ public class PlaceTourBookingUseCase : IPlaceTourBookingUseCase
         for (int i = 0; i < passengers.Count; i++)
         {
             var p = passengers[i];
-            if (string.IsNullOrWhiteSpace(p.FullName))
-            {
-                return PlaceBookingResult.Failure($"Hành khách #{i + 1} chưa điền họ tên đầy đủ.", "RULE2_MISSING_NAME");
-            }
-
-            p.Price = BookingBusinessRules.CalculatePassengerFare(tour.BasePrice, p.PassengerType, priceRules);
             p.TicketCode = $"{bookingCode}-{i + 1:D2}";
             if (string.IsNullOrEmpty(p.SeatNumber))
             {
                 p.SeatNumber = $"G{departure.BookedSeats + i + 1:D2}";
             }
-            totalAmount += p.Price;
         }
 
         // 5. Lưu hoặc cập nhật khách hàng
@@ -140,18 +132,25 @@ public class PlaceTourBookingUseCase : IPlaceTourBookingUseCase
             DepartureId = departureId,
             CustomerId = customerId,
             BookingDate = DateTime.Now,
-            TotalAmount = totalAmount,
+            TotalAmount = 0,
             Status = "Pending",
             Notes = notes,
             PaymentMethod = paymentMethod ?? "Thanh toán khi khởi hành / Chuyển khoản QR",
             PassengerTickets = passengers
         };
 
-        // 7. Ghi nhận Header-Line trong 1 Database Transaction (K2.2)
-        await _bookingRepository.CreateBookingTransactionalAsync(booking, passengers);
+        var fareResult = BookingBusinessRules.ValidateBookingFares(booking, tour.BasePrice, priceRules);
+        if (!fareResult.IsSuccess)
+        {
+            return PlaceBookingResult.Failure(fareResult.ErrorMessage!, fareResult.RuleCode!);
+        }
 
-        // 8. Cập nhật số ghế đã đặt của Departure
-        await _departureRepository.IncrementBookedSeatsAsync(departureId, passengers.Count);
+        // 7. Ghi nhận Header-Line trong 1 Database Transaction (K2.2)
+        var persistenceResult = await _bookingRepository.CreateBookingTransactionalAsync(booking, passengers, passengers.Count);
+        if (!persistenceResult.IsSuccess)
+        {
+            return PlaceBookingResult.Failure(persistenceResult.ErrorMessage!, persistenceResult.RuleCode!);
+        }
 
         booking.Departure = departure;
         booking.Customer = customer;

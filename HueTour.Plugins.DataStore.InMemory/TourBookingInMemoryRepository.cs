@@ -1,4 +1,5 @@
 using HueTour.CoreBusiness;
+using HueTour.CoreBusiness.BusinessRules;
 using HueTour.UseCases.PluginInterfaces.DataStore;
 
 namespace HueTour.Plugins.DataStore.InMemory;
@@ -63,10 +64,21 @@ public class TourBookingInMemoryRepository : ITourBookingRepository
         };
     }
 
-    public Task<string> CreateBookingTransactionalAsync(TourBooking booking, List<PassengerTicket> tickets)
+    public async Task<CreateBookingResult> CreateBookingTransactionalAsync(TourBooking booking, List<PassengerTicket> tickets, int seatsToReserve)
     {
+        var departure = await _departureRepository.GetDepartureByIdAsync(booking.DepartureId);
+        if (departure == null)
+            return CreateBookingResult.Failure("Không tìm thấy thông tin chuyến khởi hành.", "RULE1_DEPARTURE_NOT_FOUND");
+
         lock (_bookings)
         {
+            var ruleResult = BookingBusinessRules.ValidateDepartureCapacityAndCutoff(departure, seatsToReserve, DateTime.Now);
+            if (!ruleResult.IsSuccess)
+                return CreateBookingResult.Failure(ruleResult.ErrorMessage!, ruleResult.RuleCode!);
+
+            departure.BookedSeats += seatsToReserve;
+            try
+            {
             int newBookingId = _bookings.Any() ? _bookings.Max(b => b.Id) + 1 : 1;
             booking.Id = newBookingId;
             _bookings.Add(booking);
@@ -80,7 +92,13 @@ public class TourBookingInMemoryRepository : ITourBookingRepository
             }
 
             booking.PassengerTickets = new List<PassengerTicket>(tickets);
-            return Task.FromResult(booking.BookingCode);
+            return CreateBookingResult.Success(booking.BookingCode);
+            }
+            catch
+            {
+                departure.BookedSeats -= seatsToReserve;
+                throw;
+            }
         }
     }
 
