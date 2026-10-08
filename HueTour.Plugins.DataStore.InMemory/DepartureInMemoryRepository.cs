@@ -20,7 +20,7 @@ public class DepartureInMemoryRepository : IDepartureRepository
             new() { Id = 2, TourId = 1, DepartureDate = now.AddDays(6).Date.AddHours(8), ReturnDate = now.AddDays(6).Date.AddHours(17), MaxCapacity = 25, BookedSeats = 3, Status = "Open", MeetingPoint = "Cột cờ Phu Văn Lâu", TourGuideName = "Nguyễn Thị Thu", TourGuidePhone = "0905333444" },
             // Chuyến test K1.3 Luật 1: ĐÃ ĐẦY CHỖ (25/25)
             new() { Id = 3, TourId = 1, DepartureDate = now.AddDays(4).Date.AddHours(8), ReturnDate = now.AddDays(4).Date.AddHours(17), MaxCapacity = 25, BookedSeats = 25, Status = "Open", MeetingPoint = "Cột cờ Phu Văn Lâu", TourGuideName = "Trần Minh Đức", TourGuidePhone = "0905555666" },
-            // Chuyến test K1.3 Luật 1: KHÓA TRƯỚC 24H (chỉ còn 10h)
+            // Chuyến test K1.3 Luật 1: KHÓA ĐẶT SẮP TỚI (chỉ còn 10 giờ)
             new() { Id = 4, TourId = 1, DepartureDate = now.AddHours(10), ReturnDate = now.AddHours(19), MaxCapacity = 25, BookedSeats = 12, Status = "Open", MeetingPoint = "Cột cờ Phu Văn Lâu", TourGuideName = "Lê Văn Hoàng", TourGuidePhone = "0905111222" },
 
             // Tour 2: Phá Tam Giang

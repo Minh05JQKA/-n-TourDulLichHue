@@ -1,5 +1,5 @@
 @using HueTour.CoreBusiness
-@using HueTour.CoreBusiness.BusinessRules
+@inject ICalculateBookingPricingUseCase CalculateBookingPricingUseCase
 
 <div class="passenger-item-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -105,22 +105,19 @@
     public decimal BasePrice { get; set; }
 
     [Parameter]
-    public IEnumerable<PriceRule>? PriceRules { get; set; }
-
-    [Parameter]
     public EventCallback<int> OnRemovePassenger { get; set; }
 
     [Parameter]
     public EventCallback OnPassengerUpdated { get; set; }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        CalculatePrice();
+        await CalculatePrice();
     }
 
-    private void CalculatePrice()
+    private async Task CalculatePrice()
     {
-        Passenger.Price = BookingBusinessRules.CalculatePassengerFare(BasePrice, Passenger.PassengerType, PriceRules);
+        Passenger.Price = await CalculateBookingPricingUseCase.CalculateTicketPriceAsync(BasePrice, Passenger.PassengerType);
     }
 
     private async Task OnNameChanged(string? value)
@@ -138,7 +135,7 @@
     private async Task OnTypeChanged(string? value)
     {
         Passenger.PassengerType = value ?? "Adult";
-        CalculatePrice();
+        await CalculatePrice();
         await NotifyUpdate();
     }
 

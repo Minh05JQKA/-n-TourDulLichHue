@@ -77,7 +77,7 @@ public class PlaceTourBookingUseCase : IPlaceTourBookingUseCase
             return PlaceBookingResult.Failure("Không tìm thấy tour du lịch tương ứng.", "RULE1_TOUR_NOT_FOUND");
         }
 
-        // 3. THỰC THI LUẬT NGHIỆP VỤ 1 (K1.3): Sức chứa & Khóa đặt 24h
+        // 3. THỰC THI LUẬT NGHIỆP VỤ 1 (K1.3): Sức chứa & khóa đặt theo thời hạn
         var rule1Result = BookingBusinessRules.ValidateDepartureCapacityAndCutoff(departure, passengers.Count, DateTime.Now);
         if (!rule1Result.IsSuccess)
         {

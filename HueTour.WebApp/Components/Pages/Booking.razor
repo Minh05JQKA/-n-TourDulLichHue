@@ -166,7 +166,6 @@ else
                             <PassengerItemComponent Passenger="@formModel.Passengers[index]"
                                                     Index="@index"
                                                     BasePrice="@departure.Tour.BasePrice"
-                                                    PriceRules="@priceRules"
                                                     CanRemove="@(formModel.Passengers.Count > 1)"
                                                     OnRemovePassenger="HandleRemovePassenger"
                                                     OnPassengerUpdated="RecalculateTotal" />
@@ -294,7 +293,7 @@ else
                     formModel.CustomerAddress = savedCustomer.Address;
                 }
 
-                RecalculateTotal();
+                await RecalculateTotal();
             }
         }
         finally
@@ -303,7 +302,7 @@ else
         }
     }
 
-    private void AddNewPassenger()
+    private async Task AddNewPassenger()
     {
         if (departure?.Tour != null)
         {
@@ -315,30 +314,24 @@ else
                 BirthYear = DateTime.Now.Year - 20,
                 Price = departure.Tour.BasePrice
             });
-            RecalculateTotal();
+            await RecalculateTotal();
         }
     }
 
-    private void HandleRemovePassenger(int index)
+    private async Task HandleRemovePassenger(int index)
     {
         if (index >= 0 && index < formModel.Passengers.Count && formModel.Passengers.Count > 1)
         {
             formModel.Passengers.RemoveAt(index);
-            RecalculateTotal();
+            await RecalculateTotal();
         }
     }
 
-    private void RecalculateTotal()
+    private async Task RecalculateTotal()
     {
         if (departure?.Tour == null) return;
 
-        decimal total = 0;
-        foreach (var p in formModel.Passengers)
-        {
-            p.Price = BookingBusinessRules.CalculatePassengerFare(departure.Tour.BasePrice, p.PassengerType, priceRules);
-            total += p.Price;
-        }
-        currentTotalAmount = total;
+        currentTotalAmount = await CalculateBookingPricingUseCase.CalculateTotalAmountAsync(departure.Tour.BasePrice, formModel.Passengers);
         StateHasChanged();
     }
 
