@@ -1,6 +1,7 @@
 @page "/admin/bookings"
 @attribute [Authorize(Roles = "Admin")]
 @using HueTour.CoreBusiness
+@using HueTour.CoreBusiness.BusinessRules
 @inject IManageBookingsUseCase ManageBookings
 
 <PageTitle>Quản lý đơn đặt tour - Hue Tour</PageTitle>
@@ -33,8 +34,15 @@
     private async Task Confirm(int id) { await ManageBookings.ConfirmBookingAsync(id); message = "Đã xác nhận đơn đặt tour."; await Load(); }
     private async Task Cancel(int id)
     {
-        var result = await ManageBookings.CancelBookingAsync(id);
-        message = result.IsSuccess ? "Đã hủy đơn và cập nhật số chỗ." : result.ErrorMessage;
+        try
+        {
+            var result = await ManageBookings.CancelBookingAsync(id);
+            message = result.IsSuccess ? "Đã hủy đơn và cập nhật số chỗ." : result.ErrorMessage;
+        }
+        catch
+        {
+            message = BookingBusinessRules.SeatReleaseFailedMessage;
+        }
         await Load();
     }
     private async Task Complete(int id) { await ManageBookings.CompleteBookingAsync(id); message = "Đã hoàn tất đơn."; await Load(); }

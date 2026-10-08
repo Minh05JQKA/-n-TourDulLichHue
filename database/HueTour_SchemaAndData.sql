@@ -275,7 +275,7 @@ VALUES
 );
 
 -- Seed Chuyến khởi hành (Departures)
--- Lưu ý: Tạo các chuyến với ngày giờ phong phú (Có chuyến cách > 24h để đặt bình thường, có chuyến cách < 24h hoặc gần đầy để test Luật 1)
+-- Lưu ý: Tạo chuyến có đủ thời gian đặt bình thường, chuyến trong thời hạn khóa và chuyến gần đầy để test Luật 1.
 DECLARE @Now DATETIME2 = GETDATE();
 
 -- Chuyến 1 cho Tour Đại Nội (Cách 3 ngày, còn 18 chỗ) -> Đặt được
@@ -290,7 +290,7 @@ VALUES (1, DATEADD(DAY, 6, @Now), DATEADD(DAY, 6, DATEADD(HOUR, 9, @Now)), 25, 3
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (1, DATEADD(DAY, 4, @Now), DATEADD(DAY, 4, DATEADD(HOUR, 9, @Now)), 25, 25, 'Open', N'Cột cờ Phu Văn Lâu', N'Trần Minh Đức', '0905555666');
 
--- Chuyến 4 cho Tour Đại Nội (CHỈ CÒN 10 TIẾNG NỮA KHỞI HÀNH: < 24H) -> TEST LUẬT 1: Khóa đặt trước 24 giờ!
+-- Chuyến 4 cho Tour Đại Nội còn ít giờ trước khởi hành -> TEST LUẬT 1: Thời hạn khóa đặt!
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (1, DATEADD(HOUR, 10, @Now), DATEADD(HOUR, 19, @Now), 25, 12, 'Open', N'Cột cờ Phu Văn Lâu', N'Lê Văn Hoàng', '0905111222');
 
