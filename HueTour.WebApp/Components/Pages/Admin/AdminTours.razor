@@ -1,5 +1,6 @@
 @page "/admin/tours"
 @attribute [Authorize(Roles = "Admin")]
+@using System.ComponentModel.DataAnnotations
 @inject IViewToursUseCase ViewToursUseCase
 @inject IManageToursUseCase ManageToursUseCase
 
@@ -84,59 +85,66 @@
                     <h5 class="modal-title font-serif fw-bold">@(editingTour.Id == 0 ? "Thêm Tour Du Lịch Mới" : "Chỉnh Sửa Thông Tin Tour")</h5>
                     <button type="button" class="btn-close btn-close-white" @onclick="CloseModal"></button>
                 </div>
+                <EditForm Model="formModel" OnValidSubmit="SaveTour">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label small fw-bold">Mã Tour:</label>
-                            <input type="text" class="form-control" @bind="editingTour.Code" placeholder="HT-XXXX" />
+                            <InputText class="form-control" @bind-Value="formModel.Code" placeholder="HT-XXXX" />
+                            <ValidationMessage For="@(() => formModel.Code)" />
                         </div>
                         <div class="col-md-8">
                             <label class="form-label small fw-bold">Tên Tour:</label>
-                            <input type="text" class="form-control" @bind="editingTour.Title" />
+                            <InputText class="form-control" @bind-Value="formModel.Title" />
+                            <ValidationMessage For="@(() => formModel.Title)" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Danh Mục:</label>
-                            <select class="form-select" @bind="editingTour.Category">
+                            <InputSelect class="form-select" @bind-Value="formModel.Category">
                                 <option value="Di tích Cố Đô">Di tích Cố Đô</option>
                                 <option value="Sinh thái & Đầm phá">Sinh thái & Đầm phá</option>
                                 <option value="Sông Hương & Làng nghề">Sông Hương & Làng nghề</option>
                                 <option value="Văn hóa & Ẩm thực">Văn hóa & Ẩm thực</option>
-                            </select>
+                            </InputSelect>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Giá Gốc (VNĐ):</label>
-                            <input type="number" class="form-control" step="10000" @bind="editingTour.BasePrice" />
+                            <InputNumber class="form-control" step="10000" @bind-Value="formModel.BasePrice" />
+                            <ValidationMessage For="@(() => formModel.BasePrice)" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Thời Lượng:</label>
-                            <input type="text" class="form-control" @bind="editingTour.Duration" placeholder="1 Ngày" />
+                            <InputText class="form-control" @bind-Value="formModel.Duration" placeholder="1 Ngày" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Điểm Xuất Phát:</label>
-                            <input type="text" class="form-control" @bind="editingTour.StartingLocation" />
+                            <InputText class="form-control" @bind-Value="formModel.StartingLocation" />
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">Link Ảnh Bìa (URL):</label>
-                            <input type="text" class="form-control" @bind="editingTour.ImageUrl" />
+                            <InputText class="form-control" @bind-Value="formModel.ImageUrl" />
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">Mô Tả Ngắn:</label>
-                            <textarea class="form-control" rows="2" @bind="editingTour.ShortDescription"></textarea>
+                            <InputTextArea class="form-control" rows="2" @bind-Value="formModel.ShortDescription" />
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">Điểm Nổi Bật (phân cách dấu chấm phẩy ;):</label>
-                            <input type="text" class="form-control" @bind="editingTour.Highlights" />
+                            <InputText class="form-control" @bind-Value="formModel.Highlights" />
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">Lịch Trình Tóm Tắt (phân cách mũi tên ->):</label>
-                            <input type="text" class="form-control" @bind="editingTour.Itinerary" />
+                            <InputText class="form-control" @bind-Value="formModel.Itinerary" />
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary rounded-pill px-4" @onclick="CloseModal">Hủy</button>
-                    <button type="button" class="btn btn-royal rounded-pill px-4" @onclick="SaveTour">Lưu Tour</button>
+                    <button type="submit" class="btn btn-royal rounded-pill px-4">Lưu Tour</button>
                 </div>
+                </EditForm>
             </div>
         </div>
     </div>
@@ -147,6 +155,28 @@
     private bool isLoading = true;
     private bool showModal = false;
     private Tour editingTour = new();
+    private TourFormModel formModel = new();
+
+    private sealed class TourFormModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập mã tour")]
+        public string Code { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Vui lòng nhập tên tour")]
+        public string Title { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Vui lòng chọn danh mục")]
+        public string Category { get; set; } = string.Empty;
+        [Range(0, double.MaxValue, ErrorMessage = "Giá tour không được âm")]
+        public decimal BasePrice { get; set; }
+        [Required(ErrorMessage = "Vui lòng nhập thời lượng")]
+        public string Duration { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Vui lòng nhập điểm xuất phát")]
+        public string StartingLocation { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Vui lòng nhập đường dẫn ảnh")]
+        public string ImageUrl { get; set; } = string.Empty;
+        public string ShortDescription { get; set; } = string.Empty;
+        public string Highlights { get; set; } = string.Empty;
+        public string Itinerary { get; set; } = string.Empty;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -179,6 +209,7 @@
             Highlights = "Xe đưa đón; Vé tham quan; HDV nhiệt tình",
             Itinerary = "08:00 Đón khách -> 11:30 Ăn trưa -> 17:00 Trả khách"
         };
+        formModel = new TourFormModel { Code = editingTour.Code, Title = editingTour.Title, Category = editingTour.Category, BasePrice = editingTour.BasePrice, Duration = editingTour.Duration, StartingLocation = editingTour.StartingLocation, ImageUrl = editingTour.ImageUrl, ShortDescription = editingTour.ShortDescription, Highlights = editingTour.Highlights, Itinerary = editingTour.Itinerary };
         showModal = true;
     }
 
@@ -200,6 +231,7 @@
             Itinerary = tour.Itinerary,
             IsActive = tour.IsActive
         };
+        formModel = new TourFormModel { Code = tour.Code, Title = tour.Title, Category = tour.Category, BasePrice = tour.BasePrice, Duration = tour.Duration, StartingLocation = tour.StartingLocation, ImageUrl = tour.ImageUrl, ShortDescription = tour.ShortDescription, Highlights = tour.Highlights, Itinerary = tour.Itinerary };
         showModal = true;
     }
 
@@ -210,6 +242,16 @@
 
     private async Task SaveTour()
     {
+        editingTour.Code = formModel.Code;
+        editingTour.Title = formModel.Title;
+        editingTour.Category = formModel.Category;
+        editingTour.BasePrice = formModel.BasePrice;
+        editingTour.Duration = formModel.Duration;
+        editingTour.StartingLocation = formModel.StartingLocation;
+        editingTour.ImageUrl = formModel.ImageUrl;
+        editingTour.ShortDescription = formModel.ShortDescription;
+        editingTour.Highlights = formModel.Highlights;
+        editingTour.Itinerary = formModel.Itinerary;
         if (editingTour.Id == 0)
         {
             await ManageToursUseCase.AddTourAsync(editingTour);
