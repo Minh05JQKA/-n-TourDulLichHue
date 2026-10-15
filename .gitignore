@@ -16,6 +16,7 @@
 # Course recordings and unrelated course materials
 /videopart*/
 /capstone-topics-2026 (1).pdf
+~$*
 
 # Local secrets and environment files
 appsettings.*.local.json
