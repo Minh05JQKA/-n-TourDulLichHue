@@ -12,7 +12,11 @@ public class CustomerInMemoryRepository : ICustomerRepository
         _customers = new List<Customer>
         {
             new() { Id = 1, FullName = "Trần Minh Tuấn", Email = "tuan.tran@gmail.com", PhoneNumber = "0988776655", Address = "12 Lê Lợi, TP Huế", CreatedAt = DateTime.Now.AddDays(-1) },
-            new() { Id = 2, FullName = "Lê Thị Mai Anh", Email = "maianh.le@gmail.com", PhoneNumber = "0977889900", Address = "84 Nguyễn Huệ, TP Huế", CreatedAt = DateTime.Now.AddDays(-2) }
+            new() { Id = 2, FullName = "Lê Thị Mai Anh", Email = "maianh.le@gmail.com", PhoneNumber = "0977889900", Address = "84 Nguyễn Huệ, TP Huế", CreatedAt = DateTime.Now.AddDays(-2) },
+            new() { Id = 3, FullName = "Nguyễn Hoàng Long", Email = "long.nguyen@outlook.com", PhoneNumber = "0903112233", Address = "158 Phố Huế, Q. Hai Bà Trưng, Hà Nội", CreatedAt = DateTime.Now.AddDays(-2) },
+            new() { Id = 4, FullName = "Vũ Minh Châu", Email = "minhchau.vu@gmail.com", PhoneNumber = "0918445566", Address = "45 Nguyễn Đình Chiểu, Q.1, TP. Hồ Chí Minh", CreatedAt = DateTime.Now.AddDays(-1) },
+            new() { Id = 5, FullName = "Đặng Thu Thảo", Email = "thuthao.dang@gmail.com", PhoneNumber = "0935667788", Address = "22 Bạch Đằng, Q. Hải Châu, Đà Nẵng", CreatedAt = DateTime.Now.AddDays(-3) },
+            new() { Id = 6, FullName = "Hoàng Đức Anh", Email = "ducanh.hoang@gmail.com", PhoneNumber = "0983990011", Address = "08 Hùng Vương, TP Huế", CreatedAt = DateTime.Now.AddDays(-5) }
         };
     }
 

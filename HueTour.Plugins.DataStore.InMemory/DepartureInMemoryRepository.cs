@@ -42,7 +42,10 @@ public class DepartureInMemoryRepository : IDepartureRepository
             // Lịch mẫu mở bán để có thể xem và thử luồng đặt tour mới.
             new() { Id = 12, TourId = 7, DepartureDate = now.AddDays(4).Date.AddHours(8), ReturnDate = now.AddDays(4).Date.AddHours(12).AddMinutes(30), MaxCapacity = 18, BookedSeats = 0, Status = DepartureStatus.Open, MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Công ty điều phối", TourGuidePhone = null },
             new() { Id = 13, TourId = 8, DepartureDate = now.AddDays(3).Date.AddHours(8), ReturnDate = now.AddDays(3).Date.AddHours(13), MaxCapacity = 18, BookedSeats = 0, Status = DepartureStatus.Open, MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Công ty điều phối", TourGuidePhone = null },
-            new() { Id = 14, TourId = 9, DepartureDate = now.AddDays(5).Date.AddHours(7), ReturnDate = now.AddDays(5).Date.AddHours(17), MaxCapacity = 20, BookedSeats = 0, Status = DepartureStatus.Open, MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Công ty điều phối", TourGuidePhone = null }
+            new() { Id = 14, TourId = 9, DepartureDate = now.AddDays(5).Date.AddHours(7), ReturnDate = now.AddDays(5).Date.AddHours(17), MaxCapacity = 20, BookedSeats = 0, Status = DepartureStatus.Open, MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Công ty điều phối", TourGuidePhone = null },
+            new() { Id = 15, TourId = 10, DepartureDate = now.AddDays(4).Date.AddHours(8), ReturnDate = now.AddDays(4).Date.AddHours(13), MaxCapacity = 20, BookedSeats = 5, Status = DepartureStatus.Open, MeetingPoint = "Cột cờ Phu Văn Lâu", TourGuideName = "Phan Thanh Sang", TourGuidePhone = "0905777888" },
+            new() { Id = 16, TourId = 11, DepartureDate = now.AddDays(3).Date.AddHours(8).AddMinutes(30), ReturnDate = now.AddDays(3).Date.AddHours(12).AddMinutes(30), MaxCapacity = 16, BookedSeats = 4, Status = DepartureStatus.Open, MeetingPoint = "Chợ Đông Ba", TourGuideName = "Lê Thị Thu", TourGuidePhone = "0905333444" },
+            new() { Id = 17, TourId = 12, DepartureDate = now.AddDays(7).Date.AddHours(8), ReturnDate = now.AddDays(7).Date.AddHours(17), MaxCapacity = 25, BookedSeats = 0, Status = DepartureStatus.Open, MeetingPoint = "Trung tâm TP Huế", TourGuideName = "Bùi Quang Dũng", TourGuidePhone = "0905666777" }
         };
     }
 

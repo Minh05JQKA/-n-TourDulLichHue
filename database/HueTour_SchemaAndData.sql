@@ -272,6 +272,36 @@ VALUES
     N'07:00 Đón khách tại trung tâm Huế -> 08:30 Dừng ngắm cảnh tại Hải Vân Quan -> 10:00 Tham quan đầm Lập An -> 11:30 Ăn trưa hải sản tại Lăng Cô -> 13:00 Nghỉ ngơi và dạo biển -> 15:00 Khởi hành về Huế -> 17:00 Trả khách.',
     N'Vịnh biển Lăng Cô; Cảnh quan đầm Lập An; Hải Vân Quan; Xe đưa đón trong ngày và hướng dẫn viên.',
     N'1 Ngày', N'Trung tâm TP Huế', 850000, '/images/lang-co-lagoon.jpg', 1
+),
+(
+    'HT-MINHMANG10',
+    N'Tour Di Tích Lăng Minh Mạng – Lăng Gia Long – Đồi Vọng Cảnh',
+    N'Di tích Cố Đô',
+    N'Khám phá lăng tẩm uy nghiêm nhất triều Nguyễn, chiêm ngưỡng kiến trúc phong thủy đăng đối đỉnh cao bên dòng Hương giang.',
+    N'Hành trình đưa quý khách đến với Lăng Gia Long giữa rừng thông bạt ngàn và Lăng Minh Mạng thanh tịnh, tôn nghiêm.',
+    N'08:00 Đón khách tại trung tâm TP Huế -> 08:45 Khám phá Lăng Gia Long -> 10:30 Tham quan Lăng Minh Mạng uy nghiêm -> 11:45 Ngắm sông Hương từ Đồi Vọng Cảnh -> 12:30 Thưởng thức bữa trưa đặc sản Huế.',
+    N'Xe du lịch đời mới; Vé tham quan các lăng; Hướng dẫn viên am tường lịch sử; Nước suối và khăn lạnh.',
+    N'Nửa Ngày', N'Trung tâm TP Huế', 520000, '/images/tu-duc-tomb.jpg', 1
+),
+(
+    'HT-NONLA11',
+    N'Tour Trải Nghiệm Làng Nghề Nón Lá Tây Hồ & Hoa Giấy Thanh Tiên',
+    N'Sông Hương & Làng nghề',
+    N'Tự tay chằm chiếc nón bài thơ xứ Huế và học gấp hoa sen giấy Thanh Tiên cùng các nghệ nhân lão thành.',
+    N'Tour văn hóa làng nghề truyền thống đặc sắc. Du khách được tự tay làm nón bài thơ và hoa giấy truyền thống mang về làm kỷ niệm.',
+    N'08:30 Đón khách -> 09:00 Đến làng nón Tây Hồ, trải nghiệm chằm nón bài thơ -> 10:30 Thăm làng hoa giấy Thanh Tiên -> 11:30 Thưởng trà sen và bánh đậu xanh trái cây -> 12:30 Trả khách.',
+    N'Tự tay làm nón bài thơ mang về; Trò chuyện với nghệ nhân; Xe đưa đón; Trà sen cung đình.',
+    N'Nửa Ngày', N'Trung tâm TP Huế', 420000, '/images/thanh-toan-bridge.jpg', 1
+),
+(
+    'HT-SUOIVOI12',
+    N'Tour Sinh Thái Suối Voi – Đầm Lập An – Vịnh Lăng Cô',
+    N'Sinh thái & Đầm phá',
+    N'Tắm suối mát lạnh tại Suối Voi nguyên sơ, thưởng thức hàu nướng mỡ hành đầm Lập An và ngắm vịnh biển đẹp nhất thế giới.',
+    N'Một ngày trọn vẹn khám phá thiên nhiên phía Nam Cố Đô. Thư giãn tại các bồn tắm thiên nhiên mát lạnh giữa rừng nguyên sinh Suối Voi và tiệc hải sản tươi sống Lập An.',
+    N'08:00 Đón khách tại Huế -> 09:30 Vui chơi tắm suối mát tại Suối Voi -> 12:00 Ăn trưa hải sản đầm Lập An -> 14:00 Thư giãn dạo bờ biển vịnh Lăng Cô -> 16:30 Về đến TP Huế.',
+    N'Xe du lịch máy lạnh; Vé tham quan Suối Voi; Bữa trưa hải sản tươi sống đầm Lập An; Hướng dẫn viên nhiệt tình.',
+    N'1 Ngày', N'Trung tâm TP Huế', 720000, '/images/lang-co-lagoon.jpg', 1
 );
 
 -- Seed Chuyến khởi hành (Departures)
@@ -320,7 +350,7 @@ VALUES (5, DATEADD(DAY, 2, @Now), DATEADD(DAY, 2, DATEADD(HOUR, 4, @Now)), 16, 4
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (6, DATEADD(DAY, 5, @Now), DATEADD(DAY, 5, DATEADD(HOUR, 10, @Now)), 20, 6, 'Open', N'Trung tâm TP Huế', N'Bùi Quang Dũng', '0905666777');
 
--- Lịch mẫu cho ba tour mới (ngày giờ chỉ phục vụ demo và kiểm tra luồng đặt chỗ)
+-- Lịch cho các tour khác
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (7, DATEADD(HOUR, 8, DATEADD(DAY, 4, CAST(@Now AS DATE))), DATEADD(MINUTE, 270, DATEADD(HOUR, 8, DATEADD(DAY, 4, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
@@ -330,23 +360,75 @@ VALUES (8, DATEADD(HOUR, 8, DATEADD(DAY, 3, CAST(@Now AS DATE))), DATEADD(HOUR, 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (9, DATEADD(HOUR, 7, DATEADD(DAY, 5, CAST(@Now AS DATE))), DATEADD(HOUR, 17, DATEADD(DAY, 5, CAST(@Now AS DATE))), 20, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
+-- Chuyến cho Tour 10, 11, 12
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (10, DATEADD(DAY, 4, @Now), DATEADD(DAY, 4, DATEADD(HOUR, 5, @Now)), 20, 5, 'Open', N'Cột cờ Phu Văn Lâu', N'Phan Thanh Sang', '0905777888');
+
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (11, DATEADD(DAY, 3, @Now), DATEADD(DAY, 3, DATEADD(HOUR, 4, @Now)), 16, 4, 'Open', N'Chợ Đông Ba', N'Lê Thị Thu', '0905333444');
+
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (12, DATEADD(DAY, 7, @Now), DATEADD(DAY, 7, DATEADD(HOUR, 9, @Now)), 25, 0, 'Open', N'Trung tâm TP Huế', N'Bùi Quang Dũng', '0905666777');
+
 -- Seed Khách hàng mẫu
 INSERT INTO dbo.Customer (FullName, Email, PhoneNumber, Address)
 VALUES
 (N'Trần Minh Tuấn', 'tuan.tran@gmail.com', '0988776655', N'12 Lê Lợi, TP Huế'),
-(N'Lê Thị Mai Anh', 'maianh.le@gmail.com', '0977889900', N'84 Nguyễn Huệ, TP Huế');
+(N'Lê Thị Mai Anh', 'maianh.le@gmail.com', '0977889900', N'84 Nguyễn Huệ, TP Huế'),
+(N'Nguyễn Hoàng Long', 'long.nguyen@outlook.com', '0903112233', N'158 Phố Huế, Q. Hai Bà Trưng, Hà Nội'),
+(N'Vũ Minh Châu', 'minhchau.vu@gmail.com', '0918445566', N'45 Nguyễn Đình Chiểu, Q.1, TP. Hồ Chí Minh'),
+(N'Đặng Thu Thảo', 'thuthao.dang@gmail.com', '0935667788', N'22 Bạch Đằng, Q. Hải Châu, Đà Nẵng'),
+(N'Hoàng Đức Anh', 'ducanh.hoang@gmail.com', '0983990011', N'08 Hùng Vương, TP Huế');
 
 -- Seed Booking mẫu
 INSERT INTO dbo.TourBooking (BookingCode, DepartureId, CustomerId, BookingDate, TotalAmount, Status, Notes, SpecialRequests, PaymentMethod)
 VALUES
-('HUE-202610-001', 1, 1, DATEADD(DAY, -1, @Now), 825000, 'Confirmed', N'Khách gia đình có 1 bé nhỏ', N'Sắp xếp xe ngồi gần cửa sổ', N'Chuyển khoản QR');
+('HUE-202610-001', 1, 1, DATEADD(DAY, -1, @Now), 825000, 'Confirmed', N'Khách gia đình có 1 bé nhỏ', N'Sắp xếp xe ngồi gần cửa sổ', N'Chuyển khoản QR'),
+('HUE-202610-002', 5, 3, DATEADD(DAY, -2, @Now), 1200000, 'Confirmed', N'Đoàn tham gia chèo Sup hoàng hôn', N'Áo phao cho trẻ em', N'Chuyển khoản VietQR'),
+('HUE-202610-003', 7, 4, DATEADD(DAY, -1, @Now), 550000, 'Pending', N'Muốn ngồi tầng 2 du thuyền rồng', N'Thả hoa đăng giấy màu', N'Thanh toán trực tiếp'),
+('HUE-202610-004', 11, 5, DATEADD(DAY, -3, @Now), 1360000, 'Confirmed', N'Đoàn khám phá Bạch Mã', N'Ăn trưa picnic bên suối', N'Chuyển khoản QR'),
+('HUE-202610-005', 1, 6, DATEADD(DAY, -5, @Now), 550000, 'Completed', N'Khách đi 1 mình công tác', NULL, N'Thẻ tín dụng'),
+('HUE-202610-006', 2, 2, DATEADD(DAY, -1, @Now), 480000, 'Cancelled', N'Bận việc đột xuất xin hủy', NULL, N'Chuyển khoản');
 
--- Seed Vé mẫu của Booking trên (1 Người lớn 550.000 + 1 Trẻ em 275.000 = 825.000 VNĐ -> Khớp đúng Luật 2)
+-- Seed Vé mẫu của các Booking trên (Áp dụng chuẩn Luật 2: Người lớn 100%, Trẻ em 50%, Em bé 0%)
+-- Booking 1: 1 Người lớn 550k + 1 Trẻ em 275k = 825k
 INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
 VALUES
 (1, 'HUE-202610-001-01', N'Trần Minh Tuấn', 'Nam', 'Adult', 1990, 550000, 'G01'),
 (1, 'HUE-202610-001-02', N'Trần Tuấn Khang', 'Nam', 'Child', 2018, 275000, 'G02');
 
+-- Booking 2: 2 Người lớn (480k x 2 = 960k) + 1 Trẻ em (240k) + 1 Em bé (0k) = 1.200.000 VNĐ
+INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
+VALUES
+(2, 'HUE-202610-002-01', N'Nguyễn Hoàng Long', 'Nam', 'Adult', 1988, 480000, 'G01'),
+(2, 'HUE-202610-002-02', N'Lê Ngọc Bích', 'Nữ', 'Adult', 1991, 480000, 'G02'),
+(2, 'HUE-202610-002-03', N'Nguyễn Hoàng Nam', 'Nam', 'Child', 2016, 240000, 'G03'),
+(2, 'HUE-202610-002-04', N'Nguyễn Ngọc An', 'Nữ', 'Infant', 2023, 0, 'G04');
+
+-- Booking 3: 2 Người lớn (220k x 2 = 440k) + 1 Trẻ em (110k) = 550.000 VNĐ
+INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
+VALUES
+(3, 'HUE-202610-003-01', N'Vũ Minh Châu', 'Nữ', 'Adult', 1995, 220000, 'G05'),
+(3, 'HUE-202610-003-02', N'Phạm Nhật Minh', 'Nam', 'Adult', 1993, 220000, 'G06'),
+(3, 'HUE-202610-003-03', N'Phạm Minh Nhi', 'Nữ', 'Child', 2019, 110000, 'G07');
+
+-- Booking 4: 2 Người lớn (680k x 2) = 1.360.000 VNĐ
+INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
+VALUES
+(4, 'HUE-202610-004-01', N'Đặng Thu Thảo', 'Nữ', 'Adult', 1997, 680000, 'G01'),
+(4, 'HUE-202610-004-02', N'Nguyễn Quang Vinh', 'Nam', 'Adult', 1996, 680000, 'G02');
+
+-- Booking 5: 1 Người lớn = 550.000 VNĐ
+INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
+VALUES
+(5, 'HUE-202610-005-01', N'Hoàng Đức Anh', 'Nam', 'Adult', 1992, 550000, 'G08');
+
+-- Booking 6: 1 Người lớn = 480.000 VNĐ (đã hủy)
+INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
+VALUES
+(6, 'HUE-202610-006-01', N'Lê Thị Mai Anh', 'Nữ', 'Adult', 1994, 480000, 'G09');
+
 GO
 
 PRINT N'Cơ sở dữ liệu HueTourDb đã được khởi tạo và nạp dữ liệu mẫu hoàn tất thành công!';
+

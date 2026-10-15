@@ -163,6 +163,57 @@ public class TourInMemoryRepository : ITourRepository
                 ImageUrl = "/images/lang-co-lagoon.jpg",
                 IsActive = true,
                 CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 10,
+                Code = "HT-MINHMANG10",
+                Title = "Tour Di Tích Lăng Minh Mạng – Lăng Gia Long – Đồi Vọng Cảnh",
+                Category = "Di tích Cố Đô",
+                ShortDescription = "Khám phá lăng tẩm uy nghiêm nhất triều Nguyễn, chiêm ngưỡng kiến trúc phong thủy đăng đối đỉnh cao bên dòng Hương giang.",
+                Description = "Hành trình đưa quý khách đến với Lăng Gia Long giữa rừng thông bạt ngàn và Lăng Minh Mạng thanh tịnh, tôn nghiêm.",
+                Itinerary = "08:00 Đón khách tại trung tâm TP Huế -> 08:45 Khám phá Lăng Gia Long -> 10:30 Tham quan Lăng Minh Mạng uy nghiêm -> 11:45 Ngắm sông Hương từ Đồi Vọng Cảnh -> 12:30 Thưởng thức bữa trưa đặc sản Huế.",
+                Highlights = "Xe du lịch đời mới; Vé tham quan các lăng; Hướng dẫn viên am tường lịch sử; Nước suối và khăn lạnh.",
+                Duration = "Nửa Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 520000,
+                ImageUrl = "/images/tu-duc-tomb.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 11,
+                Code = "HT-NONLA11",
+                Title = "Tour Trải Nghiệm Làng Nghề Nón Lá Tây Hồ & Hoa Giấy Thanh Tiên",
+                Category = "Sông Hương & Làng nghề",
+                ShortDescription = "Tự tay chằm chiếc nón bài thơ xứ Huế và học gấp hoa sen giấy Thanh Tiên cùng các nghệ nhân lão thành.",
+                Description = "Tour văn hóa làng nghề truyền thống đặc sắc. Du khách được tự tay làm nón bài thơ và hoa giấy truyền thống mang về làm kỷ niệm.",
+                Itinerary = "08:30 Đón khách -> 09:00 Đến làng nón Tây Hồ, trải nghiệm chằm nón bài thơ -> 10:30 Thăm làng hoa giấy Thanh Tiên -> 11:30 Thưởng trà sen và bánh đậu xanh trái cây -> 12:30 Trả khách.",
+                Highlights = "Tự tay làm nón bài thơ mang về; Trò chuyện với nghệ nhân; Xe đưa đón; Trà sen cung đình.",
+                Duration = "Nửa Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 420000,
+                ImageUrl = "/images/thanh-toan-bridge.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 12,
+                Code = "HT-SUOIVOI12",
+                Title = "Tour Sinh Thái Suối Voi – Đầm Lập An – Vịnh Lăng Cô",
+                Category = "Sinh thái & Đầm phá",
+                ShortDescription = "Tắm suối mát lạnh tại Suối Voi nguyên sơ, thưởng thức hàu nướng mỡ hành đầm Lập An và ngắm vịnh biển đẹp nhất thế giới.",
+                Description = "Một ngày trọn vẹn khám phá thiên nhiên phía Nam Cố Đô. Thư giãn tại các bồn tắm thiên nhiên mát lạnh giữa rừng nguyên sinh Suối Voi và tiệc hải sản tươi sống Lập An.",
+                Itinerary = "08:00 Đón khách tại Huế -> 09:30 Vui chơi tắm suối mát tại Suối Voi -> 12:00 Ăn trưa hải sản đầm Lập An -> 14:00 Thư giãn dạo bờ biển vịnh Lăng Cô -> 16:30 Về đến TP Huế.",
+                Highlights = "Xe du lịch máy lạnh; Vé tham quan Suối Voi; Bữa trưa hải sản tươi sống đầm Lập An; Hướng dẫn viên nhiệt tình.",
+                Duration = "1 Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 720000,
+                ImageUrl = "/images/lang-co-lagoon.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
             }
         };
     }
