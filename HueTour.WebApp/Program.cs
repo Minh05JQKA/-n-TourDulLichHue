@@ -1,15 +1,18 @@
 using HueTour.WebApp.Components;
+using HueTour.WebApp.Services;
 using HueTour.UseCases.AiAssistant;
 using HueTour.UseCases.Auth;
 using HueTour.UseCases.Booking;
 using HueTour.UseCases.Departures;
 using HueTour.UseCases.PluginInterfaces.DataStore;
 using HueTour.UseCases.PluginInterfaces.State;
+using HueTour.UseCases.Reports;
 using HueTour.UseCases.Tours;
 using HueTour.Plugins.DataStore.InMemory;
 using HueTour.Plugins.DataStore.SQL;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.AI;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,7 +54,10 @@ builder.Services.AddScoped<IPlaceTourBookingUseCase, PlaceTourBookingUseCase>();
 builder.Services.AddScoped<IManageBookingsUseCase, ManageBookingsUseCase>();
 builder.Services.AddScoped<IViewBookingConfirmationUseCase, ViewBookingConfirmationUseCase>();
 builder.Services.AddScoped<IAuthenticateUserUseCase, AuthenticateUserUseCase>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IChatClient, HueTourChatClient>();
 builder.Services.AddScoped<IAiTourAdvisorUseCase, AiTourAdvisorUseCase>();
+builder.Services.AddScoped<IExportBookingReportUseCase, ExportBookingReportUseCase>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -118,6 +124,21 @@ app.MapGet("/auth/logout", async (HttpContext context) =>
 {
     await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     return Results.Redirect("/");
+});
+
+// TIÊU CHÍ K4.3: Endpoint xuất báo cáo Excel/CSV từ dữ liệu thật
+app.MapGet("/api/reports/bookings-csv", async (IExportBookingReportUseCase reportUseCase) =>
+{
+    var csvBytes = await reportUseCase.ExportBookingsToCsvAsync();
+    string fileName = $"HueTour_BaoCaoDatTour_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+    return Results.File(csvBytes, "text/csv; charset=utf-8", fileName);
+});
+
+app.MapGet("/api/reports/passengers-csv/{departureId:int}", async (int departureId, IExportBookingReportUseCase reportUseCase) =>
+{
+    var csvBytes = await reportUseCase.ExportDeparturePassengersToCsvAsync(departureId);
+    string fileName = $"HueTour_Chuyen_{departureId}_HanhKhach_{DateTime.Now:yyyyMMdd}.csv";
+    return Results.File(csvBytes, "text/csv; charset=utf-8", fileName);
 });
 
 app.UseStaticFiles();

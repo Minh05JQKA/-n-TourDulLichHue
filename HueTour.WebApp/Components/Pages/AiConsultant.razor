@@ -2,16 +2,16 @@
 @inject IAiTourAdvisorUseCase AiAdvisorUseCase
 @inject NavigationManager NavManager
 
-<PageTitle>Trợ Lý AI Tư Vấn Tour Du Lịch Huế</PageTitle>
+<PageTitle>Gợi Ý Hành Trình Du Lịch Huế</PageTitle>
 
 <div class="bg-purple text-white py-5 mb-4">
     <div class="container text-center">
         <span class="badge bg-gold text-dark px-3 py-2 fw-bold text-uppercase mb-2">
-            <i class="bi bi-robot me-1"></i>TÍNH NĂNG NÂNG CAO (K4.3 - ECO2415)
+            <i class="bi bi-stars me-1"></i>GỢI Ý THEO SỞ THÍCH
         </span>
-        <h1 class="font-serif fw-bold display-5 mt-1">Trợ Lý AI Du Lịch Cố Đô</h1>
+        <h1 class="font-serif fw-bold display-5 mt-1">Tìm hành trình hợp ý bạn</h1>
         <p class="text-light opacity-90 mx-auto mb-0" style="max-width: 650px;">
-            Nhập nhu cầu về sở thích, thời gian hoặc ngân sách dự kiến của đoàn. Trợ lý thông minh sẽ phân tích và đề xuất hành trình tối ưu từ dữ liệu thực tế trong CSDL!
+            Chọn sở thích, thời lượng và ngân sách. Hệ thống sẽ đối chiếu với các tour và lịch khởi hành hiện có để gợi ý lựa chọn phù hợp.
         </p>
     </div>
 </div>
@@ -83,31 +83,55 @@
                     @if (isThinking)
                     {
                         <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        <span>AI Đang Phân Tích CSDL...</span>
+                        <span>Đang tìm hành trình phù hợp...</span>
                     }
                     else
                     {
-                        <i class="bi bi-magic me-2"></i>
-                        <span>Gợi Ý Tour Tối Ưu</span>
+                        <i class="bi bi-search me-2"></i>
+                        <span>Tìm tour phù hợp</span>
                     }
                 </button>
             </div>
         </div>
 
-        <!-- Kết quả gợi ý từ AI -->
+        <!-- Kết quả gợi ý từ dữ liệu tour và quy tắc lọc -->
         <div class="col-lg-7 col-12">
             @if (response != null)
             {
                 <div class="card border-0 shadow-sm p-4 bg-white animate__animated animate__fadeIn" style="border-radius: 16px;">
-                    <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-3">
-                        <div class="fs-2 text-gold">🤖</div>
+                    <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="fs-2 text-gold"><i class="bi bi-stars"></i></div>
+                            <div>
+                                <h5 class="fw-bold text-purple mb-0">Tư Vấn Thông Minh Cố Đô Huế</h5>
+                                <small class="text-muted">Đối chiếu dữ liệu tour, sức chứa &amp; giá vé từ CSDL</small>
+                            </div>
+                        </div>
                         <div>
-                            <h5 class="fw-bold text-purple mb-0">Phản Hồi Từ Trợ Lý AI</h5>
-                            <small class="text-muted">Được chọn lọc trực tiếp từ CSDL Tours &amp; Departures</small>
+                            @if (response.UsedLlm)
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill">
+                                    <i class="bi bi-robot me-1"></i>@(response.AiProvider ?? "Microsoft.Extensions.AI (IChatClient)")
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-2 rounded-pill">
+                                    <i class="bi bi-cpu me-1"></i>Hệ Thống Phân Tích Cố Đô (Core Engine)
+                                </span>
+                            }
                         </div>
                     </div>
 
-                    <div class="p-3 bg-light rounded-3 mb-4 text-dark small border" style="line-height: 1.7;">
+                    @if (!string.IsNullOrEmpty(response.Notice))
+                    {
+                        <div class="alert alert-info py-2 px-3 small rounded-3 mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle-fill text-primary"></i>
+                            <div>@response.Notice</div>
+                        </div>
+                    }
+
+                    <div class="p-3 bg-light rounded-3 mb-4 text-dark small border" style="line-height: 1.7; white-space: pre-line;">
                         @response.AdviceMessage
                     </div>
 
@@ -150,9 +174,9 @@
             {
                 <div class="card border-0 shadow-sm p-5 text-center bg-white h-100 d-flex flex-column justify-content-center" style="border-radius: 16px;">
                     <div class="display-3 text-gold mb-3">✨</div>
-                    <h4 class="font-serif fw-bold text-purple">Trợ Lý Sẵn Sàng Phục Vụ</h4>
+                    <h4 class="font-serif fw-bold text-purple">Sẵn sàng tìm hành trình</h4>
                     <p class="text-muted mx-auto" style="max-width: 450px;">
-                        Điền nhu cầu của bạn ở bảng bên cạnh và bấm "Gợi Ý Tour Tối Ưu" để AI tìm kiếm và tính toán chi phí chính xác cho đoàn của bạn.
+                        Điền nhu cầu ở bảng bên cạnh để xem các hành trình phù hợp và chi phí ước tính cho đoàn.
                     </p>
                 </div>
             }

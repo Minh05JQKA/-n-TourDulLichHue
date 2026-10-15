@@ -8,30 +8,37 @@
 
 <!-- Hero Section Hoàng Cung Huế -->
 <section class="hue-hero text-center">
-    <div class="container py-4">
-        <span class="hue-hero-subtitle d-inline-block mb-3">
-            <i class="bi bi-compass-fill me-1"></i>Trải Nghiệm Du Lịch Di Sản UNESCO Cố Đô
+    <div class="container hue-hero-content">
+        <span class="hue-hero-subtitle d-inline-flex align-items-center mb-4">
+            <i class="bi bi-compass-fill me-2"></i>Di sản thế giới · Kinh đô triều Nguyễn
         </span>
-        <h1 class="display-3 fw-bold mb-4 font-serif text-white">
-            Khám Phá Cố Đô Huế <br class="d-none d-md-inline" />
-            <span class="text-gold">Vàng Son &amp; Thơ Mộng</span>
-        </h1>
-        <p class="lead mb-4 mx-auto text-light opacity-90" style="max-width: 720px; font-size: 1.15rem;">
-            Đặt tour trực tuyến tham quan Đại Nội, các lăng tẩm hoàng gia triều Nguyễn, đắm mình trong hoàng hôn phá Tam Giang và thưởng thức ẩm thực Cố Đô trứ danh.
+        <div class="hero-title-frame">
+            <h1 class="hue-hero-title fw-bold mb-0 font-serif text-white">
+                Khám phá Cố Đô Huế
+                <span class="d-block text-gold">Vàng son &amp; thơ mộng</span>
+            </h1>
+        </div>
+        <p class="hue-hero-description mb-4 mx-auto">
+            Dạo bước giữa Hoàng thành, lắng nghe chuyện xưa bên lăng tẩm triều Nguyễn và ngắm hoàng hôn trên phá Tam Giang.
         </p>
         <div class="d-flex flex-wrap justify-content-center gap-3">
             <a href="tours" class="btn btn-gold btn-lg rounded-pill px-4 py-3 shadow">
                 <i class="bi bi-compass me-2"></i>Khám Phá Các Hành Trình
             </a>
             <a href="ai-consultant" class="btn btn-outline-light btn-lg rounded-pill px-4 py-3">
-                <i class="bi bi-robot me-2"></i>Trợ Lý AI Tư Vấn Tour
+                <i class="bi bi-stars me-2"></i>Gợi ý hành trình
             </a>
+        </div>
+        <div class="hero-highlights d-flex flex-wrap justify-content-center gap-3 gap-md-4 mt-5">
+            <span><i class="bi bi-patch-check-fill me-2"></i>Di sản UNESCO</span>
+            <span><i class="bi bi-geo-alt-fill me-2"></i>Trải nghiệm bản địa</span>
+            <span><i class="bi bi-heart-fill me-2"></i>Hành trình đáng nhớ</span>
         </div>
     </div>
 </section>
 
 <!-- Floating Search Bar Component (K3.1) -->
-<div class="container mb-5">
+<div class="container home-search-wrap mb-5">
     <SearchBarComponent SearchTerm="@searchTerm"
                         SelectedCategory="@selectedCategory"
                         OnSearchExecuted="HandleSearch" />
@@ -40,15 +47,15 @@
 <!-- Main Tours Section -->
 <div class="container py-4">
     <!-- Tiêu đề danh sách -->
-    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 border-bottom pb-3">
+    <div class="section-heading d-flex flex-wrap justify-content-between align-items-end mb-4">
         <div>
-            <span class="text-gold fw-bold small text-uppercase letter-spacing-1">
+            <span class="section-eyebrow text-gold fw-bold small text-uppercase letter-spacing-1">
                 <i class="bi bi-award-fill me-1"></i>Hành Trình Được Yêu Thích Nhất
             </span>
-            <h2 class="font-serif fw-bold text-purple mb-0 fs-2">Các Tour Du Lịch Huế Nổi Bật</h2>
+            <h2 class="font-serif fw-bold text-purple mb-0">Các tour du lịch Huế nổi bật</h2>
         </div>
         <div class="mt-2 mt-md-0">
-            <span class="text-muted small">Hiển thị <strong>@displayedTours.Count()</strong> hành trình</span>
+            <span class="tour-count-pill"><i class="bi bi-compass me-2"></i><strong>@displayedTours.Count()</strong> hành trình</span>
         </div>
     </div>
 
@@ -83,9 +90,9 @@
 </div>
 
 <!-- Khối Giới Thiệu 2 Luật Nghiệp Vụ Minh Bạch (K1.3, K3.3) -->
-<section class="py-5 bg-white border-top border-bottom my-5">
+<section class="rules-section py-5 border-top border-bottom my-5">
     <div class="container">
-        <div class="text-center mb-5" style="max-width: 700px; margin: 0 auto;">
+        <div class="text-center mb-5 rule-intro">
             <span class="badge bg-purple px-3 py-2 text-gold mb-2">QUY CHUẨN ĐỒ ÁN CAPSTONE ECO2415</span>
             <h2 class="font-serif fw-bold text-purple">Cam Kết 2 Luật Nghiệp Vụ Minh Bạch</h2>
             <p class="text-muted">Hệ thống áp dụng chuẩn kiến trúc Clean Architecture 4 tầng, bảo đảm tính toàn vẹn dữ liệu và trải nghiệm công bằng cho hành khách.</p>

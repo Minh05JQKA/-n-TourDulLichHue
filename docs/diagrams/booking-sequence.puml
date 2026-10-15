@@ -1,26 +1,36 @@
-# Sequence đặt tour
-
-```plantuml
 @startuml
 actor Customer
 boundary BookingPage
 control PlaceTourBookingUseCase
 control BookingBusinessRules
 database DepartureRepository
+database TourRepository
+database PriceRuleRepository
 database CustomerRepository
 database TourBookingRepository
-Customer -> BookingPage : gửi thông tin đoàn khách
-BookingPage -> PlaceTourBookingUseCase : ExecuteAsync(departure, customer, passengers)
-PlaceTourBookingUseCase -> DepartureRepository : lấy chuyến và số chỗ còn
+
+Customer -> BookingPage : gửi thông tin hành khách
+BookingPage -> PlaceTourBookingUseCase : ExecuteAsync(departureId, customer, passengers)
+PlaceTourBookingUseCase -> DepartureRepository : GetDepartureByIdAsync
 DepartureRepository --> PlaceTourBookingUseCase : departure
+PlaceTourBookingUseCase -> TourRepository : GetTourByIdAsync
+TourRepository --> PlaceTourBookingUseCase : tour
 PlaceTourBookingUseCase -> BookingBusinessRules : kiểm tra sức chứa / hạn đặt
-BookingBusinessRules --> PlaceTourBookingUseCase : hợp lệ hoặc thông báo lỗi
-PlaceTourBookingUseCase -> CustomerRepository : tìm hoặc tạo khách hàng
+BookingBusinessRules --> PlaceTourBookingUseCase : hợp lệ hoặc lỗi thân thiện
+PlaceTourBookingUseCase -> PriceRuleRepository : GetAllPriceRulesAsync
+PriceRuleRepository --> PlaceTourBookingUseCase : priceRules
+PlaceTourBookingUseCase -> BookingBusinessRules : tính và kiểm tra giá vé
+BookingBusinessRules --> PlaceTourBookingUseCase : hợp lệ hoặc lỗi thân thiện
+PlaceTourBookingUseCase -> CustomerRepository : tìm hoặc lưu khách hàng
 CustomerRepository --> PlaceTourBookingUseCase : customerId
-PlaceTourBookingUseCase -> TourBookingRepository : lưu header + ticket lines (transaction)
-TourBookingRepository --> PlaceTourBookingUseCase : bookingId
-PlaceTourBookingUseCase -> DepartureRepository : cập nhật số chỗ đã đặt
+PlaceTourBookingUseCase -> TourBookingRepository : CreateBookingTransactionalAsync
+activate TourBookingRepository
+TourBookingRepository -> TourBookingRepository : BEGIN TRANSACTION
+TourBookingRepository -> TourBookingRepository : giữ chỗ có điều kiện
+TourBookingRepository -> TourBookingRepository : INSERT TourBooking + PassengerTicket
+TourBookingRepository -> TourBookingRepository : COMMIT hoặc ROLLBACK
+TourBookingRepository --> PlaceTourBookingUseCase : kết quả lưu booking
+deactivate TourBookingRepository
 PlaceTourBookingUseCase --> BookingPage : kết quả đặt tour
-BookingPage --> Customer : xác nhận / lỗi thân thiện
+BookingPage --> Customer : xác nhận hoặc lỗi thân thiện
 @enduml
-```
