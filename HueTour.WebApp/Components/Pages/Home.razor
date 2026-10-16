@@ -12,12 +12,10 @@
         <span class="hue-hero-subtitle d-inline-flex align-items-center mb-4">
             <i class="bi bi-compass-fill me-2"></i>Di sản thế giới · Kinh đô triều Nguyễn
         </span>
-        <div class="hero-title-frame">
-            <h1 class="hue-hero-title fw-bold mb-0 font-serif text-white">
-                Huế, chạm vào
-                <span class="d-block text-gold">miền di sản</span>
-            </h1>
-        </div>
+        <h1 class="hue-hero-title fw-bold mb-4 font-serif text-white">
+            Huế, chạm vào
+            <span class="d-block text-gold">miền di sản</span>
+        </h1>
         <p class="hue-hero-description mb-4">
             Từ Hoàng thành trầm mặc đến phá Tam Giang mênh mang — chọn một hành trình để cảm nhận Huế theo cách của riêng bạn.
         </p>
@@ -43,6 +41,36 @@
                         SelectedCategory="@selectedCategory"
                         OnSearchExecuted="HandleSearch" />
 </div>
+
+<!-- Điểm đến nổi bật bằng ảnh -->
+<section class="container destination-showcase" aria-labelledby="destination-showcase-title">
+    <div class="destination-showcase-heading">
+        <div>
+            <span class="section-eyebrow text-gold fw-bold small text-uppercase letter-spacing-1">CHỌN CẢM HỨNG CHO CHUYẾN ĐI</span>
+            <h2 id="destination-showcase-title" class="font-serif fw-bold text-purple mb-2">Huế có nhiều điều để nhớ</h2>
+            <p class="text-muted mb-0">Từ dấu xưa triều Nguyễn đến những bữa ngon và miền nước mênh mang.</p>
+        </div>
+        <a href="tours" class="destination-all-link">Xem tất cả hành trình <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+    <div class="destination-grid">
+        <a class="destination-tile" href="/tour/18" aria-label="Khám phá tuyến Hổ Quyền, Điện Voi Ré và lăng Tự Đức">
+            <img src="/images/tu-duc-tomb.jpg" alt="Cảnh quan lăng Tự Đức giữa cây xanh" loading="lazy" />
+            <span class="destination-tile-copy"><span class="destination-kicker">DẤU XƯA TRIỀU NGUYỄN</span><strong>Di sản Cố đô</strong><span>Hổ Quyền · Điện Voi Ré · Lăng Tự Đức</span></span>
+        </a>
+        <a class="destination-tile" href="/tour/19" aria-label="Khám phá Điện Hòn Chén và đồi Vọng Cảnh">
+            <img src="/images/thien-mu-2025.jpg" alt="Chùa Thiên Mụ bên dòng sông Hương" loading="lazy" />
+            <span class="destination-tile-copy"><span class="destination-kicker">THEO DÒNG HƯƠNG GIANG</span><strong>Sông Hương &amp; tâm linh</strong><span>Điện Hòn Chén · Đồi Vọng Cảnh</span></span>
+        </a>
+        <a class="destination-tile" href="/tour/22" aria-label="Khám phá Hòn Chảo và vịnh Lăng Cô">
+            <img src="/images/lang-co-2023.jpg" alt="Vịnh Lăng Cô và dãy núi ven biển" loading="lazy" />
+            <span class="destination-tile-copy"><span class="destination-kicker">BIỂN XANH &amp; THIÊN NHIÊN</span><strong>Lăng Cô – Hòn Chảo</strong><span>Ngắm vịnh · Trải nghiệm biển</span></span>
+        </a>
+        <a class="destination-tile" href="/tour/21" aria-label="Khám phá làng bún Vân Cù và ẩm thực Huế">
+            <img src="/images/bun-bo-hue-2024.jpg" alt="Tô bún bò Huế tại chợ Đông Ba" loading="lazy" />
+            <span class="destination-tile-copy"><span class="destination-kicker">HƯƠNG VỊ XỨ HUẾ</span><strong>Làng nghề &amp; ẩm thực</strong><span>Vân Cù · Bao Vinh · Kim Long</span></span>
+        </a>
+    </div>
+</section>
 
 <!-- Main Tours Section -->
 <div class="container py-4">

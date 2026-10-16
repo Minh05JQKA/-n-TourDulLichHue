@@ -69,7 +69,7 @@ CREATE TABLE dbo.Tour (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     Code NVARCHAR(50) NOT NULL UNIQUE,
     Title NVARCHAR(255) NOT NULL,
-    Category NVARCHAR(100) NOT NULL, -- Di tích Cố Đô, Sinh thái & Đầm phá, Văn hóa & Ẩm thực, Sông Hương & Làng nghề
+    Category NVARCHAR(100) NOT NULL, -- Di tích Cố Đô, Sinh thái & Đầm phá, Thiên nhiên & Nghỉ dưỡng, Văn hóa & Ẩm thực, Sông Hương & Làng nghề
     ShortDescription NVARCHAR(500) NOT NULL,
     Description NVARCHAR(MAX) NOT NULL,
     Itinerary NVARCHAR(MAX) NOT NULL,
@@ -240,7 +240,7 @@ VALUES
     N'1 Ngày',
     N'Trung tâm TP Huế',
     680000,
-    '/images/bach-ma-panorama-cc0.jpg',
+    '/images/bach-ma-waterfall.jpg',
     1
 ),
 (
@@ -325,7 +325,7 @@ VALUES
     N'Tuyến tham quan gợi ý kết hợp cảnh quan đô thị và ẩm thực. Món ăn, quán dừng và thời lượng có thể thay đổi theo ngày; giá đang hiển thị là dữ liệu mẫu.',
     N'16:00 Hẹn gần cầu Trường Tiền -> 16:30 Dạo bờ sông Hương -> 17:00 Tham quan khu vực chợ Đông Ba -> 18:00 Thưởng thức các món địa phương -> 19:30 Kết thúc tại trung tâm.',
     N'Cầu Trường Tiền; chợ Đông Ba; món ăn địa phương; trải nghiệm đi bộ trung tâm.',
-    N'4 Giờ', N'Cầu Trường Tiền, TP Huế', 350000, '/images/truong-tien-2024.jpg', 1
+    N'4 Giờ', N'Cầu Trường Tiền, TP Huế', 350000, '/images/dong-ba-market-2024.jpg', 1
 ),
 (
     'HT-LANGMINHMANG16', N'Lăng Gia Long – Lăng Minh Mạng – Lăng Khải Định', N'Di tích Cố Đô',
@@ -341,7 +341,55 @@ VALUES
     N'Lịch trình gợi ý theo mùa, kết hợp vùng biển và đầm phá phía đông Huế. Điều kiện thời tiết, tắm biển và hoạt động thuyền cần được xác nhận trước chuyến đi.',
     N'08:00 Hẹn tại trung tâm -> 08:45 Dạo biển Thuận An -> 11:00 Di chuyển đến vùng phá Tam Giang -> 12:00 Ăn trưa địa phương -> 14:00 Tham quan Đầm Chuồn -> 16:00 Trở về Huế.',
     N'Biển Thuận An; cảnh quan phá Tam Giang; Đầm Chuồn; ẩm thực địa phương.',
-    N'1 Ngày', N'Trung tâm TP Huế', 560000, '/images/tam-giang-2024.jpg', 1
+    N'1 Ngày', N'Trung tâm TP Huế', 560000, '/images/thuan-an-beach-2023.jpg', 1
+),
+(
+    'HT-HOQUYEN18', N'Hổ Quyền – Điện Voi Ré – Lăng Tự Đức', N'Di tích Cố Đô',
+    N'Tìm hiểu dấu tích trường đấu voi độc đáo, Điện Voi Ré và không gian lăng Tự Đức.',
+    N'Tuyến di sản gợi ý ở phía tây nam Huế, nối Hổ Quyền với Điện Voi Ré và lăng Tự Đức. Cần kiểm tra giờ tham quan, vé và phương tiện trước khi khởi hành.',
+    N'08:00 Hẹn tại trung tâm Huế -> 08:30 Tham quan Hổ Quyền -> 09:45 Tìm hiểu Điện Voi Ré -> 11:00 Tham quan lăng Tự Đức -> 12:30 Kết thúc tại trung tâm.',
+    N'Di tích Hổ Quyền; Điện Voi Ré; lăng Tự Đức; kiến trúc và câu chuyện triều Nguyễn.',
+    N'Nửa Ngày', N'Trung tâm TP Huế', 420000, '/images/ho-quyen-2008.jpg', 1
+),
+(
+    'HT-HONCHEN19', N'Điện Hòn Chén – Đồi Vọng Cảnh – Sông Hương', N'Sông Hương & Làng nghề',
+    N'Ghé không gian tín ngưỡng Điện Hòn Chén và ngắm khúc sông Hương từ đồi Vọng Cảnh.',
+    N'Hành trình gợi ý kết hợp điểm di tích bên sông và cảnh quan đồi Vọng Cảnh. Nếu đi thuyền, cần xác nhận bến, giờ chạy, điều kiện thời tiết và chương trình lễ hội với đơn vị tổ chức.',
+    N'07:30 Hẹn tại trung tâm Huế -> 08:15 Tham quan Điện Hòn Chén -> 10:30 Dừng ngắm cảnh tại đồi Vọng Cảnh -> 11:30 Trở về trung tâm. Phương án đường thủy chỉ thực hiện khi được xác nhận.',
+    N'Điện Hòn Chén; đồi Vọng Cảnh; cảnh quan sông Hương; trải nghiệm văn hóa tín ngưỡng địa phương.',
+    N'Nửa Ngày', N'Trung tâm TP Huế', 390000, '/images/hon-chen-2008.jpg', 1
+),
+(
+    'HT-THANHTAN20', N'Suối khoáng nóng Thanh Tân – Nghỉ dưỡng giữa thiên nhiên', N'Thiên nhiên & Nghỉ dưỡng',
+    N'Dành một ngày thư giãn với trải nghiệm suối khoáng nóng ở phía tây bắc Huế.',
+    N'Tuyến nghỉ dưỡng tham khảo đến khu suối khoáng nóng Thanh Tân, cách trung tâm Huế khoảng 30 km. Hạng mục dịch vụ, giờ hoạt động, vé và phương tiện cần xác nhận trực tiếp với khu du lịch trước chuyến đi.',
+    N'08:00 Khởi hành từ trung tâm Huế -> 09:00 Đến khu vực Thanh Tân -> 09:30–14:00 Tham quan và sử dụng dịch vụ đang mở -> 15:00 Trở về Huế. Hoạt động cụ thể phụ thuộc dịch vụ được xác nhận.',
+    N'Khu suối khoáng nóng Thanh Tân; cảnh quan thiên nhiên; lịch trình nghỉ dưỡng trong ngày; dịch vụ phụ thuộc tình trạng vận hành.',
+    N'1 Ngày', N'Trung tâm TP Huế', 750000, 'https://huetourism.gov.vn/Medias/Nam2023/Thang8/suoi-khoang-nong-thanh-tan.jpg', 1
+),
+(
+    'HT-VANCU21', N'Làng bún Vân Cù – Phố cổ Bao Vinh – Làng Kim Long', N'Văn hóa & Ẩm thực',
+    N'Tìm hiểu nghề làm bún truyền thống, dạo phố Bao Vinh và khám phá nếp sống ven sông.',
+    N'Tuyến trải nghiệm cộng đồng gợi ý kết nối làng nghề Vân Cù, khu phố cổ Bao Vinh và làng Kim Long. Hoạt động gặp nghệ nhân, làm thử và nếm món cần đặt trước, tùy lịch của cộng đồng địa phương.',
+    N'08:00 Hẹn tại trung tâm Huế -> 08:45 Tham quan làng nghề bún Vân Cù -> 10:30 Dạo khu phố Bao Vinh -> 11:30 Ghé làng Kim Long, tìm hiểu nghề và ẩm thực địa phương -> 13:00 Trở về trung tâm.',
+    N'Nghề làm bún Vân Cù; không gian phố Bao Vinh; làng Kim Long; trải nghiệm ẩm thực và đời sống địa phương.',
+    N'Nửa Ngày', N'Trung tâm TP Huế', 430000, '/images/bun-bo-hue-2024.jpg', 1
+),
+(
+    'HT-HONCHAO22', N'Đảo Hòn Chảo – Vịnh Lăng Cô', N'Sinh thái & Đầm phá',
+    N'Ngắm cảnh biển Lăng Cô và trải nghiệm vùng đảo Hòn Chảo theo điều kiện thời tiết.',
+    N'Tuyến biển tham khảo kết hợp vịnh Lăng Cô với hoạt động tham quan Hòn Chảo. Tàu thuyền, lặn ngắm san hô và các dịch vụ phải được xác nhận với đơn vị có tổ chức; lịch trình phụ thuộc thời tiết và an toàn hàng hải.',
+    N'07:00 Khởi hành từ trung tâm Huế -> 08:30 Đến vùng Lăng Cô -> 09:00 Tham quan Hòn Chảo nếu tàu được phép hoạt động và thời tiết phù hợp -> 12:00 Nghỉ trưa -> 14:00 Trở về Huế. Nếu điều kiện không đảm bảo, đổi lịch hoặc dừng hoạt động.',
+    N'Vịnh Lăng Cô; cảnh quan đảo Hòn Chảo; hoạt động biển theo điều kiện thực tế; ưu tiên an toàn thời tiết.',
+    N'1 Ngày', N'Trung tâm TP Huế', 980000, '/images/lang-co-2023.jpg', 1
+),
+(
+    'HT-DISANDEM23', N'Đại Nội Huế về đêm – Trải nghiệm di sản theo chương trình', N'Di tích Cố Đô',
+    N'Gợi ý khám phá không gian Hoàng cung vào buổi tối khi có chương trình được công bố.',
+    N'Một số chương trình đêm và dạ yến cung đình được tổ chức theo sự kiện hoặc lịch riêng. Tuyến này chỉ là gợi ý trong capstone; không mặc định hoạt động hằng ngày và cần xác nhận chương trình, vé, thời gian với đơn vị tổ chức.',
+    N'Lịch trình thay đổi theo chương trình được công bố. Chỉ đặt chỗ sau khi xác nhận ngày tổ chức, vé vào cửa và nội dung dịch vụ.',
+    N'Không gian Hoàng cung; hoạt động văn hóa buổi tối theo lịch; cần xác nhận chương trình trước khi đặt.',
+    N'Theo chương trình', N'Đại Nội Huế', 650000, '/images/hue-imperial-night-2024.jpg', 1
 );
 
 -- Seed Chuyến khởi hành (Departures)
@@ -425,6 +473,15 @@ VALUES (16, DATEADD(MINUTE, 450, DATEADD(DAY, 8, CAST(@Now AS DATE))), DATEADD(M
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (17, DATEADD(HOUR, 8, DATEADD(DAY, 9, CAST(@Now AS DATE))), DATEADD(HOUR, 16, DATEADD(DAY, 9, CAST(@Now AS DATE))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+
+-- Lịch mẫu cho các tour gợi ý bổ sung (18-22); chỉ dùng thử luồng đặt chỗ capstone.
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES
+(18, DATEADD(HOUR, 8, DATEADD(DAY, 6, CAST(@Now AS DATE))), DATEADD(MINUTE, 270, DATEADD(HOUR, 8, DATEADD(DAY, 6, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
+(19, DATEADD(MINUTE, 450, DATEADD(DAY, 7, CAST(@Now AS DATE))), DATEADD(HOUR, 12, DATEADD(DAY, 7, CAST(@Now AS DATE))), 16, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
+(20, DATEADD(HOUR, 8, DATEADD(DAY, 8, CAST(@Now AS DATE))), DATEADD(HOUR, 15, DATEADD(DAY, 8, CAST(@Now AS DATE))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
+(21, DATEADD(HOUR, 8, DATEADD(DAY, 5, CAST(@Now AS DATE))), DATEADD(HOUR, 13, DATEADD(DAY, 5, CAST(@Now AS DATE))), 16, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
+(22, DATEADD(HOUR, 7, DATEADD(DAY, 10, CAST(@Now AS DATE))), DATEADD(HOUR, 16, DATEADD(DAY, 10, CAST(@Now AS DATE))), 12, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 -- Seed Khách hàng mẫu
 INSERT INTO dbo.Customer (FullName, Email, PhoneNumber, Address)

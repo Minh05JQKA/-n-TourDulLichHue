@@ -109,7 +109,7 @@ public class TourInMemoryRepository : ITourRepository
                 Duration = "1 Ngày",
                 StartingLocation = "Trung tâm TP Huế",
                 BasePrice = 680000,
-                ImageUrl = "/images/bach-ma-panorama-cc0.jpg",
+                ImageUrl = "/images/bach-ma-waterfall.jpg",
                 IsActive = true,
                 CreatedAt = DateTime.Now
             },
@@ -262,7 +262,7 @@ public class TourInMemoryRepository : ITourRepository
                 Duration = "4 Giờ",
                 StartingLocation = "Cầu Trường Tiền, TP Huế",
                 BasePrice = 350000,
-                ImageUrl = "/images/truong-tien-2024.jpg",
+                ImageUrl = "/images/dong-ba-market-2024.jpg",
                 IsActive = true,
                 CreatedAt = DateTime.Now
             },
@@ -296,7 +296,109 @@ public class TourInMemoryRepository : ITourRepository
                 Duration = "1 Ngày",
                 StartingLocation = "Trung tâm TP Huế",
                 BasePrice = 560000,
-                ImageUrl = "/images/tam-giang-2024.jpg",
+                ImageUrl = "/images/thuan-an-beach-2023.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 18,
+                Code = "HT-HOQUYEN18",
+                Title = "Hổ Quyền – Điện Voi Ré – Lăng Tự Đức",
+                Category = "Di tích Cố Đô",
+                ShortDescription = "Tìm hiểu dấu tích trường đấu voi độc đáo, Điện Voi Ré và không gian lăng Tự Đức.",
+                Description = "Tuyến di sản gợi ý ở phía tây nam Huế, nối Hổ Quyền với Điện Voi Ré và lăng Tự Đức. Cần kiểm tra giờ tham quan, vé và phương tiện trước khi khởi hành.",
+                Itinerary = "08:00 Hẹn tại trung tâm Huế -> 08:30 Tham quan Hổ Quyền -> 09:45 Tìm hiểu Điện Voi Ré -> 11:00 Tham quan lăng Tự Đức -> 12:30 Kết thúc tại trung tâm.",
+                Highlights = "Di tích Hổ Quyền; Điện Voi Ré; lăng Tự Đức; kiến trúc và câu chuyện triều Nguyễn.",
+                Duration = "Nửa Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 420000,
+                ImageUrl = "/images/ho-quyen-2008.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 19,
+                Code = "HT-HONCHEN19",
+                Title = "Điện Hòn Chén – Đồi Vọng Cảnh – Sông Hương",
+                Category = "Sông Hương & Làng nghề",
+                ShortDescription = "Ghé không gian tín ngưỡng Điện Hòn Chén và ngắm khúc sông Hương từ đồi Vọng Cảnh.",
+                Description = "Hành trình gợi ý kết hợp điểm di tích bên sông và cảnh quan đồi Vọng Cảnh. Nếu đi thuyền, cần xác nhận bến, giờ chạy, điều kiện thời tiết và chương trình lễ hội với đơn vị tổ chức.",
+                Itinerary = "07:30 Hẹn tại trung tâm Huế -> 08:15 Tham quan Điện Hòn Chén -> 10:30 Dừng ngắm cảnh tại đồi Vọng Cảnh -> 11:30 Trở về trung tâm. Phương án đường thủy chỉ thực hiện khi được xác nhận.",
+                Highlights = "Điện Hòn Chén; đồi Vọng Cảnh; cảnh quan sông Hương; trải nghiệm văn hóa tín ngưỡng địa phương.",
+                Duration = "Nửa Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 390000,
+                ImageUrl = "/images/hon-chen-2008.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 20,
+                Code = "HT-THANHTAN20",
+                Title = "Suối khoáng nóng Thanh Tân – Nghỉ dưỡng giữa thiên nhiên",
+                Category = "Thiên nhiên & Nghỉ dưỡng",
+                ShortDescription = "Dành một ngày thư giãn với trải nghiệm suối khoáng nóng ở phía tây bắc Huế.",
+                Description = "Tuyến nghỉ dưỡng tham khảo đến khu suối khoáng nóng Thanh Tân, cách trung tâm Huế khoảng 30 km. Hạng mục dịch vụ, giờ hoạt động, vé và phương tiện cần xác nhận trực tiếp với khu du lịch trước chuyến đi.",
+                Itinerary = "08:00 Khởi hành từ trung tâm Huế -> 09:00 Đến khu vực Thanh Tân -> 09:30–14:00 Tham quan và sử dụng dịch vụ đang mở -> 15:00 Trở về Huế. Hoạt động cụ thể phụ thuộc dịch vụ được xác nhận.",
+                Highlights = "Khu suối khoáng nóng Thanh Tân; cảnh quan thiên nhiên; lịch trình nghỉ dưỡng trong ngày; dịch vụ phụ thuộc tình trạng vận hành.",
+                Duration = "1 Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 750000,
+                ImageUrl = "https://huetourism.gov.vn/Medias/Nam2023/Thang8/suoi-khoang-nong-thanh-tan.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 21,
+                Code = "HT-VANCU21",
+                Title = "Làng bún Vân Cù – Phố cổ Bao Vinh – Làng Kim Long",
+                Category = "Văn hóa & Ẩm thực",
+                ShortDescription = "Tìm hiểu nghề làm bún truyền thống, dạo phố Bao Vinh và khám phá nếp sống ven sông.",
+                Description = "Tuyến trải nghiệm cộng đồng gợi ý kết nối làng nghề Vân Cù, khu phố cổ Bao Vinh và làng Kim Long. Hoạt động gặp nghệ nhân, làm thử và nếm món cần đặt trước, tùy lịch của cộng đồng địa phương.",
+                Itinerary = "08:00 Hẹn tại trung tâm Huế -> 08:45 Tham quan làng nghề bún Vân Cù -> 10:30 Dạo khu phố Bao Vinh -> 11:30 Ghé làng Kim Long, tìm hiểu nghề và ẩm thực địa phương -> 13:00 Trở về trung tâm.",
+                Highlights = "Nghề làm bún Vân Cù; không gian phố Bao Vinh; làng Kim Long; trải nghiệm ẩm thực và đời sống địa phương.",
+                Duration = "Nửa Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 430000,
+                ImageUrl = "/images/bun-bo-hue-2024.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 22,
+                Code = "HT-HONCHAO22",
+                Title = "Đảo Hòn Chảo – Vịnh Lăng Cô",
+                Category = "Sinh thái & Đầm phá",
+                ShortDescription = "Ngắm cảnh biển Lăng Cô và trải nghiệm vùng đảo Hòn Chảo theo điều kiện thời tiết.",
+                Description = "Tuyến biển tham khảo kết hợp vịnh Lăng Cô với hoạt động tham quan Hòn Chảo. Tàu thuyền, lặn ngắm san hô và các dịch vụ phải được xác nhận với đơn vị có tổ chức; lịch trình phụ thuộc thời tiết và an toàn hàng hải.",
+                Itinerary = "07:00 Khởi hành từ trung tâm Huế -> 08:30 Đến vùng Lăng Cô -> 09:00 Tham quan Hòn Chảo nếu tàu được phép hoạt động và thời tiết phù hợp -> 12:00 Nghỉ trưa -> 14:00 Trở về Huế. Nếu điều kiện không đảm bảo, đổi lịch hoặc dừng hoạt động.",
+                Highlights = "Vịnh Lăng Cô; cảnh quan đảo Hòn Chảo; hoạt động biển theo điều kiện thực tế; ưu tiên an toàn thời tiết.",
+                Duration = "1 Ngày",
+                StartingLocation = "Trung tâm TP Huế",
+                BasePrice = 980000,
+                ImageUrl = "/images/lang-co-2023.jpg",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            },
+            new()
+            {
+                Id = 23,
+                Code = "HT-DI_SAN_DEM23",
+                Title = "Đại Nội Huế về đêm – Trải nghiệm di sản theo chương trình",
+                Category = "Di tích Cố Đô",
+                ShortDescription = "Gợi ý khám phá không gian Hoàng cung vào buổi tối khi có chương trình được công bố.",
+                Description = "Một số chương trình đêm và dạ yến cung đình được tổ chức theo sự kiện hoặc lịch riêng. Tuyến này chỉ là gợi ý trong capstone; không mặc định hoạt động hằng ngày và cần xác nhận chương trình, vé, thời gian với đơn vị tổ chức.",
+                Itinerary = "Lịch trình thay đổi theo chương trình được công bố. Chỉ đặt chỗ sau khi xác nhận ngày tổ chức, vé vào cửa và nội dung dịch vụ.",
+                Highlights = "Không gian Hoàng cung; hoạt động văn hóa buổi tối theo lịch; cần xác nhận chương trình trước khi đặt.",
+                Duration = "Theo chương trình",
+                StartingLocation = "Đại Nội Huế",
+                BasePrice = 650000,
+                ImageUrl = "/images/hue-imperial-night-2024.jpg",
                 IsActive = true,
                 CreatedAt = DateTime.Now
             }
