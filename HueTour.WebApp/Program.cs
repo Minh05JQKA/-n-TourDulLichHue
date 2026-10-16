@@ -12,10 +12,19 @@ using HueTour.Plugins.DataStore.InMemory;
 using HueTour.Plugins.DataStore.SQL;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.AI;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
+var dataProtectionKeyPath = builder.Configuration["DataProtection:KeyPath"];
+if (!string.IsNullOrWhiteSpace(dataProtectionKeyPath))
+{
+    Directory.CreateDirectory(dataProtectionKeyPath);
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeyPath));
+}
+
 var useSqlDatabase = builder.Configuration.GetValue<bool>("UseSqlDatabase");
 if (useSqlDatabase)
 {

@@ -170,7 +170,7 @@ VALUES
     N'1 Ngày',
     N'Cột cờ Phu Văn Lâu, TP Huế',
     550000,
-    '/images/ngo-mon-gate.jpg',
+    '/images/imperial-city-2025.jpg',
     1
 ),
 (
@@ -184,7 +184,7 @@ VALUES
     N'Nửa Ngày (Chiều tối)',
     N'Bến thuyền Đầm Chuồn, Phú Vang',
     480000,
-    '/images/tam-giang-lagoon.jpg',
+    '/images/tam-giang-2024.jpg',
     1
 ),
 (
@@ -198,7 +198,7 @@ VALUES
     N'3 Giờ',
     N'Bến thuyền Tòa Khâm, 49 Lê Lợi, TP Huế',
     220000,
-    '/images/truong-tien-bridge.jpg',
+    '/images/truong-tien-2024.jpg',
     1
 ),
 (
@@ -212,7 +212,7 @@ VALUES
     N'Nửa Ngày',
     N'Chùa Thiên Mụ / Làng Thủy Biều',
     390000,
-    '/images/thien-mu-pagoda.jpg',
+    '/images/thien-mu-2025.jpg',
     1
 ),
 (
@@ -226,7 +226,7 @@ VALUES
     N'4 Giờ',
     N'Đón tại các khách sạn trung tâm TP Huế',
     420000,
-    '/images/bun-bo-hue.jpg',
+    '/images/bun-bo-hue-2024.jpg',
     1
 ),
 (
@@ -261,7 +261,7 @@ VALUES
     N'Một buổi khám phá vùng quê Huế với kiến trúc cầu ngói Thanh Toàn, không gian chợ quê và hoạt động tìm hiểu nghề làm hoa giấy tại làng Thanh Tiên.',
     N'08:00 Đón khách tại trung tâm Huế -> 08:45 Tham quan Cầu Ngói Thanh Toàn và nhà trưng bày nông cụ -> 10:00 Dạo chợ quê -> 10:45 Đến làng Thanh Tiên, tìm hiểu cách làm hoa giấy -> 12:00 Thưởng thức bữa trưa địa phương -> 13:00 Trở về trung tâm.',
     N'Cầu ngói Thanh Toàn; Không gian chợ quê; Gặp gỡ nghệ nhân làng hoa giấy Thanh Tiên; Thưởng thức món ăn địa phương.',
-    N'Nửa Ngày', N'Trung tâm TP Huế', 450000, '/images/thanh-toan-bridge.jpg', 1
+    N'Nửa Ngày', N'Trung tâm TP Huế', 450000, '/images/thanh-toan-2018.jpg', 1
 ),
 (
     'HT-LANGCO09',
@@ -271,7 +271,7 @@ VALUES
     N'Khám phá vùng ven biển phía nam Huế với các điểm dừng nổi bật: ngắm cảnh đầm Lập An, thư giãn tại vịnh Lăng Cô và tham quan Hải Vân Quan. Lịch trình có thời gian di chuyển đường dài, phù hợp cho chuyến đi trong ngày.',
     N'07:00 Đón khách tại trung tâm Huế -> 08:30 Dừng ngắm cảnh tại Hải Vân Quan -> 10:00 Tham quan đầm Lập An -> 11:30 Ăn trưa hải sản tại Lăng Cô -> 13:00 Nghỉ ngơi và dạo biển -> 15:00 Khởi hành về Huế -> 17:00 Trả khách.',
     N'Vịnh biển Lăng Cô; Cảnh quan đầm Lập An; Hải Vân Quan; Xe đưa đón trong ngày và hướng dẫn viên.',
-    N'1 Ngày', N'Trung tâm TP Huế', 850000, '/images/lang-co-lagoon.jpg', 1
+    N'1 Ngày', N'Trung tâm TP Huế', 850000, '/images/lang-co-2023.jpg', 1
 ),
 (
     'HT-MINHMANG10',
@@ -281,7 +281,7 @@ VALUES
     N'Hành trình đưa quý khách đến với Lăng Gia Long giữa rừng thông bạt ngàn và Lăng Minh Mạng thanh tịnh, tôn nghiêm.',
     N'08:00 Đón khách tại trung tâm TP Huế -> 08:45 Khám phá Lăng Gia Long -> 10:30 Tham quan Lăng Minh Mạng uy nghiêm -> 11:45 Ngắm sông Hương từ Đồi Vọng Cảnh -> 12:30 Thưởng thức bữa trưa đặc sản Huế.',
     N'Xe du lịch đời mới; Vé tham quan các lăng; Hướng dẫn viên am tường lịch sử; Nước suối và khăn lạnh.',
-    N'Nửa Ngày', N'Trung tâm TP Huế', 520000, '/images/tu-duc-tomb.jpg', 1
+    N'Nửa Ngày', N'Trung tâm TP Huế', 520000, '/images/minh-mang-2024.jpg', 1
 ),
 (
     'HT-NONLA11',
@@ -291,17 +291,57 @@ VALUES
     N'Tour văn hóa làng nghề truyền thống đặc sắc. Du khách được tự tay làm nón bài thơ và hoa giấy truyền thống mang về làm kỷ niệm.',
     N'08:30 Đón khách -> 09:00 Đến làng nón Tây Hồ, trải nghiệm chằm nón bài thơ -> 10:30 Thăm làng hoa giấy Thanh Tiên -> 11:30 Thưởng trà sen và bánh đậu xanh trái cây -> 12:30 Trả khách.',
     N'Tự tay làm nón bài thơ mang về; Trò chuyện với nghệ nhân; Xe đưa đón; Trà sen cung đình.',
-    N'Nửa Ngày', N'Trung tâm TP Huế', 420000, '/images/thanh-toan-bridge.jpg', 1
+    N'Nửa Ngày', N'Trung tâm TP Huế', 420000, '/images/hue-conical-hat.jpg', 1
 ),
 (
     'HT-SUOIVOI12',
     N'Tour Sinh Thái Suối Voi – Đầm Lập An – Vịnh Lăng Cô',
     N'Sinh thái & Đầm phá',
-    N'Tắm suối mát lạnh tại Suối Voi nguyên sơ, thưởng thức hàu nướng mỡ hành đầm Lập An và ngắm vịnh biển đẹp nhất thế giới.',
-    N'Một ngày trọn vẹn khám phá thiên nhiên phía Nam Cố Đô. Thư giãn tại các bồn tắm thiên nhiên mát lạnh giữa rừng nguyên sinh Suối Voi và tiệc hải sản tươi sống Lập An.',
-    N'08:00 Đón khách tại Huế -> 09:30 Vui chơi tắm suối mát tại Suối Voi -> 12:00 Ăn trưa hải sản đầm Lập An -> 14:00 Thư giãn dạo bờ biển vịnh Lăng Cô -> 16:30 Về đến TP Huế.',
-    N'Xe du lịch máy lạnh; Vé tham quan Suối Voi; Bữa trưa hải sản tươi sống đầm Lập An; Hướng dẫn viên nhiệt tình.',
-    N'1 Ngày', N'Trung tâm TP Huế', 720000, '/images/lang-co-lagoon.jpg', 1
+    N'Tuyến Suối Voi – Lập An – Lăng Cô đang tạm ẩn trong khi xác minh tình trạng khai thác tại điểm đến.',
+    N'Tuyến gợi ý phía Nam Huế được giữ trong dữ liệu capstone để quản trị tham khảo. Suối Voi đang có dự án du lịch dang dở và thông tin về hoạt động tại điểm cần được xác nhận trước khi mở bán lại.',
+    N'Tạm ngưng nhận đặt chỗ. Chỉ kích hoạt lại sau khi xác minh được hoạt động, dịch vụ và điều kiện tham quan tại Suối Voi.',
+    N'Đầm Lập An; Vịnh Lăng Cô; Tình trạng Suối Voi cần xác minh trước khi tổ chức.',
+    N'1 Ngày', N'Trung tâm TP Huế', 720000, '/images/lang-co-2023.jpg', 0
+),
+(
+    'HT-DAINOI-THIENMU13', N'Đại Nội – Chùa Thiên Mụ – Nhà vườn An Hiên', N'Di tích Cố Đô',
+    N'Khám phá Hoàng thành, ghé ngôi chùa bên sông Hương và tìm hiểu nếp nhà vườn Huế.',
+    N'Lịch trình gợi ý kết hợp di sản trung tâm, cảnh quan sông Hương và kiến trúc nhà vườn. Thứ tự điểm đến có thể điều chỉnh theo giờ mở cửa và điều kiện thực tế.',
+    N'08:00 Hẹn tại trung tâm Huế -> 08:30 Tham quan Đại Nội -> 11:30 Nghỉ trưa -> 13:30 Tham quan chùa Thiên Mụ -> 15:00 Ghé nhà vườn An Hiên -> 16:30 Kết thúc tại trung tâm.',
+    N'Đại Nội Huế; chùa Thiên Mụ; nhà vườn An Hiên; tuyến di sản trong thành phố.',
+    N'1 Ngày', N'Trung tâm TP Huế', 590000, '/images/thien-mu-2025.jpg', 1
+),
+(
+    'HT-RUCHATAMGIANG14', N'Bình Minh Rú Chá – Phá Tam Giang – Làng chài', N'Sinh thái & Đầm phá',
+    N'Ngắm bình minh giữa rừng ngập mặn Rú Chá và tìm hiểu nhịp sống ven phá Tam Giang.',
+    N'Chuyến đi gợi ý dành cho người thích thiên nhiên và đời sống địa phương. Thời điểm ngắm bình minh, hoạt động trên thuyền và điểm dừng cần xác nhận trước với đơn vị vận hành.',
+    N'05:00 Đón tại trung tâm -> 05:45 Dạo rừng ngập mặn Rú Chá -> 07:00 Ăn sáng địa phương -> 08:00 Tham quan vùng phá Tam Giang và làng chài -> 10:30 Trở về Huế.',
+    N'Rừng ngập mặn Rú Chá; cảnh quan đầm phá; tìm hiểu sinh kế địa phương; khung giờ bình minh.',
+    N'Nửa Ngày', N'Trung tâm TP Huế', 460000, '/images/tam-giang-2024.jpg', 1
+),
+(
+    'HT-SONGHUONGAMTHUC15', N'Dạo phố Huế – Chợ Đông Ba – Ẩm thực địa phương', N'Văn hóa & Ẩm thực',
+    N'Đi bộ qua những điểm phố trung tâm, ghé chợ Đông Ba và thưởng thức các món Huế theo mùa.',
+    N'Tuyến tham quan gợi ý kết hợp cảnh quan đô thị và ẩm thực. Món ăn, quán dừng và thời lượng có thể thay đổi theo ngày; giá đang hiển thị là dữ liệu mẫu.',
+    N'16:00 Hẹn gần cầu Trường Tiền -> 16:30 Dạo bờ sông Hương -> 17:00 Tham quan khu vực chợ Đông Ba -> 18:00 Thưởng thức các món địa phương -> 19:30 Kết thúc tại trung tâm.',
+    N'Cầu Trường Tiền; chợ Đông Ba; món ăn địa phương; trải nghiệm đi bộ trung tâm.',
+    N'4 Giờ', N'Cầu Trường Tiền, TP Huế', 350000, '/images/truong-tien-2024.jpg', 1
+),
+(
+    'HT-LANGMINHMANG16', N'Lăng Gia Long – Lăng Minh Mạng – Lăng Khải Định', N'Di tích Cố Đô',
+    N'So sánh dấu ấn kiến trúc và cảnh quan của ba lăng vua Nguyễn trong chuyến đi một ngày.',
+    N'Tuyến di sản gợi ý nối các lăng tẩm ở phía nam thành phố. Thời gian di chuyển giữa các điểm khá dài, cần kiểm tra giờ mở cửa, vé và phương tiện trước ngày đi.',
+    N'07:30 Hẹn tại trung tâm -> 08:30 Tham quan Lăng Gia Long -> 10:30 Tham quan Lăng Minh Mạng -> 12:00 Nghỉ trưa -> 14:00 Tham quan Lăng Khải Định -> 16:30 Trở về trung tâm.',
+    N'Lăng Gia Long; lăng Minh Mạng; lăng Khải Định; kiến trúc và cảnh quan lăng tẩm triều Nguyễn.',
+    N'1 Ngày', N'Trung tâm TP Huế', 690000, '/images/minh-mang-2024.jpg', 1
+),
+(
+    'HT-THUANAN-TAMGIANG17', N'Biển Thuận An – Phá Tam Giang – Đầm Chuồn', N'Sinh thái & Đầm phá',
+    N'Kết hợp dạo biển Thuận An với cảnh quan đầm phá và trải nghiệm ẩm thực vùng ven Huế.',
+    N'Lịch trình gợi ý theo mùa, kết hợp vùng biển và đầm phá phía đông Huế. Điều kiện thời tiết, tắm biển và hoạt động thuyền cần được xác nhận trước chuyến đi.',
+    N'08:00 Hẹn tại trung tâm -> 08:45 Dạo biển Thuận An -> 11:00 Di chuyển đến vùng phá Tam Giang -> 12:00 Ăn trưa địa phương -> 14:00 Tham quan Đầm Chuồn -> 16:00 Trở về Huế.',
+    N'Biển Thuận An; cảnh quan phá Tam Giang; Đầm Chuồn; ẩm thực địa phương.',
+    N'1 Ngày', N'Trung tâm TP Huế', 560000, '/images/tam-giang-2024.jpg', 1
 );
 
 -- Seed Chuyến khởi hành (Departures)
@@ -368,7 +408,23 @@ INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, Booke
 VALUES (11, DATEADD(DAY, 3, @Now), DATEADD(DAY, 3, DATEADD(HOUR, 4, @Now)), 16, 4, 'Open', N'Chợ Đông Ba', N'Lê Thị Thu', '0905333444');
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (12, DATEADD(DAY, 7, @Now), DATEADD(DAY, 7, DATEADD(HOUR, 9, @Now)), 25, 0, 'Open', N'Trung tâm TP Huế', N'Bùi Quang Dũng', '0905666777');
+VALUES (12, DATEADD(DAY, 7, @Now), DATEADD(DAY, 7, DATEADD(HOUR, 9, @Now)), 25, 0, 'Closed', N'Trung tâm TP Huế', N'Bùi Quang Dũng', '0905666777');
+
+-- Lịch khởi hành mẫu cho các tour gợi ý bổ sung (13-17)
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (13, DATEADD(HOUR, 8, DATEADD(DAY, 5, CAST(@Now AS DATE))), DATEADD(MINUTE, 510, DATEADD(HOUR, 8, DATEADD(DAY, 5, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (14, DATEADD(HOUR, 5, DATEADD(DAY, 6, CAST(@Now AS DATE))), DATEADD(MINUTE, 330, DATEADD(HOUR, 5, DATEADD(DAY, 6, CAST(@Now AS DATE)))), 16, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (15, DATEADD(HOUR, 16, DATEADD(DAY, 3, CAST(@Now AS DATE))), DATEADD(HOUR, 20, DATEADD(DAY, 3, CAST(@Now AS DATE))), 12, 0, 'Open', N'Cầu Trường Tiền', N'Công ty điều phối', NULL);
+
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (16, DATEADD(MINUTE, 450, DATEADD(DAY, 8, CAST(@Now AS DATE))), DATEADD(MINUTE, 990, DATEADD(DAY, 8, CAST(@Now AS DATE))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (17, DATEADD(HOUR, 8, DATEADD(DAY, 9, CAST(@Now AS DATE))), DATEADD(HOUR, 16, DATEADD(DAY, 9, CAST(@Now AS DATE))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 -- Seed Khách hàng mẫu
 INSERT INTO dbo.Customer (FullName, Email, PhoneNumber, Address)

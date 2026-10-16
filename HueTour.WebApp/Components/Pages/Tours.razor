@@ -11,7 +11,7 @@
         </span>
         <h1 class="font-serif fw-bold display-5 mt-1">Danh Sách Tour Du Lịch Huế</h1>
         <p class="text-light opacity-90 mx-auto mb-0" style="max-width: 650px;">
-            Trải nghiệm trọn vẹn văn hóa, lịch sử và cảnh sắc Cố Đô với các tour ghép đoàn khởi hành cố định hàng ngày.
+            Chọn tuyến di sản, thiên nhiên, làng nghề hoặc ẩm thực. Lịch và mức giá đang hiển thị là dữ liệu mẫu của đồ án.
         </p>
     </div>
 </div>
@@ -20,7 +20,7 @@
     <!-- Search & Filter Controls -->
     <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
         <div class="row g-3 align-items-center">
-            <div class="col-md-5 col-12">
+            <div class="col-lg-3 col-md-6 col-12">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted">
                         <i class="bi bi-search"></i>
@@ -33,7 +33,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4 col-12">
+            <div class="col-lg-3 col-md-6 col-12">
                 <select class="form-select" @bind="selectedCategory" @bind:after="FilterTours">
                     <option value="Tất cả">Tất cả danh mục (@allTours.Count())</option>
                     <option value="Di tích Cố Đô">Di tích Cố Đô & Hoàng Thành</option>
@@ -43,7 +43,15 @@
                 </select>
             </div>
 
-            <div class="col-md-3 col-12">
+            <div class="col-lg-3 col-md-6 col-12">
+                <select class="form-select" @bind="priceRange" @bind:after="FilterTours">
+                    <option value="all">Mọi mức giá</option>
+                    <option value="under400">Dưới 400.000đ</option>
+                    <option value="400to700">400.000–700.000đ</option>
+                    <option value="over700">Trên 700.000đ</option>
+                </select>
+            </div>
+            <div class="col-lg-3 col-md-6 col-12">
                 <select class="form-select" @bind="sortBy" @bind:after="ApplySort">
                     <option value="default">Sắp xếp: Mặc định</option>
                     <option value="price_asc">Giá: Thấp đến Cao</option>
@@ -88,6 +96,7 @@
     private List<Tour> filteredTours = new();
     private string searchTerm = string.Empty;
     private string selectedCategory = "Tất cả";
+    private string priceRange = "all";
     private string sortBy = "default";
     private bool isLoading = true;
 
@@ -123,6 +132,14 @@
             query = query.Where(t => string.Equals(t.Category, selectedCategory, StringComparison.OrdinalIgnoreCase));
         }
 
+        query = priceRange switch
+        {
+            "under400" => query.Where(t => t.BasePrice < 400000),
+            "400to700" => query.Where(t => t.BasePrice >= 400000 && t.BasePrice <= 700000),
+            "over700" => query.Where(t => t.BasePrice > 700000),
+            _ => query
+        };
+
         filteredTours = query.ToList();
         ApplySort();
     }
@@ -142,6 +159,7 @@
         searchTerm = string.Empty;
         selectedCategory = "Tất cả";
         sortBy = "default";
+        priceRange = "all";
         filteredTours = new List<Tour>(allTours);
     }
 }

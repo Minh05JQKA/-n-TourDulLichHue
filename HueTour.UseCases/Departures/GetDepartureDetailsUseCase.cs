@@ -22,10 +22,12 @@ public class GetDepartureDetailsUseCase : IGetDepartureDetailsUseCase
     public async Task<Departure?> ExecuteAsync(int departureId)
     {
         var departure = await _departureRepository.GetDepartureByIdAsync(departureId);
-        if (departure != null && departure.Tour == null)
+        if (departure == null)
         {
-            departure.Tour = await _tourRepository.GetTourByIdAsync(departure.TourId);
+            return null;
         }
-        return departure;
+
+        departure.Tour ??= await _tourRepository.GetTourByIdAsync(departure.TourId);
+        return departure.Tour?.IsActive == true ? departure : null;
     }
 }

@@ -606,3 +606,181 @@ h1, h2, h3, .font-serif, .tour-title {
         animation-iteration-count: 1 !important;
     }
 }
+
+/* 2026 editorial refresh: airy ivory surfaces, richer imperial purple and a documentary hero. */
+:root {
+    --hue-purple: #38213f;
+    --hue-purple-dark: #211728;
+    --hue-purple-light: #63416b;
+    --hue-gold: #c99532;
+    --hue-gold-light: #f5d98c;
+    --hue-sand: #f7f5f0;
+    --hue-border: #e8e2d8;
+    --hue-shadow-sm: 0 8px 24px rgba(36, 24, 38, .07);
+    --hue-shadow-md: 0 18px 42px rgba(36, 24, 38, .14);
+}
+
+.site-header {
+    background: rgba(34, 24, 39, .97);
+}
+
+.brand-logo {
+    display: block;
+    width: clamp(168px, 16vw, 210px);
+    height: auto;
+}
+
+.brand-emblem {
+    width: 40px;
+    height: 40px;
+}
+
+.footer-source-link {
+    color: var(--hue-gold-light);
+    text-decoration: none;
+}
+
+.footer-source-link:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.hue-hero {
+    min-height: min(720px, 76vh);
+    padding: clamp(64px, 8vw, 112px) 0 clamp(90px, 10vw, 145px);
+    border-radius: 0 0 34px 34px;
+    background: linear-gradient(90deg, rgba(22, 17, 27, .88) 0%, rgba(31, 24, 34, .73) 42%, rgba(31, 24, 34, .18) 100%),
+                url('/images/imperial-city-2025.jpg') center 44% / cover no-repeat;
+}
+
+.hue-hero::before,
+.hue-hero::after {
+    display: none;
+}
+
+.hue-hero-content {
+    max-width: 1200px;
+}
+
+.hero-title-frame {
+    width: min(100%, 760px);
+    margin: 0 0 1.2rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+}
+
+.hero-title-frame::before {
+    display: none;
+}
+
+.hue-hero-title {
+    max-width: 760px;
+    font-size: clamp(3.4rem, 7.2vw, 6.3rem);
+    line-height: .98;
+    letter-spacing: -.055em;
+}
+
+.hue-hero-title .text-gold {
+    color: #f2cf75 !important;
+}
+
+.hue-hero-subtitle {
+    border-color: rgba(245, 217, 140, .38);
+    background: rgba(32, 22, 35, .45);
+    font-size: .72rem;
+    letter-spacing: .12em;
+}
+
+.hue-hero-description {
+    max-width: 560px;
+    margin-left: 0 !important;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+}
+
+.hue-hero .btn-gold {
+    color: #2c1c05;
+}
+
+.hero-highlights {
+    font-size: .86rem;
+}
+
+.home-search-wrap {
+    margin-top: -52px;
+}
+
+.tour-card {
+    border-radius: 18px;
+    border-color: #ebe5db;
+}
+
+.tour-card-img-wrap {
+    height: 230px;
+}
+
+.tour-category-badge {
+    border-radius: 8px;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.tour-card-body {
+    padding: 1.25rem 1.3rem 1.35rem;
+}
+
+.tour-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: -.025em;
+}
+
+.section-heading {
+    border-bottom-color: #e6dfd4;
+}
+
+.section-eyebrow {
+    color: #9d7224 !important;
+}
+
+.rules-section {
+    border-color: #e8e1d7 !important;
+}
+
+.rules-section .card {
+    border-radius: 18px !important;
+}
+
+.footer-royal {
+    color: rgba(255,255,255,.76);
+    background: linear-gradient(145deg, #211728, #16111b);
+}
+
+.form-control,
+.form-select {
+    min-height: 46px;
+    border-color: #e3ddd4;
+    border-radius: 10px;
+}
+
+@media (max-width: 767.98px) {
+    .brand-logo { width: 156px; }
+    .hue-hero {
+        min-height: 610px;
+        padding: 56px 0 100px;
+        border-radius: 0 0 24px 24px;
+        background-image: linear-gradient(90deg, rgba(22,17,27,.88), rgba(31,24,34,.45)),
+                          url('/images/imperial-city-2025.jpg');
+        background-position: 58% center;
+    }
+    .hue-hero-title {
+        font-size: clamp(3.2rem, 14vw, 4.6rem);
+    }
+    .hue-hero-subtitle {
+        max-width: 100%;
+        font-size: .62rem;
+    }
+    .home-search-wrap { margin-top: -48px; }
+    .hero-highlights { display: none !important; }
+}

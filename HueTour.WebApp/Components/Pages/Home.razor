@@ -7,21 +7,21 @@
 <PageTitle>Tour Du Lịch Huế - Khám Phá Di Sản Vàng Son</PageTitle>
 
 <!-- Hero Section Hoàng Cung Huế -->
-<section class="hue-hero text-center">
+<section class="hue-hero">
     <div class="container hue-hero-content">
         <span class="hue-hero-subtitle d-inline-flex align-items-center mb-4">
             <i class="bi bi-compass-fill me-2"></i>Di sản thế giới · Kinh đô triều Nguyễn
         </span>
         <div class="hero-title-frame">
             <h1 class="hue-hero-title fw-bold mb-0 font-serif text-white">
-                Khám phá Cố Đô Huế
-                <span class="d-block text-gold">Vàng son &amp; thơ mộng</span>
+                Huế, chạm vào
+                <span class="d-block text-gold">miền di sản</span>
             </h1>
         </div>
-        <p class="hue-hero-description mb-4 mx-auto">
-            Dạo bước giữa Hoàng thành, lắng nghe chuyện xưa bên lăng tẩm triều Nguyễn và ngắm hoàng hôn trên phá Tam Giang.
+        <p class="hue-hero-description mb-4">
+            Từ Hoàng thành trầm mặc đến phá Tam Giang mênh mang — chọn một hành trình để cảm nhận Huế theo cách của riêng bạn.
         </p>
-        <div class="d-flex flex-wrap justify-content-center gap-3">
+        <div class="d-flex flex-wrap gap-3">
             <a href="tours" class="btn btn-gold btn-lg rounded-pill px-4 py-3 shadow">
                 <i class="bi bi-compass me-2"></i>Khám Phá Các Hành Trình
             </a>
@@ -29,10 +29,10 @@
                 <i class="bi bi-stars me-2"></i>Gợi ý hành trình
             </a>
         </div>
-        <div class="hero-highlights d-flex flex-wrap justify-content-center gap-3 gap-md-4 mt-5">
-            <span><i class="bi bi-patch-check-fill me-2"></i>Di sản UNESCO</span>
-            <span><i class="bi bi-geo-alt-fill me-2"></i>Trải nghiệm bản địa</span>
-            <span><i class="bi bi-heart-fill me-2"></i>Hành trình đáng nhớ</span>
+        <div class="hero-highlights d-flex flex-wrap gap-3 gap-md-4 mt-5">
+            <span><i class="bi bi-compass me-2"></i>@allTours.Count() hành trình gợi ý</span>
+            <span><i class="bi bi-geo-alt me-2"></i>Di sản · thiên nhiên · ẩm thực</span>
+            <span><i class="bi bi-camera me-2"></i>Ảnh có ghi nguồn tham khảo</span>
         </div>
     </div>
 </section>
@@ -50,14 +50,15 @@
     <div class="section-heading d-flex flex-wrap justify-content-between align-items-end mb-4">
         <div>
             <span class="section-eyebrow text-gold fw-bold small text-uppercase letter-spacing-1">
-                <i class="bi bi-award-fill me-1"></i>Hành Trình Được Yêu Thích Nhất
+                <i class="bi bi-flower1 me-1"></i>ĐI THEO NHỊP RIÊNG CỦA BẠN
             </span>
-            <h2 class="font-serif fw-bold text-purple mb-0">Các tour du lịch Huế nổi bật</h2>
+            <h2 class="font-serif fw-bold text-purple mb-0">Những hành trình nổi bật ở Huế</h2>
         </div>
         <div class="mt-2 mt-md-0">
-            <span class="tour-count-pill"><i class="bi bi-compass me-2"></i><strong>@displayedTours.Count()</strong> hành trình</span>
+            <span class="tour-count-pill"><i class="bi bi-compass me-2"></i><strong>@allTours.Count()</strong> hành trình gợi ý</span>
         </div>
     </div>
+    <p class="text-muted small mb-4">Tuyến, mức giá và lịch khởi hành trong website là dữ liệu capstone để tham khảo luồng đặt chỗ.</p>
 
     <!-- Tours Grid (K3.1: TourCardComponent) -->
     @if (isLoading)
@@ -86,6 +87,13 @@
                 </div>
             }
         </div>
+
+        @if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            <div class="text-center mt-5">
+                <a href="tours" class="btn btn-royal rounded-pill px-4 py-3">Xem toàn bộ @allTours.Count() hành trình <i class="bi bi-arrow-right ms-2"></i></a>
+            </div>
+        }
     }
 </div>
 
@@ -149,7 +157,7 @@
         try
         {
             allTours = await ViewToursUseCase.ExecuteAsync(activeOnly: true);
-            displayedTours = allTours;
+            displayedTours = allTours.Take(6).ToList();
         }
         finally
         {
@@ -171,7 +179,7 @@
     {
         searchTerm = string.Empty;
         selectedCategory = "Tất cả";
-        displayedTours = allTours;
+        displayedTours = allTours.Take(6).ToList();
     }
 
     private void NavigateToTour(int tourId)

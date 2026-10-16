@@ -22,11 +22,13 @@ public class ViewTourDetailsUseCase : IViewTourDetailsUseCase
     public async Task<Tour?> ExecuteAsync(int tourId)
     {
         var tour = await _tourRepository.GetTourByIdAsync(tourId);
-        if (tour != null)
+        if (tour == null || !tour.IsActive)
         {
-            var departures = await _departureRepository.GetDeparturesByTourIdAsync(tourId, futureOnly: false);
-            tour.Departures = departures.ToList();
+            return null;
         }
+
+        var departures = await _departureRepository.GetDeparturesByTourIdAsync(tourId, futureOnly: false);
+        tour.Departures = departures.ToList();
         return tour;
     }
 }

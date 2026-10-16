@@ -77,6 +77,11 @@ public class PlaceTourBookingUseCase : IPlaceTourBookingUseCase
             return PlaceBookingResult.Failure("Không tìm thấy tour du lịch tương ứng.", "RULE1_TOUR_NOT_FOUND");
         }
 
+        if (!tour.IsActive)
+        {
+            return PlaceBookingResult.Failure("Tour hiện tạm ngưng nhận đặt chỗ.", "RULE1_TOUR_INACTIVE");
+        }
+
         // 3. THỰC THI LUẬT NGHIỆP VỤ 1 (K1.3): Sức chứa & khóa đặt theo thời hạn
         var rule1Result = BookingBusinessRules.ValidateDepartureCapacityAndCutoff(departure, passengers.Count, DateTime.Now);
         if (!rule1Result.IsSuccess)
