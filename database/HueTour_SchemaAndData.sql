@@ -198,7 +198,7 @@ VALUES
     N'3 Giờ',
     N'Bến thuyền Tòa Khâm, 49 Lê Lợi, TP Huế',
     220000,
-    '/images/truong-tien-2024.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Dragon_boat_on_the_Perfume_River_%2825606150197%29.jpg/1280px-Dragon_boat_on_the_Perfume_River_%2825606150197%29.jpg',
     1
 ),
 (
@@ -317,7 +317,7 @@ VALUES
     N'Chuyến đi gợi ý dành cho người thích thiên nhiên và đời sống địa phương. Thời điểm ngắm bình minh, hoạt động trên thuyền và điểm dừng cần xác nhận trước với đơn vị vận hành.',
     N'05:00 Đón tại trung tâm -> 05:45 Dạo rừng ngập mặn Rú Chá -> 07:00 Ăn sáng địa phương -> 08:00 Tham quan vùng phá Tam Giang và làng chài -> 10:30 Trở về Huế.',
     N'Rừng ngập mặn Rú Chá; cảnh quan đầm phá; tìm hiểu sinh kế địa phương; khung giờ bình minh.',
-    N'Nửa Ngày', N'Trung tâm TP Huế', 460000, '/images/tam-giang-2024.jpg', 1
+    N'Nửa Ngày', N'Trung tâm TP Huế', 460000, 'https://hue.gov.vn/Portals/0/Uploads/00.00.H57/Nam2025/Thang6/z5862841503198458c3a50b5d9fa36ebde75e83e601fed_17271732773451054397863_28_4_2025_17_12_01_832_CH.jpg?v=1773705600033', 1
 ),
 (
     'HT-SONGHUONGAMTHUC15', N'Dạo phố Huế – Chợ Đông Ba – Ẩm thực địa phương', N'Văn hóa & Ẩm thực',
@@ -373,7 +373,7 @@ VALUES
     N'Tuyến trải nghiệm cộng đồng gợi ý kết nối làng nghề Vân Cù, khu phố cổ Bao Vinh và làng Kim Long. Hoạt động gặp nghệ nhân, làm thử và nếm món cần đặt trước, tùy lịch của cộng đồng địa phương.',
     N'08:00 Hẹn tại trung tâm Huế -> 08:45 Tham quan làng nghề bún Vân Cù -> 10:30 Dạo khu phố Bao Vinh -> 11:30 Ghé làng Kim Long, tìm hiểu nghề và ẩm thực địa phương -> 13:00 Trở về trung tâm.',
     N'Nghề làm bún Vân Cù; không gian phố Bao Vinh; làng Kim Long; trải nghiệm ẩm thực và đời sống địa phương.',
-    N'Nửa Ngày', N'Trung tâm TP Huế', 430000, '/images/bun-bo-hue-2024.jpg', 1
+    N'Nửa Ngày', N'Trung tâm TP Huế', 430000, 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Bao_Vinh_street.jpg/1280px-Bao_Vinh_street.jpg', 1
 ),
 (
     'HT-HONCHAO22', N'Đảo Hòn Chảo – Vịnh Lăng Cô', N'Sinh thái & Đầm phá',

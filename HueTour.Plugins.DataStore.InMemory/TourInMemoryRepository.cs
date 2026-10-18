@@ -58,7 +58,7 @@ public class TourInMemoryRepository : ITourRepository
                 Duration = "3 Giờ",
                 StartingLocation = "Bến thuyền Tòa Khâm, 49 Lê Lợi, TP Huế",
                 BasePrice = 220000,
-                ImageUrl = "/images/truong-tien-2024.jpg",
+                ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Dragon_boat_on_the_Perfume_River_%2825606150197%29.jpg/1280px-Dragon_boat_on_the_Perfume_River_%2825606150197%29.jpg",
                 IsActive = true,
                 CreatedAt = DateTime.Now
             },
@@ -245,7 +245,7 @@ public class TourInMemoryRepository : ITourRepository
                 Duration = "Nửa Ngày",
                 StartingLocation = "Trung tâm TP Huế",
                 BasePrice = 460000,
-                ImageUrl = "/images/tam-giang-2024.jpg",
+                ImageUrl = "https://hue.gov.vn/Portals/0/Uploads/00.00.H57/Nam2025/Thang6/z5862841503198458c3a50b5d9fa36ebde75e83e601fed_17271732773451054397863_28_4_2025_17_12_01_832_CH.jpg?v=1773705600033",
                 IsActive = true,
                 CreatedAt = DateTime.Now
             },
@@ -364,7 +364,7 @@ public class TourInMemoryRepository : ITourRepository
                 Duration = "Nửa Ngày",
                 StartingLocation = "Trung tâm TP Huế",
                 BasePrice = 430000,
-                ImageUrl = "/images/bun-bo-hue-2024.jpg",
+                ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Bao_Vinh_street.jpg/1280px-Bao_Vinh_street.jpg",
                 IsActive = true,
                 CreatedAt = DateTime.Now
             },

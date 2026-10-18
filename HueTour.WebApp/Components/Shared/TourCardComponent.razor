@@ -2,8 +2,15 @@
 
 <div class="tour-card">
     <div class="tour-card-img-wrap">
-        <img src="@Tour.ImageUrl" alt="@Tour.Title" loading="lazy" />
+        <img src="@CoverPhoto.Url" alt="@CoverPhoto.Caption" loading="lazy" />
         <span class="tour-category-badge">@Tour.Category</span>
+        <span class="tour-cover-caption">@CoverPhoto.Caption</span>
+        @if (!string.IsNullOrWhiteSpace(CoverPhoto.CreditUrl))
+        {
+            <a class="tour-image-source" href="@CoverPhoto.CreditUrl" target="_blank" rel="noopener noreferrer" aria-label="Nguồn ảnh: @CoverPhoto.Credit" @onclick:stopPropagation="true">
+                <i class="bi bi-image me-1"></i>Nguồn ảnh
+            </a>
+        }
         <span class="tour-duration-badge">
             <i class="bi bi-clock me-1"></i>@Tour.Duration
         </span>
@@ -40,4 +47,6 @@
 
     [Parameter]
     public EventCallback<int> OnTourSelected { get; set; }
+
+    private TourGalleryPhoto CoverPhoto => TourImageCatalog.GetCoverPhoto(Tour);
 }

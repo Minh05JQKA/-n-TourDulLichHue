@@ -12,6 +12,7 @@
         <div class="spinner-border text-purple" role="status"></div>
         <p class="text-muted mt-2">Đang tải thông tin tour...</p>
     </div>
+
 }
 else if (tour == null)
 {
@@ -38,12 +39,49 @@ else
             <div class="col-lg-8 col-12">
                 <!-- Banner ảnh -->
                 <div class="tour-details-hero position-relative mb-4 rounded-4 overflow-hidden shadow-sm">
-                    <img src="@tour.ImageUrl" alt="@tour.Title" class="w-100 h-100 object-fit-cover" />
+                    <img src="@(activeGalleryPhoto?.Url ?? tour.ImageUrl)"
+                         alt="@(activeGalleryPhoto?.Caption ?? TourImageCatalog.GetCoverCaption(tour))"
+                         class="w-100 h-100 object-fit-cover" />
                     <span class="tour-category-badge">@tour.Category</span>
+                    <span class="tour-details-image-caption">@(activeGalleryPhoto?.Caption ?? TourImageCatalog.GetCoverCaption(tour))</span>
                     <span class="tour-duration-badge fs-6 px-3 py-1">
                         <i class="bi bi-clock me-1"></i>@tour.Duration
                     </span>
                 </div>
+
+                @if (galleryPhotos.Count > 0)
+                {
+                    <section class="tour-gallery card border-0 shadow-sm p-3 p-md-4 mb-4" aria-label="Thư viện ảnh tour">
+                        <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+                            <div>
+                                <h2 class="h5 fw-bold text-purple mb-1">Hình ảnh hành trình</h2>
+                                <p class="small text-muted mb-0">Chọn ảnh để xem lớn</p>
+                            </div>
+                            <span class="small text-muted">@galleryPhotos.Count ảnh</span>
+                        </div>
+                        <div class="tour-gallery-grid">
+                            @foreach (var photo in galleryPhotos)
+                            {
+                                <figure class="tour-gallery-item mb-0" @key="photo.Url">
+                                    <button type="button"
+                                            class="tour-gallery-thumb @(activeGalleryPhoto?.Url == photo.Url ? "is-selected" : string.Empty)"
+                                            aria-pressed="@(activeGalleryPhoto?.Url == photo.Url)"
+                                            aria-label="Xem ảnh: @photo.Caption"
+                                            @onclick="() => SelectGalleryPhoto(photo)">
+                                        <img src="@photo.Url" alt="" loading="lazy" />
+                                        <span class="tour-gallery-caption">@photo.Caption</span>
+                                    </button>
+                                    @if (!string.IsNullOrWhiteSpace(photo.CreditUrl))
+                                    {
+                                        <figcaption class="tour-gallery-credit">
+                                            <a href="@photo.CreditUrl" target="_blank" rel="noopener noreferrer">Nguồn ảnh: @photo.Credit</a>
+                                        </figcaption>
+                                    }
+                                </figure>
+                            }
+                        </div>
+                    </section>
+                }
 
                 <h1 class="tour-details-title font-serif fw-bold text-purple mb-3">@tour.Title</h1>
 
@@ -159,6 +197,33 @@ else
             </div>
         </div>
     </div>
+
+    @if (isGalleryLightboxOpen && activeGalleryPhoto != null)
+    {
+        <div class="tour-gallery-lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh: @activeGalleryPhoto.Caption" @onclick="CloseGalleryLightbox">
+            <div class="tour-gallery-lightbox-panel" @onclick:stopPropagation="true">
+                <button type="button" class="tour-gallery-lightbox-close" aria-label="Đóng ảnh" @onclick="CloseGalleryLightbox">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <img src="@activeGalleryPhoto.Url" alt="@activeGalleryPhoto.Caption" />
+                <div class="tour-gallery-lightbox-footer">
+                    <button type="button" class="tour-gallery-lightbox-nav" aria-label="Ảnh trước" @onclick="ShowPreviousGalleryPhoto">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <div class="text-center px-3">
+                        <div class="fw-semibold">@activeGalleryPhoto.Caption</div>
+                        @if (!string.IsNullOrWhiteSpace(activeGalleryPhoto.CreditUrl))
+                        {
+                            <a href="@activeGalleryPhoto.CreditUrl" target="_blank" rel="noopener noreferrer">Nguồn ảnh: @activeGalleryPhoto.Credit</a>
+                        }
+                    </div>
+                    <button type="button" class="tour-gallery-lightbox-nav" aria-label="Ảnh tiếp theo" @onclick="ShowNextGalleryPhoto">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
 }
 
 @code {
@@ -169,6 +234,9 @@ else
     private int selectedDepartureId = 0;
     private Departure? selectedDeparture;
     private bool isLoading = true;
+    private bool isGalleryLightboxOpen;
+    private IReadOnlyList<TourGalleryPhoto> galleryPhotos = Array.Empty<TourGalleryPhoto>();
+    private TourGalleryPhoto? activeGalleryPhoto;
 
     protected override async Task OnInitializedAsync()
     {
@@ -176,17 +244,23 @@ else
         try
         {
             tour = await ViewTourDetailsUseCase.ExecuteAsync(Id);
-            if (tour?.Departures != null)
+            if (tour != null)
             {
-                // Tự động chọn chuyến đầu tiên còn chỗ và qua thời hạn đặt
-                var validDep = tour.Departures.FirstOrDefault(d =>
-                    !d.IsFullyBooked &&
-                    !d.IsClosed &&
-                    (d.DepartureDate - DateTime.Now).TotalHours >= BookingBusinessRules.CutoffHoursBeforeDeparture);
-                if (validDep != null)
+                galleryPhotos = TourImageCatalog.GetPhotos(tour);
+                activeGalleryPhoto = galleryPhotos.FirstOrDefault();
+
+                if (tour.Departures != null)
                 {
-                    selectedDepartureId = validDep.Id;
-                    selectedDeparture = validDep;
+                    // Tự động chọn chuyến đầu tiên còn chỗ và qua thời hạn đặt
+                    var validDep = tour.Departures.FirstOrDefault(d =>
+                        !d.IsFullyBooked &&
+                        !d.IsClosed &&
+                        (d.DepartureDate - DateTime.Now).TotalHours >= BookingBusinessRules.CutoffHoursBeforeDeparture);
+                    if (validDep != null)
+                    {
+                        selectedDepartureId = validDep.Id;
+                        selectedDeparture = validDep;
+                    }
                 }
             }
         }
@@ -200,6 +274,44 @@ else
     {
         selectedDepartureId = departure.Id;
         selectedDeparture = departure;
+    }
+
+    private void SelectGalleryPhoto(TourGalleryPhoto photo)
+    {
+        activeGalleryPhoto = photo;
+        isGalleryLightboxOpen = true;
+    }
+
+    private void CloseGalleryLightbox()
+    {
+        isGalleryLightboxOpen = false;
+    }
+
+    private void ShowPreviousGalleryPhoto()
+    {
+        MoveGalleryPhoto(-1);
+    }
+
+    private void ShowNextGalleryPhoto()
+    {
+        MoveGalleryPhoto(1);
+    }
+
+    private void MoveGalleryPhoto(int offset)
+    {
+        if (galleryPhotos.Count == 0)
+        {
+            return;
+        }
+
+        var currentIndex = Array.FindIndex(galleryPhotos.ToArray(), photo => photo.Url == activeGalleryPhoto?.Url);
+        if (currentIndex < 0)
+        {
+            currentIndex = 0;
+        }
+
+        var nextIndex = (currentIndex + offset + galleryPhotos.Count) % galleryPhotos.Count;
+        activeGalleryPhoto = galleryPhotos[nextIndex];
     }
 
     private void ProceedToBooking()
