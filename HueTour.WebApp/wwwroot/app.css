@@ -3,22 +3,26 @@
    ========================================================================== */
 
 :root {
-    --hue-purple: #4a154b;
-    --hue-purple-dark: #2d102f;
-    --hue-purple-light: #6b2a6c;
-    --hue-gold: #c79b2b;
-    --hue-gold-light: #f2cf69;
-    --hue-gold-gradient: linear-gradient(135deg, #bd8f20 0%, #e1b944 100%);
-    --hue-royal-gradient: linear-gradient(135deg, #4a154b 0%, #241027 100%);
-    --hue-jade: #0f4c5c;
-    --hue-sand: #faf7f1;
+    --hue-primary: #185f57;
+    --hue-primary-dark: #103e3a;
+    --hue-primary-light: #28786e;
+    --hue-primary-text: #15574f;
+    --hue-purple: var(--hue-primary);
+    --hue-purple-dark: var(--hue-primary-dark);
+    --hue-purple-light: var(--hue-primary-light);
+    --hue-gold: #c18b2f;
+    --hue-gold-light: #efd17f;
+    --hue-gold-gradient: linear-gradient(135deg, #b98021 0%, #e0b847 100%);
+    --hue-royal-gradient: linear-gradient(135deg, #185f57 0%, #103e3a 100%);
+    --hue-jade: #185f57;
+    --hue-sand: #f5f7f2;
     --hue-surface: #ffffff;
-    --hue-text-main: #2b2b2b;
-    --hue-text-muted: #666666;
-    --hue-border: #ede7db;
-    --hue-shadow-sm: 0 6px 20px rgba(50, 20, 52, 0.07);
-    --hue-shadow-md: 0 14px 34px rgba(50, 20, 52, 0.12);
-    --hue-shadow-lg: 0 24px 56px rgba(40, 15, 42, 0.16);
+    --hue-text-main: #263331;
+    --hue-text-muted: #65736f;
+    --hue-border: #e1e8e2;
+    --hue-shadow-sm: 0 6px 20px rgba(19, 72, 65, 0.07);
+    --hue-shadow-md: 0 14px 34px rgba(19, 72, 65, 0.12);
+    --hue-shadow-lg: 0 24px 56px rgba(16, 62, 58, 0.16);
 }
 
 * {
@@ -45,7 +49,7 @@ h1, h2, h3, .font-serif, .tour-title {
 }
 
 /* Brand Colors & Utilities */
-.text-purple { color: var(--hue-purple) !important; }
+.text-purple { color: var(--hue-primary-text, var(--hue-purple)) !important; }
 .text-gold { color: var(--hue-gold) !important; }
 .text-jade { color: var(--hue-jade) !important; }
 .bg-purple { background-color: var(--hue-purple) !important; }
@@ -423,7 +427,7 @@ h1, h2, h3, .font-serif, .tour-title {
     align-items: center;
     min-height: clamp(510px, 43vw, 650px);
     overflow: hidden;
-    background: linear-gradient(105deg, rgba(28, 12, 31, 0.84) 0%, rgba(54, 20, 57, 0.69) 52%, rgba(39, 17, 43, 0.62) 100%),
+    background: linear-gradient(105deg, rgba(10, 34, 32, 0.86) 0%, rgba(16, 53, 49, 0.72) 52%, rgba(19, 44, 41, 0.62) 100%),
                 url('/images/ngo-mon-gate.jpg') center/cover no-repeat;
     color: #ffffff;
     padding: 76px 0 108px;
@@ -467,7 +471,7 @@ h1, h2, h3, .font-serif, .tour-title {
     letter-spacing: 0.16em;
     font-size: 0.78rem;
     border: 1px solid rgba(242, 207, 105, 0.35);
-    background: rgba(37, 18, 40, 0.36);
+    background: rgba(13, 47, 43, 0.5);
     border-radius: 999px;
     padding: 0.65rem 1rem;
     backdrop-filter: blur(10px);
@@ -564,7 +568,7 @@ h1, h2, h3, .font-serif, .tour-title {
     display: inline-flex;
     align-items: center;
     color: var(--hue-purple);
-    background: #f1e9f1;
+    background: #e7f0eb;
     border-radius: 999px;
     padding: 0.58rem 0.9rem;
     font-size: 0.84rem;
@@ -596,8 +600,8 @@ h1, h2, h3, .font-serif, .tour-title {
 }
 
 .site-header {
-    background: rgba(60, 20, 62, 0.97);
-    box-shadow: 0 8px 28px rgba(24, 8, 26, 0.16);
+    background: rgba(19, 66, 61, 0.97);
+    box-shadow: 0 8px 28px rgba(8, 35, 32, 0.18);
     backdrop-filter: blur(16px);
     z-index: 1030;
 }
@@ -649,7 +653,7 @@ h1, h2, h3, .font-serif, .tour-title {
 }
 
 .footer-royal {
-    background: linear-gradient(145deg, #241027, #160a19);
+    background: linear-gradient(145deg, #103e3a, #0a2927);
 }
 
 /* Validation & Form Styles (K3.2, K3.3) */
@@ -663,7 +667,7 @@ h1, h2, h3, .font-serif, .tour-title {
 
 .form-control:focus, .form-select:focus {
     border-color: var(--hue-purple);
-    box-shadow: 0 0 0 0.2rem rgba(74, 21, 75, 0.15);
+    box-shadow: 0 0 0 0.2rem rgba(24, 95, 87, 0.18);
 }
 
 .rule-alert {
@@ -768,21 +772,29 @@ h1, h2, h3, .font-serif, .tour-title {
     }
 }
 
-/* 2026 editorial refresh: airy ivory surfaces, richer imperial purple and a documentary hero. */
+/* 2026 editorial refresh: airy ivory surfaces, jade accents and a documentary hero. */
 :root {
-    --hue-purple: #38213f;
-    --hue-purple-dark: #211728;
-    --hue-purple-light: #63416b;
-    --hue-gold: #c99532;
-    --hue-gold-light: #f5d98c;
-    --hue-sand: #f7f5f0;
-    --hue-border: #e8e2d8;
-    --hue-shadow-sm: 0 8px 24px rgba(36, 24, 38, .07);
-    --hue-shadow-md: 0 18px 42px rgba(36, 24, 38, .14);
+    --hue-primary: #185f57;
+    --hue-primary-dark: #103e3a;
+    --hue-primary-light: #28786e;
+    --hue-primary-text: #15574f;
+    --hue-purple: var(--hue-primary);
+    --hue-purple-dark: var(--hue-primary-dark);
+    --hue-purple-light: var(--hue-primary-light);
+    --hue-gold: #c18b2f;
+    --hue-gold-light: #efd17f;
+    --hue-jade: #185f57;
+    --hue-sand: #f5f7f2;
+    --hue-surface: #ffffff;
+    --hue-text-main: #263331;
+    --hue-text-muted: #65736f;
+    --hue-border: #e1e8e2;
+    --hue-shadow-sm: 0 8px 24px rgba(19, 72, 65, .07);
+    --hue-shadow-md: 0 18px 42px rgba(19, 72, 65, .14);
 }
 
 .site-header {
-    background: rgba(34, 24, 39, .97);
+    background: rgba(19, 66, 61, .97);
 }
 
 .brand-logo {
@@ -810,7 +822,7 @@ h1, h2, h3, .font-serif, .tour-title {
     min-height: min(720px, 76vh);
     padding: clamp(64px, 8vw, 112px) 0 clamp(90px, 10vw, 145px);
     border-radius: 0 0 34px 34px;
-    background: linear-gradient(90deg, rgba(22, 17, 27, .88) 0%, rgba(31, 24, 34, .73) 42%, rgba(31, 24, 34, .18) 100%),
+    background: linear-gradient(90deg, rgba(10, 34, 32, .88) 0%, rgba(16, 53, 49, .73) 42%, rgba(16, 53, 49, .18) 100%),
                 url('/images/imperial-city-2025.jpg') center 44% / cover no-repeat;
 }
 
@@ -836,7 +848,7 @@ h1, h2, h3, .font-serif, .tour-title {
 
 .hue-hero-subtitle {
     border-color: rgba(245, 217, 140, .38);
-    background: rgba(32, 22, 35, .45);
+    background: rgba(13, 47, 43, .5);
     font-size: .72rem;
     letter-spacing: .12em;
 }
@@ -877,13 +889,13 @@ h1, h2, h3, .font-serif, .tour-title {
 }
 
 .destination-all-link {
-    color: #532052;
+    color: var(--hue-primary-text);
     font-weight: 700;
     text-decoration: none;
     white-space: nowrap;
 }
 
-.destination-all-link:hover { color: #9d7224; }
+.destination-all-link:hover { color: var(--hue-gold); }
 
 .destination-grid {
     display: grid;
@@ -898,7 +910,7 @@ h1, h2, h3, .font-serif, .tour-title {
     overflow: hidden;
     align-items: end;
     border-radius: 18px;
-    background: #332536;
+    background: var(--hue-primary-dark);
     color: #fff;
     text-decoration: none;
     isolation: isolate;
@@ -909,7 +921,7 @@ h1, h2, h3, .font-serif, .tour-title {
     z-index: -1;
     inset: 28% 0 0;
     content: "";
-    background: linear-gradient(0deg, rgba(25, 15, 27, .92), rgba(25, 15, 27, 0));
+    background: linear-gradient(0deg, rgba(8, 30, 28, .92), rgba(8, 30, 28, 0));
 }
 
 .destination-tile img {
@@ -943,20 +955,20 @@ h1, h2, h3, .font-serif, .tour-title {
 }
 
 .destination-kicker {
-    color: #f2cf75;
+    color: var(--hue-gold-light);
     font-size: .65rem;
     font-weight: 700;
     letter-spacing: .1em;
 }
 
 .destination-tile:focus-visible {
-    outline: 3px solid #d7ae43;
+    outline: 3px solid var(--hue-gold);
     outline-offset: 3px;
 }
 
 .tour-card {
     border-radius: 18px;
-    border-color: #ebe5db;
+    border-color: var(--hue-border);
 }
 
 .tour-card-img-wrap {
@@ -984,7 +996,7 @@ h1, h2, h3, .font-serif, .tour-title {
 }
 
 .section-eyebrow {
-    color: #9d7224 !important;
+    color: var(--hue-gold) !important;
 }
 
 .rules-section {
@@ -997,7 +1009,7 @@ h1, h2, h3, .font-serif, .tour-title {
 
 .footer-royal {
     color: rgba(255,255,255,.76);
-    background: linear-gradient(145deg, #211728, #16111b);
+    background: linear-gradient(145deg, #103e3a, #0a2927);
 }
 
 .form-control,
@@ -1013,7 +1025,7 @@ h1, h2, h3, .font-serif, .tour-title {
         min-height: 610px;
         padding: 56px 0 100px;
         border-radius: 0 0 24px 24px;
-        background-image: linear-gradient(90deg, rgba(22,17,27,.88), rgba(31,24,34,.45)),
+        background-image: linear-gradient(90deg, rgba(10,34,32,.88), rgba(16,53,49,.45)),
                           url('/images/imperial-city-2025.jpg');
         background-position: 58% center;
     }
@@ -1037,4 +1049,130 @@ h1, h2, h3, .font-serif, .tour-title {
 @media (max-width: 420px) {
     .destination-grid { grid-template-columns: 1fr; }
     .destination-tile { min-height: 205px; }
+}
+
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    min-width: 78px;
+    white-space: nowrap;
+}
+
+.theme-toggle i {
+    color: var(--hue-gold-light);
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --hue-primary: #174d47;
+    --hue-primary-dark: #0d302d;
+    --hue-primary-light: #26786e;
+    --hue-primary-text: #83c5b8;
+    --hue-purple: var(--hue-primary);
+    --hue-purple-dark: var(--hue-primary-dark);
+    --hue-purple-light: var(--hue-primary-light);
+    --hue-gold: #d3a746;
+    --hue-gold-light: #f0d78e;
+    --hue-jade: #83c5b8;
+    --hue-sand: #111a18;
+    --hue-surface: #1b2622;
+    --hue-text-main: #e8efeb;
+    --hue-text-muted: #aab8b1;
+    --hue-border: #34443d;
+    --hue-shadow-sm: 0 8px 24px rgba(0, 0, 0, .2);
+    --hue-shadow-md: 0 18px 42px rgba(0, 0, 0, .28);
+    --bs-body-bg: var(--hue-sand);
+    --bs-body-color: var(--hue-text-main);
+    --bs-secondary-color: var(--hue-text-muted);
+    --bs-tertiary-bg: #222e29;
+    --bs-border-color: var(--hue-border);
+    --bs-link-color: #83c5b8;
+    --bs-link-hover-color: #b3e2d8;
+}
+
+html[data-theme="dark"] body {
+    background-color: var(--hue-sand);
+    color: var(--hue-text-main);
+}
+
+html[data-theme="dark"] .text-purple {
+    color: var(--hue-primary-text) !important;
+}
+
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-light {
+    background-color: var(--hue-surface) !important;
+    color: var(--hue-text-main) !important;
+}
+
+html[data-theme="dark"] .text-dark {
+    color: var(--hue-text-main) !important;
+}
+
+html[data-theme="dark"] .btn-gold,
+html[data-theme="dark"] .bg-gold.text-dark,
+html[data-theme="dark"] .bg-warning.text-dark {
+    color: #1d281f !important;
+}
+
+html[data-theme="dark"] .tour-card,
+html[data-theme="dark"] .search-floating-card,
+html[data-theme="dark"] .passenger-item-card,
+html[data-theme="dark"] .ticket-voucher,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .dropdown-menu {
+    background-color: var(--hue-surface) !important;
+    border-color: var(--hue-border);
+    color: var(--hue-text-main);
+}
+
+html[data-theme="dark"] .rules-section {
+    background: linear-gradient(180deg, var(--hue-sand), #17211e) !important;
+    border-color: var(--hue-border) !important;
+}
+
+html[data-theme="dark"] .rules-section .card,
+html[data-theme="dark"] .card[style*="background"] {
+    background-color: var(--hue-surface) !important;
+}
+
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] .search-floating-card .form-control,
+html[data-theme="dark"] .search-floating-card .form-select {
+    color: var(--hue-text-main) !important;
+    background-color: #17211e !important;
+    border-color: var(--hue-border) !important;
+}
+
+html[data-theme="dark"] .form-control::placeholder {
+    color: #aab8b1;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .tour-count-pill {
+    color: var(--hue-primary-text);
+    background: #243832;
+}
+
+html[data-theme="dark"] .section-heading {
+    border-bottom-color: var(--hue-border);
+}
+
+html[data-theme="dark"] .tour-card:hover {
+    border-color: #58756b;
+}
+
+html[data-theme="dark"] .table {
+    --bs-table-color: var(--hue-text-main);
+    --bs-table-bg: var(--hue-surface);
+    --bs-table-border-color: var(--hue-border);
+}
+
+html[data-theme="dark"] .footer-royal {
+    color: rgba(255, 255, 255, .76);
+    background: linear-gradient(145deg, #103e3a, #0a2927);
 }

@@ -2,6 +2,7 @@
 @inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavManager
+@inject IJSRuntime JS
 
 <div class="d-flex flex-column min-vh-100">
     <!-- Main Navbar -->
@@ -56,6 +57,15 @@
 
                 <!-- User Auth Area (K4.1) -->
                 <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                    <button class="theme-toggle btn btn-outline-light btn-sm rounded-pill px-3"
+                            type="button"
+                            @onclick="ToggleThemeAsync"
+                            aria-label="@(isDarkMode ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối")"
+                            aria-pressed="@isDarkMode.ToString().ToLowerInvariant()"
+                            title="@(isDarkMode ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối")">
+                        <i class="bi @(isDarkMode ? "bi-sun-fill" : "bi-moon-stars-fill")" aria-hidden="true"></i>
+                        <span>@(isDarkMode ? "Sáng" : "Tối")</span>
+                    </button>
                     <AuthorizeView>
                         <Authorized>
                         <span class="user-greeting text-light small me-2">
@@ -133,3 +143,30 @@
         </div>
     </footer>
 </div>
+
+@code {
+    private bool isDarkMode;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            isDarkMode = await JS.InvokeAsync<bool>("hueTheme.isDark");
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (JSException)
+        {
+            // Keep the default light theme if browser storage is unavailable.
+        }
+    }
+
+    private async Task ToggleThemeAsync()
+    {
+        isDarkMode = await JS.InvokeAsync<bool>("hueTheme.toggle");
+    }
+}
