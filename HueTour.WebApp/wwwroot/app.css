@@ -522,7 +522,7 @@ h1, h2, h3, .font-serif, .tour-title {
 }
 
 .search-floating-card .form-label {
-    color: var(--hue-purple-dark) !important;
+    color: var(--hue-primary-text) !important;
     letter-spacing: 0.01em;
 }
 
@@ -820,9 +820,9 @@ h1, h2, h3, .font-serif, .tour-title {
 
 .hue-hero {
     min-height: min(720px, 76vh);
-    padding: clamp(64px, 8vw, 112px) 0 clamp(90px, 10vw, 145px);
+    padding: clamp(48px, 6vw, 88px) 0 clamp(68px, 7vw, 100px);
     border-radius: 0 0 34px 34px;
-    background: linear-gradient(90deg, rgba(10, 34, 32, .88) 0%, rgba(16, 53, 49, .73) 42%, rgba(16, 53, 49, .18) 100%),
+    background: linear-gradient(90deg, rgba(8, 34, 31, .8) 0%, rgba(12, 48, 43, .62) 42%, rgba(16, 53, 49, .12) 100%),
                 url('/images/imperial-city-2025.jpg') center 44% / cover no-repeat;
 }
 
@@ -868,7 +868,7 @@ h1, h2, h3, .font-serif, .tour-title {
 }
 
 .home-search-wrap {
-    margin-top: -52px;
+    margin-top: -64px;
 }
 
 .destination-showcase {
@@ -1139,13 +1139,29 @@ html[data-theme="dark"] .card[style*="background"] {
     background-color: var(--hue-surface) !important;
 }
 
+html[data-theme="dark"] .search-floating-card {
+    background: linear-gradient(145deg, #1d2b26, #19241f) !important;
+    border-color: #40594e;
+    box-shadow: 0 22px 52px rgba(0, 0, 0, .34);
+}
+
+html[data-theme="dark"] .search-floating-card .form-label {
+    color: var(--hue-text-main) !important;
+}
+
 html[data-theme="dark"] .form-control,
 html[data-theme="dark"] .form-select,
 html[data-theme="dark"] .search-floating-card .form-control,
 html[data-theme="dark"] .search-floating-card .form-select {
     color: var(--hue-text-main) !important;
     background-color: #17211e !important;
-    border-color: var(--hue-border) !important;
+    border-color: #496258 !important;
+}
+
+html[data-theme="dark"] .search-floating-card .form-control:focus,
+html[data-theme="dark"] .search-floating-card .form-select:focus {
+    border-color: #83c5b8 !important;
+    box-shadow: 0 0 0 .2rem rgba(131, 197, 184, .18);
 }
 
 html[data-theme="dark"] .form-control::placeholder {
