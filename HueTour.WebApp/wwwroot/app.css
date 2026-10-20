@@ -1209,11 +1209,11 @@ html[data-theme="dark"] .footer-royal {
     z-index: 0;
     top: clamp(34rem, 42vw, 40rem);
     left: 50%;
-    width: min(64vw, 880px);
-    aspect-ratio: 1 / 0.85;
-    transform: translateX(-35%);
+    width: min(56vw, 660px);
+    aspect-ratio: .90 / 1;
+    transform: translateX(-42%);
     pointer-events: none;
-    opacity: .065;
+    opacity: .10;
 }
 
 .home-dragon-watermark img {
@@ -1237,7 +1237,7 @@ html[data-theme="dark"] .footer-royal {
 }
 
 html[data-theme="dark"] .home-dragon-watermark {
-    opacity: .08;
+    opacity: .12;
 }
 
 html[data-theme="dark"] .home-dragon-watermark img {
@@ -1247,13 +1247,14 @@ html[data-theme="dark"] .home-dragon-watermark img {
 @media (max-width: 767.98px) {
     .home-dragon-watermark {
         top: 34rem;
-        width: min(88vw, 430px);
+        width: min(76vw, 360px);
+        aspect-ratio: .90 / 1;
         transform: translateX(-50%);
-        opacity: .055;
+        opacity: .08;
     }
 
     html[data-theme="dark"] .home-dragon-watermark {
-        opacity: .07;
+        opacity: .10;
     }
 }
 
