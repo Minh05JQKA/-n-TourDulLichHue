@@ -1,40 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 980" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 940" fill="none">
   <defs>
-    <linearGradient id="gold" x1="174" y1="782" x2="1010" y2="142" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#B17A1D"/>
-      <stop offset=".48" stop-color="#E6C568"/>
-      <stop offset="1" stop-color="#F6E2A1"/>
+    <linearGradient id="gold" x1="190" y1="725" x2="927" y2="179" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B9872E"/>
+      <stop offset=".48" stop-color="#D8B653"/>
+      <stop offset="1" stop-color="#F1D985"/>
     </linearGradient>
-    <linearGradient id="body" x1="264" y1="835" x2="934" y2="231" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#C39337" stop-opacity=".03"/>
-      <stop offset=".55" stop-color="#E2BD5F" stop-opacity=".1"/>
-      <stop offset="1" stop-color="#F5D981" stop-opacity=".04"/>
+    <linearGradient id="bodyGold" x1="312" y1="696" x2="774" y2="269" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B9872E"/>
+      <stop offset="1" stop-color="#E6C666"/>
     </linearGradient>
   </defs>
 
-  <g stroke="url(#gold)" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Long, rising body and curling tail -->
-    <path d="M191 760c135 44 246 31 318-40 57-56 60-132 7-166-45-29-102 1-98 50 4 38 52 53 77 25 20-22 8-54-17-59m51 132c111 36 214 2 250-82 30-69 5-147-57-174-55-24-116 12-112 70 3 42 48 64 79 42 25-18 24-51 4-65m-205 274c151 68 305 37 381-67 71-97 53-223-41-275-83-46-182-1-184 91-1 66 63 98 111 65 37-25 37-74 7-97" stroke-width="18" opacity=".72"/>
-    <path d="M198 757c-40 6-76-3-112-23 28 5 45-2 62-16-35 2-65-10-91-35 35 10 64 6 89-8-23-7-42-22-56-44 39 24 75 33 113 28" stroke-width="10"/>
-    <!-- Scaled spine -->
-    <path d="M365 735l18 23m18-17 17 22m19-21 15 23m22-31 14 24m25-45 14 23m-4-100 21 9m-13-35 22 8m-1 89 21 7m-2-45 23 3m55-81 19 12m-8-39 20 12m5 88 22 8m-3-45 22 4m79-101 19 14m-9-39 20 12m14 82 22 8m-4-45 22 5" stroke-width="6" opacity=".62"/>
-    <!-- Four cloud-shaped limbs ending in claws -->
-    <path d="M431 685c-42-17-68-13-87 17l-14 39-32 12 18 14 31-4 21-26c17-20 39-22 64-13m108-92c-37-33-64-40-91-20l-28 29-34-1 11 19 31 8 28-17c21-13 43-8 65 11m183-113c-25-39-49-54-81-44l-37 18-32-13 4 22 27 18 33-7c24-5 42 5 57 31m161-111c-13-45-32-66-65-66l-41 7-27-21-2 22 21 24 33 2c24 1 38 16 48 44" stroke-width="10"/>
-    <path d="M302 753l-10 18m19-20-2 20m-30-15-13 13m159-91-15 14m22-21-8 18m-53-4-17 8m265-96-14 17m22-20-8 18m-52-21-17 2m271-116-12 18m20-20-5 20m-48-28-17-1m255-86-10 19m18-20-3 20m-44-34-18-3" stroke-width="6"/>
-    <!-- Flowing mane, horns, brows, muzzle and whiskers -->
-    <path d="M830 277c-31-21-48-48-51-81 22 18 43 23 66 14-35-21-50-49-45-85 18 20 40 29 67 25-24-27-31-56-18-89 14 26 35 42 62 47-14-32-10-61 12-88 5 33 21 58 48 74 1-34 16-59 46-75-8 35-1 64 22 88 10-31 32-50 67-56-19 31-22 61-9 91 19-25 47-38 81-33-28 25-41 54-37 87 25-15 55-17 87-4-35 15-55 40-62 74-28 13-49 37-63 70-19 45-60 75-120 89l-57-11c-9-42-34-77-75-105" stroke-width="11"/>
-    <path d="M839 281c-38-12-66-35-84-67 35 15 67 18 98 8m-2 43c-49 1-88-15-119-49 43 8 81 3 114-16m-43 84c-46 13-88 6-126-20 46-1 82-16 111-45m322 29c28-31 40-66 37-105-19 26-43 43-73 49m108-3c38-25 60-59 67-101-28 23-57 34-89 32m-23 119c47-7 82-31 106-70-38 14-74 15-109 3" stroke-width="7" opacity=".9"/>
-    <!-- Curved crown-like horns -->
-    <path d="M901 209c-47-52-59-103-36-155 5 39 27 67 66 84m98 27c6-67 34-112 84-134-20 34-23 70-8 108m-212 75c-61-26-100-67-116-122 30 30 67 42 112 38" stroke-width="12"/>
-    <!-- Face and eye -->
-    <path d="M837 292c41-31 88-42 142-33 37 7 66 27 87 61l-22 37-53 24-54-8-51-31-49 6-32-23 32-33Z" stroke-width="12"/>
-    <path d="M883 298c13-9 28-11 43-5-13 13-27 15-43 5Zm136 20c20-10 39-9 56 4-19 8-38 7-56-4Zm-109 48c31 21 63 28 95 20" stroke-width="8"/>
-    <circle cx="908" cy="297" r="5" fill="#E6C568" stroke="none"/>
-    <circle cx="1046" cy="318" r="4" fill="#E6C568" stroke="none"/>
-    <!-- Muzzle flourishes and long whiskers -->
-    <path d="M1082 353c42 7 75 27 98 60-37-15-69-17-97-8m-23 20c32 20 50 48 53 85-23-26-47-41-72-45m-146-77c-40-2-72 10-97 38 34-8 62-6 86 8m70 23c-20 28-28 59-24 94 15-29 34-49 57-61" stroke-width="8"/>
-    <path d="M876 335c-19 8-34 21-45 39m227-39c17 4 33 14 48 29" stroke-width="7"/>
+  <!-- Curled serpentine body and fan-shaped tail -->
+  <g stroke="url(#bodyGold)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M193 672c95 66 220 43 266-50 40-81 7-162-61-162-52 0-75 54-43 87 23 24 61 14 66-15 4-22-14-36-31-33 68-4 114-50 156-109 42-58 94-89 170-105" stroke-width="58"/>
+    <path d="M194 672c95 66 220 43 266-50 40-81 7-162-61-162-52 0-75 54-43 87 23 24 61 14 66-15 4-22-14-36-31-33 68-4 114-50 156-109 42-58 94-89 170-105" stroke="#F6E3A1" stroke-width="5" opacity=".62"/>
+  </g>
+  <path d="M197 674c-43 14-83 6-120-24 34 9 63 4 88-16-41-1-74-17-100-48 41 18 77 20 110 5-29-18-48-43-57-75 37 37 78 57 123 60" fill="url(#gold)" stroke="#B9872E" stroke-width="5" stroke-linejoin="round"/>
+
+  <!-- Four bent legs with visible claws -->
+  <g stroke="url(#gold)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M395 520c-35 9-61 30-75 65l-35 20 31 15 31-17 18-34c12-18 28-27 47-28"/>
+    <path d="M285 605l-14 24m29-29-4 28m-41-19-20 17" stroke-width="8"/>
+    <path d="M494 397c-23-28-50-40-82-37l-30-17 1 34 29 20 38-2c21 1 37 10 49 29"/>
+    <path d="M383 377l-21-19m38 22-15-26m-9 45-28-3" stroke-width="8"/>
+    <path d="M576 321c-25-25-54-34-85-27l-32-13 5 34 31 16 37-7c21-2 38 5 52 22"/>
+    <path d="M461 296l-23-17m40 18-18-24m-3 44-28 2" stroke-width="8"/>
+    <path d="M670 279c-10-33-30-55-60-66l-22-27-12 32 19 29 35 14c18 10 29 26 33 46"/>
+    <path d="M595 214l-13-26m28 35-5-29m-17 42-26-12" stroke-width="8"/>
   </g>
 
-  <path d="M143 844c209 92 443 100 699 23 126-38 230-101 309-186" stroke="url(#gold)" stroke-width="3" stroke-dasharray="3 20" opacity=".45"/>
+  <!-- Crowned mane and unmistakable profile head -->
+  <g fill="url(#gold)" stroke="#B9872E" stroke-linejoin="round" stroke-width="5">
+    <path d="M718 271c-37-39-78-57-124-54 36 21 57 50 64 88-41-30-84-40-128-29 40 15 69 41 87 78 20-27 53-49 101-65Z"/>
+    <path d="M738 245c-24-48-28-91-11-130 11 39 34 66 69 80-8-43 2-81 30-114-2 48 10 85 37 111-20 28-31 62-33 104Z"/>
+    <path d="M787 220c4-48 25-86 63-114-13 37-11 72 7 105 18-40 47-66 87-77-25 39-34 78-26 119Z"/>
+    <path d="M708 291c-45-16-87-13-125 9 41 1 73 18 96 52-47-11-88-3-124 25 44-7 82 2 116 29 16-38 32-73 60-101Z"/>
+    <path d="M688 306c41-72 103-111 183-116 52-3 94 17 125 57l-17 27 66 7 39 34-44 31-71-6c-28 44-70 67-120 65l-35 38-20-42c-60-15-103-46-126-95Z"/>
+  </g>
+
+  <!-- Horns, eyes, muzzle, whiskers and beard -->
+  <g stroke="url(#gold)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M765 220c-43-39-58-81-45-127 12 29 34 49 66 59m86-55c18-39 51-65 98-77-25 29-34 60-28 94m-149 96c-54-18-91-52-110-102 34 24 70 32 111 24" stroke-width="16"/>
+    <path d="M883 274c20-14 42-15 64-3-20 18-42 20-64 3Zm17 2c8 8 12 18 10 29" stroke-width="8"/>
+    <path d="M982 304c42-3 73-20 96-53-12 33-36 56-71 69m-28 5c38 17 67 44 86 83-38-20-73-28-106-23m-34 10c15 35 18 71 8 109-18-37-42-62-73-77m25-151c-43-1-77 13-103 44 39-9 69-5 93 13" stroke-width="9"/>
+    <path d="M796 322c22 22 49 36 81 40m83-42 24 6" stroke-width="8"/>
+  </g>
+  <ellipse cx="904" cy="277" rx="7" ry="10" fill="#6E4D18"/>
+
+  <!-- Small scale marks and cloud curls complete the imperial ornament -->
+  <g stroke="url(#gold)" stroke-linecap="round" stroke-linejoin="round" opacity=".8">
+    <path d="m302 676 16 13m29 4 17 10m35 1 15 4m-36-59 17 11m36-14 16 5m-42-52 18 8m44-15 17 3m-18-53 18 2m-7-46 17-4m32-29 14-12m27-27 14-13m29-22 16-8" stroke-width="7"/>
+    <path d="M133 798c30-31 69-36 108-15 23-31 63-37 99-11-33-1-49 13-52 35 28-19 59-16 88 9-38-7-69 2-95 28-38-28-80-37-127-24m562-83c25-28 57-34 90-17 19-26 53-31 83-9-28-2-42 10-44 29 24-16 50-13 75 8-33-5-59 3-81 25-32-24-68-35-108-30" stroke-width="6" opacity=".7"/>
+  </g>
 </svg>
