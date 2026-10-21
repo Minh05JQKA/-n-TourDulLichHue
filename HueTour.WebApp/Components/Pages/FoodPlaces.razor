@@ -1,0 +1,460 @@
+@page "/am-thuc"
+@using System.Globalization
+@using HueTour.CoreBusiness
+@using HueTour.UseCases.FoodPlaces
+@inject IFoodPlaceCatalogUseCase CatalogUseCase
+@inject IJSRuntime JS
+
+<PageTitle>Ẩm thực Huế · Nhà hàng, quán cà phê, tiệm bánh | Huế Tour</PageTitle>
+
+<main class="food-page">
+    <section class="food-hero">
+        <div class="container food-hero-inner">
+            <div class="food-hero-copy">
+                <span class="food-eyebrow"><i class="bi bi-stars me-2"></i>ẨM THỰC CỐ ĐÔ</span>
+                <h1>Khám phá tinh hoa<br /><span>ẩm thực Cố đô</span></h1>
+                <p>
+                    Danh mục <strong>@_result.TotalCount</strong> địa điểm ẩm thực trên địa bàn thành phố Huế:
+                    nhà hàng, quán cà phê, tiệm bánh, quán mì · bún và quán bar.
+                    Dữ liệu được nạp từ bộ seed sinh bằng <code>scripts/import_food_places.py</code>.
+                </p>
+
+                <form class="food-search" method="get" @onsubmit="HandleSearchAsync" @onsubmit:preventDefault>
+                    <div class="food-search-field">
+                        <i class="bi bi-search"></i>
+                        <input type="search" name="q" placeholder="Tìm theo tên quán, món đặc trưng hoặc địa chỉ…"
+                               value="@_keyword" @bind:event="oninput" aria-label="Tìm địa điểm ẩm thực" />
+                    </div>
+                    <button type="submit" class="btn-royal-gold" disabled="@_loading">
+                        @if (_loading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                        }
+                        Tra cứu
+                    </button>
+                </form>
+
+                <div class="food-hero-stats">
+                    <div><strong>@_result.Categories.Sum(c => c.Count)</strong><span>địa điểm</span></div>
+                    <div><strong>@_result.Categories.Count</strong><span>nhóm món</span></div>
+                    <div><strong>@_featured.Count</strong><span>gợi ý nổi bật</span></div>
+                </div>
+            </div>
+
+            <div class="food-hero-art" aria-hidden="true">
+                <div class="food-hero-bowl"></div>
+                <div class="food-hero-stamp"><i class="bi bi-flower1"></i><span>Huế</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container food-body">
+        @if (_result.Categories.Count > 0)
+        {
+            <nav class="food-category-bar" aria-label="Lọc theo nhóm món">
+                <button type="button"
+                        class="food-chip @(string.IsNullOrEmpty(_categoryCode) ? "is-active" : string.Empty)"
+                        @onclick="() => SelectCategoryAsync(null)">
+                    Tất cả <span>@_result.Categories.Sum(c => c.Count)</span>
+                </button>
+                @foreach (var category in _result.Categories)
+                {
+                    <button type="button"
+                            class="food-chip @(string.Equals(_categoryCode, category.CategoryCode, StringComparison.OrdinalIgnoreCase) ? "is-active" : string.Empty)"
+                            @onclick="() => SelectCategoryAsync(category.CategoryCode)">
+                        @category.DisplayName <span>@category.Count</span>
+                    </button>
+                }
+            </nav>
+        }
+
+        @if (_featured.Count > 0 && string.IsNullOrEmpty(_keyword) && string.IsNullOrEmpty(_categoryCode)
+            && !_searchCenter.HasValue && _viewport is null)
+        {
+            <section class="food-featured">
+                <header class="food-section-head">
+                    <div>
+                        <span class="food-section-kicker">GỢI Ý</span>
+                        <h2>Đáng thử nhất hôm nay</h2>
+                    </div>
+                    <p class="food-section-note">Xếp theo mức độ đối chiếu và điểm đánh giá trong nguồn dữ liệu gốc.</p>
+                </header>
+
+                <div class="food-featured-grid">
+                    @foreach (var place in _featured)
+                    {
+                        <article class="food-featured-card">
+                            <div class="food-featured-media">
+                                <img src="@ResolveImage(place)" alt="@place.Name" loading="lazy" />
+                                <span class="food-badge food-badge-gold">@place.Category</span>
+                            </div>
+                            <div class="food-featured-body">
+                                <h3>@place.Name</h3>
+                                @if (!string.IsNullOrWhiteSpace(place.SignatureDish))
+                                {
+                                    <p class="food-dish"><i class="bi bi-basket2 me-1"></i>@place.SignatureDish</p>
+                                }
+                                <p class="food-featured-desc">@place.Description</p>
+                                <div class="food-featured-foot">
+                                    <span class="food-price">@place.PriceLabel</span>
+                                    <a class="food-link" href="@place.MapDetailsUrl" target="_blank" rel="noopener noreferrer">
+                                        Xem bản đồ <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            </section>
+        }
+
+        <section class="food-results @(_mobileMapMode ? "is-map-mode" : "is-list-mode")">
+            <header class="food-section-head">
+                <div>
+                    <span class="food-section-kicker">DANH MỤC</span>
+                    <h2>
+                        @if (!string.IsNullOrWhiteSpace(_keyword))
+                        {
+                            <span>Kết quả cho “@_keyword”</span>
+                        }
+                        else if (!string.IsNullOrEmpty(_activeCategoryName))
+                        {
+                            <span>@_activeCategoryName</span>
+                        }
+                        else
+                        {
+                            <span>Toàn bộ địa điểm ẩm thực</span>
+                        }
+                    </h2>
+                </div>
+                <p class="food-section-note">
+                    Hiển thị @(_result.Items.Count) / @_result.TotalCount địa điểm · Trang @_result.Page/@_result.TotalPages
+                </p>
+                <div class="food-view-switch" role="group" aria-label="Chế độ hiển thị">
+                    <button type="button" class="@(_mobileMapMode ? string.Empty : "is-active")" aria-pressed="@(!_mobileMapMode)" @onclick="ShowListAsync">
+                        <i class="bi bi-list-ul me-1"></i>Danh sách
+                    </button>
+                    <button type="button" class="@(_mobileMapMode ? "is-active" : string.Empty)" aria-pressed="@_mobileMapMode" @onclick="ShowMapAsync">
+                        <i class="bi bi-map me-1"></i>Bản đồ
+                    </button>
+                </div>
+            </header>
+
+            <div class="food-results-layout @(_mobileMapMode ? "is-map-mode" : "is-list-mode")">
+                <div class="food-grid">
+                    @if (_result.Items.Count == 0)
+                    {
+                        <div class="food-empty">
+                            <i class="bi bi-search-heart"></i>
+                            <h3>Không tìm thấy địa điểm phù hợp</h3>
+                            <p>Thử bỏ bớt từ khoá hoặc chọn nhóm món khác nhé.</p>
+                            <button type="button" class="btn-royal" @onclick="ResetAsync">Xem tất cả địa điểm</button>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var place in _result.Items)
+                        {
+                            <article class="food-card @(place.Id == _focusedPlaceId ? "is-highlight" : string.Empty)"
+                                     data-food-id="@place.Id" tabindex="0"
+                                     @onmouseenter="() => HighlightMapMarkerAsync(place.Id)"
+                                     @onfocusin="() => HighlightMapMarkerAsync(place.Id)">
+                                <div class="food-card-media">
+                                    <img src="@ResolveImage(place)" alt="@place.Name" loading="lazy" />
+                                    <span class="food-badge">@place.Category</span>
+                                    @if (place.IsCurated)
+                                    {
+                                        <span class="food-badge food-badge-verified" title="Bản ghi có mô tả biên tập tay, đã đối chiếu">
+                                            <i class="bi bi-patch-check-fill me-1"></i>Đối chiếu
+                                        </span>
+                                    }
+                                    @if (place.Rating.HasValue)
+                                    {
+                                        <span class="food-rating"><i class="bi bi-star-fill me-1"></i>@place.Rating.Value.ToString("0.0", CultureInfo.InvariantCulture)</span>
+                                    }
+                                </div>
+                                <div class="food-card-body">
+                                    <h3 title="@place.Name">@place.Name</h3>
+                                    @if (!string.IsNullOrWhiteSpace(place.SignatureDish))
+                                    {
+                                        <p class="food-dish"><i class="bi bi-basket2 me-1"></i>@place.SignatureDish</p>
+                                    }
+                                    <p class="food-address">
+                                        <i class="bi bi-geo-alt me-1"></i><span>@place.Address</span>
+                                    </p>
+                                    <div class="food-card-meta">
+                                        <span class="food-price" title="@place.PriceLabel">@place.PriceLabel</span>
+                                        <span class="food-rating-text" title="@place.RatingLabel">@place.RatingLabel</span>
+                                        @if (place.DistanceKm is { } distanceKm)
+                                        {
+                                            <span class="food-distance"><i class="bi bi-geo-alt me-1"></i>Cách bạn ~@distanceKm.ToString("0.0", CultureInfo.InvariantCulture) km</span>
+                                        }
+                                    </div>
+                                    <div class="food-card-actions">
+                                        <button type="button" class="btn-outline-royal btn-sm" @onclick="() => FocusPlaceOnMapAsync(place.Id)">
+                                            <i class="bi bi-map me-1"></i>Xem trên bản đồ
+                                        </button>
+                                        <a class="btn-royal-gold btn-sm" href="@place.DirectionsUrl" target="_blank" rel="noopener noreferrer">
+                                            <i class="bi bi-signpost-split me-1"></i>Đường đi
+                                        </a>
+                                        <a class="btn-outline-royal btn-sm" href="@place.MapDetailsUrl" target="_blank" rel="noopener noreferrer">
+                                            OpenStreetMap
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    }
+                </div>
+
+                <FoodMapPanelComponent @ref="_mapPanel"
+                                       Places="_result.MapItems"
+                                       ShowRadiusPicker="true"
+                                       HasSpatialFilter="@(_searchCenter.HasValue || _viewport is not null)"
+                                       SearchCenter="_searchCenter"
+                                       SelectedRadiusKm="_radiusKm"
+                                       SelectedRadiusKmChanged="HandleRadiusChangedAsync"
+                                       OnViewportChanged="HandleViewportChangedAsync"
+                                       OnUserLocated="HandleUserLocatedAsync"
+                                       OnFocusPlace="HandleMapFocusAsync"
+                                       OnCollapse="ShowListAsync"
+                                       OnResetSpatialFilters="ResetSpatialFiltersAsync" />
+            </div>
+
+            @if (_result.TotalPages > 1)
+            {
+                <nav class="food-pagination" aria-label="Phân trang">
+                    <button type="button" class="btn-outline-royal btn-sm" disabled="@(_result.Page <= 1)" @onclick="() => GoToPageAsync(_result.Page - 1)">
+                        <i class="bi bi-chevron-left"></i> Trước
+                    </button>
+
+                    @foreach (var pageNumber in PageNumbers())
+                    {
+                        <button type="button"
+                                class="food-page @(pageNumber == _result.Page ? "is-current" : string.Empty)"
+                                @onclick="() => GoToPageAsync(pageNumber)">@(pageNumber)</button>
+                    }
+
+                    <button type="button" class="btn-outline-royal btn-sm" disabled="@(_result.Page >= _result.TotalPages)" @onclick="() => GoToPageAsync(_result.Page + 1)">
+                        Sau <i class="bi bi-chevron-right"></i>
+                    </button>
+                </nav>
+            }
+        </section>
+
+        <section class="food-source-note">
+            <i class="bi bi-info-circle me-2"></i>
+            <span>
+                Điểm đánh giá, giá tham khảo và ảnh minh hoạ được đồng bộ từ bộ dữ liệu mẫu của dự án tham khảo
+                (<code>places_all.json</code>, <code>clean_46_places.json</code>) và được ghi rõ nguồn trong
+                <code>database/seed/dia-diem-am-thuc.json</code>. Giờ mở cửa và mức giá thực tế có thể đã thay đổi —
+                vui lòng liên hệ quán trước khi ghé.
+            </span>
+        </section>
+    </section>
+</main>
+
+@code {
+    private FoodPlaceQueryResult _result = new();
+    private IReadOnlyList<FoodPlace> _featured = Array.Empty<FoodPlace>();
+    private string? _keyword;
+    private string? _categoryCode;
+    private bool _loading = true;
+    private bool _mobileMapMode;
+    private int? _focusedPlaceId;
+    private double _radiusKm = 3;
+    private (double Lat, double Lng)? _searchCenter;
+    private GeoViewport? _viewport;
+    private GeoViewport? _lastQueriedViewport;
+    private FoodMapPanelComponent? _mapPanel;
+
+    private const int PageSize = 18;
+
+    private string? _activeCategoryName => _result.Categories
+        .FirstOrDefault(c => string.Equals(c.CategoryCode, _categoryCode, StringComparison.OrdinalIgnoreCase))?.DisplayName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync(1);
+    }
+
+    private async Task LoadAsync(int page)
+    {
+        _loading = true;
+        StateHasChanged();
+
+        _result = await CatalogUseCase.SearchAsync(new FoodPlaceQuery
+        {
+            Keyword = _keyword,
+            CategoryCode = _categoryCode,
+            NearLatitude = _searchCenter?.Lat,
+            NearLongitude = _searchCenter?.Lng,
+            RadiusKm = _searchCenter.HasValue ? _radiusKm : null,
+            BoundsWest = _viewport?.West,
+            BoundsSouth = _viewport?.South,
+            BoundsEast = _viewport?.East,
+            BoundsNorth = _viewport?.North,
+            Page = page,
+            PageSize = PageSize
+        });
+
+        if (string.IsNullOrEmpty(_keyword) && string.IsNullOrEmpty(_categoryCode)
+            && !_searchCenter.HasValue && _viewport is null)
+        {
+            _featured = await CatalogUseCase.GetFeaturedAsync(6);
+        }
+
+        _loading = false;
+        StateHasChanged();
+    }
+
+    private Task HandleViewportChangedAsync(GeoViewport viewport)
+    {
+        if (_lastQueriedViewport is { } previous
+            && !FoodPlaceCatalogUseCase.IsViewportShiftSignificant(previous, viewport))
+        {
+            return Task.CompletedTask;
+        }
+
+        _lastQueriedViewport = viewport;
+        _viewport = viewport;
+        return LoadAsync(1);
+    }
+
+    private Task HandleUserLocatedAsync((double Lat, double Lng) location)
+    {
+        _searchCenter = location;
+        _viewport = null;
+        _lastQueriedViewport = null;
+        return LoadAsync(1);
+    }
+
+    private Task HandleRadiusChangedAsync(double radiusKm)
+    {
+        _radiusKm = radiusKm;
+        return _searchCenter.HasValue ? LoadAsync(1) : Task.CompletedTask;
+    }
+
+    private async Task HandleMapFocusAsync(int placeId)
+    {
+        _focusedPlaceId = placeId;
+        var placeIndex = -1;
+        for (var index = 0; index < _result.MapItems.Count; index++)
+        {
+            if (_result.MapItems[index].Id == placeId)
+            {
+                placeIndex = index;
+                break;
+            }
+        }
+
+        if (placeIndex < 0)
+        {
+            return;
+        }
+
+        var targetPage = (placeIndex / PageSize) + 1;
+        if (targetPage != _result.Page)
+        {
+            await LoadAsync(targetPage);
+        }
+
+        await (_mapPanel?.ScrollToPlaceCardAsync(placeId) ?? Task.CompletedTask);
+    }
+
+    private async Task FocusPlaceOnMapAsync(int placeId)
+    {
+        _focusedPlaceId = placeId;
+        await JS.InvokeVoidAsync("hueFoodMap.focus", "hue-food-map", placeId);
+    }
+
+    private async Task HighlightMapMarkerAsync(int placeId)
+    {
+        _focusedPlaceId = placeId;
+        await (_mapPanel?.HighlightPlaceAsync(placeId) ?? Task.CompletedTask);
+    }
+
+    private async Task ShowListAsync()
+    {
+        _mobileMapMode = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ShowMapAsync()
+    {
+        _mobileMapMode = true;
+        await Task.Yield();
+        await (_mapPanel?.RefreshSizeAsync() ?? Task.CompletedTask);
+    }
+
+    private Task ResetSpatialFiltersAsync()
+    {
+        _searchCenter = null;
+        _viewport = null;
+        _lastQueriedViewport = null;
+        _focusedPlaceId = null;
+        return LoadAsync(1);
+    }
+
+    private Task HandleSearchAsync()
+    {
+        _keyword = string.IsNullOrWhiteSpace(_keyword) ? null : _keyword.Trim();
+        return LoadAsync(1);
+    }
+
+    private Task SelectCategoryAsync(string? categoryCode)
+    {
+        _categoryCode = categoryCode;
+        return LoadAsync(1);
+    }
+
+    private Task GoToPageAsync(int page)
+    {
+        if (page < 1 || page > _result.TotalPages)
+        {
+            return Task.CompletedTask;
+        }
+
+        return LoadAsync(page);
+    }
+
+    private Task ResetAsync()
+    {
+        _keyword = null;
+        _categoryCode = null;
+        _searchCenter = null;
+        _viewport = null;
+        _lastQueriedViewport = null;
+        return LoadAsync(1);
+    }
+
+    private IEnumerable<int> PageNumbers()
+    {
+        var total = _result.TotalPages;
+        var current = _result.Page;
+        var from = Math.Max(1, current - 2);
+        var to = Math.Min(total, from + 4);
+        from = Math.Max(1, to - 4);
+
+        for (var index = from; index <= to; index++)
+        {
+            yield return index;
+        }
+    }
+
+    private static string ResolveImage(FoodPlace place)
+    {
+        if (!string.IsNullOrWhiteSpace(place.ImageUrl))
+        {
+            return place.ImageUrl;
+        }
+
+        return place.CategoryCode switch
+        {
+            "cafe" => "/images/food/fallback-cafe.jpg",
+            "bakery" => "/images/food/fallback-bakery.jpg",
+            "restaurant" => "/images/food/fallback-restaurant.jpg",
+            _ => "/images/food/fallback-food.jpg"
+        };
+    }
+}

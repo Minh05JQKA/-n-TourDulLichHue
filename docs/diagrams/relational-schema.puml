@@ -1,0 +1,124 @@
+@startuml
+hide circle
+skinparam linetype ortho
+title Sơ đồ quan hệ CSDL — Đặt tour du lịch Huế
+
+entity "Tài khoản người dùng\ndbo.TaiKhoanNguoiDung" as TaiKhoanNguoiDung {
+  * MaTaiKhoan : INT <<PK>>
+  --
+  TenDangNhap : NVARCHAR(50) <<UQ>>
+  MatKhauBam : NVARCHAR(255)
+  HoTen : NVARCHAR(150)
+  VaiTro : NVARCHAR(50)
+  Email : NVARCHAR(150)
+  SoDienThoai : NVARCHAR(20)
+  NgayTao : DATETIME2
+}
+
+entity "Khách hàng\ndbo.KhachHang" as KhachHang {
+  * MaKhachHang : INT <<PK>>
+  --
+  MaTaiKhoan : INT <<FK, NULL>>
+  HoTen : NVARCHAR(150)
+  Email : NVARCHAR(150) <<UQ>>
+  SoDienThoai : NVARCHAR(20) <<UQ>>
+  DiaChi : NVARCHAR(255)
+  SoGiayToTuyThan : NVARCHAR(50)
+  NgayTao : DATETIME2
+}
+
+entity "Quy tắc giá vé\ndbo.QuyTacGiaVe" as QuyTacGiaVe {
+  * MaQuyTac : INT <<PK>>
+  --
+  LoaiHanhKhach : NVARCHAR(50) <<UQ>>
+  TenHienThi : NVARCHAR(100)
+  HeSoGia : DECIMAL(5,2)
+  TuoiToiThieu : INT
+  TuoiToiDa : INT
+  MoTa : NVARCHAR(255)
+  DangApDung : BIT
+}
+
+entity "Tour du lịch\ndbo.TourDuLich" as TourDuLich {
+  * MaTour : INT <<PK>>
+  --
+  MaTourHienThi : NVARCHAR(50) <<UQ>>
+  TenTour : NVARCHAR(255)
+  DanhMuc : NVARCHAR(100)
+  MoTaNgan : NVARCHAR(500)
+  MoTaChiTiet : NVARCHAR(MAX)
+  LichTrinh : NVARCHAR(MAX)
+  DiemNoiBat : NVARCHAR(1000)
+  ThoiLuong : NVARCHAR(50)
+  DiemKhoiHanh : NVARCHAR(200)
+  GiaCoBan : DECIMAL(18,2)
+  DuongDanAnh : NVARCHAR(500)
+  DangMoBan : BIT
+  NgayTao : DATETIME2
+}
+
+entity "Chuyến khởi hành\ndbo.ChuyenKhoiHanh" as ChuyenKhoiHanh {
+  * MaChuyen : INT <<PK>>
+  --
+  MaTour : INT <<FK>>
+  NgayKhoiHanh : DATETIME2
+  NgayKetThuc : DATETIME2
+  SucChuaToiDa : INT
+  SoChoDaDat : INT
+  TrangThai : NVARCHAR(50)
+  DiemHen : NVARCHAR(255)
+  TenHuongDanVien : NVARCHAR(100)
+  SoDienThoaiHuongDanVien : NVARCHAR(20)
+}
+
+entity "Đơn đặt tour\ndbo.DonDatTour" as DonDatTour {
+  * MaDonDatTour : INT <<PK>>
+  --
+  MaDatTour : NVARCHAR(50) <<UQ>>
+  MaChuyen : INT <<FK>>
+  MaKhachHang : INT <<FK>>
+  NgayDat : DATETIME2
+  TongTien : DECIMAL(18,2)
+  TrangThai : NVARCHAR(50)
+  GhiChu : NVARCHAR(500)
+  YeuCauDacBiet : NVARCHAR(500)
+  PhuongThucThanhToan : NVARCHAR(100)
+}
+
+entity "Vé hành khách\ndbo.VeHanhKhach" as VeHanhKhach {
+  * MaVeHanhKhach : INT <<PK>>
+  --
+  MaDonDatTour : INT <<FK>>
+  MaVe : NVARCHAR(50) <<UQ>>
+  HoTenHanhKhach : NVARCHAR(150)
+  GioiTinh : NVARCHAR(20)
+  LoaiHanhKhach : NVARCHAR(50) <<FK>>
+  NamSinh : INT
+  GiaVe : DECIMAL(18,2)
+  SoGhe : NVARCHAR(20)
+  GhiChu : NVARCHAR(255)
+}
+
+TaiKhoanNguoiDung o|--o| KhachHang : "tài khoản có thể có một hồ sơ"
+TourDuLich ||--o{ ChuyenKhoiHanh : "một tour có nhiều chuyến"
+ChuyenKhoiHanh ||--o{ DonDatTour : "một chuyến nhận nhiều đơn"
+KhachHang ||--o{ DonDatTour : "một khách có thể đặt nhiều đơn"
+DonDatTour ||--o{ VeHanhKhach : "một đơn gồm nhiều vé"
+QuyTacGiaVe ||--o{ VeHanhKhach : "một quy tắc áp dụng cho nhiều vé"
+
+note bottom of DonDatTour
+  Đơn đặt tour lưu phần thông tin chung; mỗi hành khách là một vé chi tiết.
+  Ứng dụng lưu đơn và vé trong cùng giao dịch.
+end note
+
+note bottom of KhachHang
+  MaTaiKhoan được để trống với khách vãng lai.
+  Khóa ngoại và chỉ mục duy nhất trên MaTaiKhoan bảo đảm quan hệ 0..1.
+end note
+
+note bottom of VeHanhKhach
+  dbo.UserAccount, dbo.Customer, dbo.PriceRule, dbo.Tour,
+  dbo.Departure, dbo.TourBooking và dbo.PassengerTicket là các VIEW tiếng Anh
+  để ứng dụng hiện tại tiếp tục hoạt động trên các bảng vật lý tiếng Việt.
+end note
+@enduml

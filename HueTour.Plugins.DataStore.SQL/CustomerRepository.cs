@@ -39,8 +39,8 @@ public class CustomerRepository : ICustomerRepository
     {
         using IDbConnection conn = _connectionFactory.CreateConnection();
         const string sql = @"
-            INSERT INTO dbo.Customer (FullName, Email, PhoneNumber, Address, IdentityCard, CreatedAt)
-            VALUES (@FullName, @Email, @PhoneNumber, @Address, @IdentityCard, @CreatedAt);
+            INSERT INTO dbo.Customer (UserAccountId, FullName, Email, PhoneNumber, Address, IdentityCard, CreatedAt)
+            VALUES (@UserAccountId, @FullName, @Email, @PhoneNumber, @Address, @IdentityCard, @CreatedAt);
             SELECT CAST(SCOPE_IDENTITY() as int);";
 
         return await conn.ExecuteScalarAsync<int>(sql, customer);
@@ -51,7 +51,7 @@ public class CustomerRepository : ICustomerRepository
         using IDbConnection conn = _connectionFactory.CreateConnection();
         const string sql = @"
             UPDATE dbo.Customer
-            SET FullName = @FullName, Email = @Email, PhoneNumber = @PhoneNumber,
+            SET UserAccountId = @UserAccountId, FullName = @FullName, Email = @Email, PhoneNumber = @PhoneNumber,
                 Address = @Address, IdentityCard = @IdentityCard
             WHERE Id = @Id";
 

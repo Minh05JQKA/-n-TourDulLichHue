@@ -6,7 +6,9 @@
 @inject ICalculateBookingPricingUseCase CalculateBookingPricingUseCase
 @inject IPlaceTourBookingUseCase PlaceTourBookingUseCase
 @inject IBookingCartStateService CartStateService
+@inject IOptions<VietQrPaymentOptions> VietQrOptions
 @inject NavigationManager NavManager
+@inject ILogger<Booking> Logger
 
 <PageTitle>Đặt Tour - Điền Thông Tin Đoàn Khách</PageTitle>
 
@@ -191,20 +193,77 @@ else
                         <h5 class="fw-bold text-purple border-bottom pb-2 mb-3">
                             <i class="bi bi-credit-card-2-front text-gold me-2"></i>3. Phương Thức Thanh Toán
                         </h5>
-                        <div class="row g-2">
+                        <div class="row g-3 mb-3">
                             <div class="col-md-6 col-12">
-                                <div class="p-3 border rounded-3 bg-light d-flex align-items-center gap-2">
-                                    <input type="radio" id="pay1" name="payment" checked />
-                                    <label for="pay1" class="small fw-bold mb-0">Chuyển khoản Quét mã VietQR (Tự động kích hoạt vé)</label>
+                                <div class="p-3 border rounded-3 @(formModel.PaymentMethod == "Chuyển khoản VietQR" ? "border-primary bg-primary-subtle" : "bg-light")"
+                                     style="cursor: pointer;"
+                                     @onclick='() => formModel.PaymentMethod = "Chuyển khoản VietQR"'>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="radio" id="pay1" name="paymentRadio"
+                                               checked="@(formModel.PaymentMethod == "Chuyển khoản VietQR")"
+                                               @onchange='() => formModel.PaymentMethod = "Chuyển khoản VietQR"' />
+                                        <label for="pay1" class="small fw-bold mb-0" style="cursor: pointer;">
+                                            <i class="bi bi-qr-code-scan text-purple me-1"></i>Chuyển khoản Quét mã VietQR 24/7
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-1 ps-4">Quét mã bằng App Ngân Hàng bất kỳ (MB Bank, VCB, BIDV...)</small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-12">
-                                <div class="p-3 border rounded-3 bg-light d-flex align-items-center gap-2">
-                                    <input type="radio" id="pay2" name="payment" />
-                                    <label for="pay2" class="small fw-bold mb-0">Thanh toán tiền mặt khi lên xe / Gặp HDV</label>
+                                <div class="p-3 border rounded-3 @(formModel.PaymentMethod == "Thanh toán trực tiếp" ? "border-primary bg-primary-subtle" : "bg-light")"
+                                     style="cursor: pointer;"
+                                     @onclick='() => formModel.PaymentMethod = "Thanh toán trực tiếp"'>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="radio" id="pay2" name="paymentRadio"
+                                               checked="@(formModel.PaymentMethod == "Thanh toán trực tiếp")"
+                                               @onchange='() => formModel.PaymentMethod = "Thanh toán trực tiếp"' />
+                                        <label for="pay2" class="small fw-bold mb-0" style="cursor: pointer;">
+                                            <i class="bi bi-cash-coin text-gold me-1"></i>Thanh toán tiền mặt khi lên xe
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-1 ps-4">Thanh toán trực tiếp với Hướng dẫn viên tại điểm tập trung</small>
                                 </div>
                             </div>
                         </div>
+
+                        @if (formModel.PaymentMethod == "Chuyển khoản VietQR")
+                        {
+                            <div class="p-3 rounded-4 border bg-white shadow-sm mt-3">
+                                <div class="row g-3 align-items-center">
+                                    @if (!string.IsNullOrWhiteSpace(VietQrOptions.Value.QrImagePath))
+                                    {
+                                        <div class="col-sm-5 text-center">
+                                        <div class="p-2 border rounded-3 bg-light d-inline-block shadow-sm">
+                                            <img src="@VietQrOptions.Value.QrImagePath" alt="Mã VietQR thanh toán" class="img-fluid rounded-2" style="max-width: 190px;" />
+                                        </div>
+                                        <div class="small text-muted mt-1"><i class="bi bi-shield-check text-success me-1"></i>Quét mã bằng ứng dụng ngân hàng</div>
+                                        </div>
+                                    }
+                                    <div class="@(string.IsNullOrWhiteSpace(VietQrOptions.Value.QrImagePath) ? "col-12" : "col-sm-7")">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge bg-danger">@VietQrOptions.Value.BankCode</span>
+                                            <span class="small text-muted">@VietQrOptions.Value.BankName</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span class="small text-muted d-block">Chủ tài khoản:</span>
+                                            <strong class="fs-6 text-purple">@VietQrOptions.Value.AccountHolder</strong>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span class="small text-muted d-block">Số tài khoản:</span>
+                                            <code class="fs-5 fw-bold text-dark p-1 px-2 bg-light rounded border">@VietQrOptions.Value.AccountNumber</code>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span class="small text-muted d-block">Số tiền thanh toán:</span>
+                                            <strong class="text-success fs-5">@currentTotalAmount.ToString("N0") VNĐ</strong>
+                                        </div>
+                                        <div class="small text-muted">
+                                            <i class="bi bi-info-circle me-1 text-primary"></i>Nội dung CK: <strong class="text-dark">@VietQrOptions.Value.FormatTransferContent("MÃ ĐẶT TOUR", formModel.CustomerPhone)</strong>
+                                            <span class="d-block mt-1">Mã đặt tour chính xác sẽ hiển thị sau khi hoàn tất đặt chỗ.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
                     </div>
 
                     <!-- Hidden submit button triggered by summary component -->
@@ -387,7 +446,8 @@ else
         }
         catch (Exception ex)
         {
-            ruleErrorMessage = $"Đã xảy ra sự cố trong quá trình ghi nhận đơn: {ex.Message}";
+            Logger.LogError(ex, "Unexpected error while placing a booking for departure {DepartureId}", departure.Id);
+            ruleErrorMessage = "Hệ thống chưa thể xác nhận đơn đặt tour lúc này. Vui lòng thử lại sau hoặc liên hệ quản trị viên.";
         }
         finally
         {

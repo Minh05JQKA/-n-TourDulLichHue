@@ -46,3 +46,38 @@
 | `Tour 22 (ảnh nhúng từ xa)` | Đảo Hòn Chảo (Sơn Chà) | Cổng thông tin Du lịch Huế (theo Công Thương); ảnh dẫn từ trang bài viết | [Trang nguồn](https://huetourism.gov.vn/Dao-Hon-Chao-Danh-thang-dac-biet-cua-bien-xu-Hue.html/?pid=MTg3MjN8Y3NkbGRs0) · [ảnh](https://huetourism.gov.vn/Portals/0/VisitHue/Destination/CanhQuan/visithue_dao%20Hon%20Chao.jpg) |
 
 Ảnh nội bộ được thu nhỏ hoặc cắt khung cho website; ảnh nhúng từ xa được tải trực tiếp từ trang nguồn và có liên kết ghi công cạnh ảnh. Một số trang du lịch Huế ghi “All rights reserved”; ảnh đó chỉ được nhúng và ghi nguồn trong bản capstone này, không được mô tả là ảnh Creative Commons.
+
+<!-- HUEGO_SAMPLE_IMAGES_START -->
+### Ảnh nhập từ dự án mẫu HUEGO (dùng cho học tập / demo capstone)
+
+| Tệp | Nội dung | Tác giả / giấy phép | Nguồn |
+|---|---|---|---|
+| `hero/am-thuc-cung-dinh-dan-gian.jpg` | Ẩm thực cung đình và dân gian Huế (ảnh bìa trang mẫu) | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `img/hero/am-thuc-cung-dinh-dan-gian.jpg` |
+| `hero/ca-phe-song-huong.jpg` | Cà phê bên bờ sông Hương (ảnh bìa trang mẫu) | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `img/hero/ca-phe-song-huong.jpg` |
+| `hero/di-san-trieu-nguyen.jpg` | Di sản triều Nguyễn (ảnh bìa trang mẫu) | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `img/hero/di-san-trieu-nguyen.jpg` |
+| `hero/chua-co-xu-hue.jpg` | Chốn thiền môn và chùa cổ Huế (ảnh bìa trang mẫu) | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `img/hero/chua-co-xu-hue.jpg` |
+| `poi/cau-ngoi-thanh-toan.jpg` | Cầu Ngói Thanh Toàn | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/cau-ngoi-thanh-toan.jpg` |
+| `poi/cau-trang-tien.jpg` | Cầu Tràng Tiền | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/cau-trang-tien.jpg` |
+| `poi/cho-dong-ba.jpg` | Chợ Đông Ba | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/cho-dong-ba.jpg` |
+| `poi/chua-thien-mu.jpg` | Chùa Thiên Mụ | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/chua-thien-mu.jpg` |
+| `poi/cung-an-dinh.jpg` | Cung An Đình | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/cung-an-dinh.jpg` |
+| `poi/cuu-dinh.jpg` | Cửa Đình | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/cuu-dinh.jpg` |
+| `poi/dai-noi-hue.jpg` | Đại Nội (Hoàng thành Huế) | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/dai-noi-hue.jpg` |
+| `poi/dien-hon-chen.jpg` | Điện Hòn Chén | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/dien-hon-chen.jpg` |
+| `poi/dien-thai-hoa.jpg` | Điện Thái Hòa | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/dien-thai-hoa.jpg` |
+| `poi/doi-vong-canh.jpg` | Đồi Vọng Cảnh | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/doi-vong-canh.jpg` |
+| `poi/ho-tinh-tam.jpg` | Hồ Tịnh Tâm | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/ho-tinh-tam.jpg` |
+| `poi/lang-khai-dinh.jpg` | Lăng Khải Định | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/lang-khai-dinh.jpg` |
+| `poi/lang-minh-mang.jpg` | Lăng Minh Mạng | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/lang-minh-mang.jpg` |
+| `poi/lang-tu-duc.jpg` | Lăng Tự Đức | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/lang-tu-duc.jpg` |
+| `poi/ngo-mon.jpg` | Ngọ Môn | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/ngo-mon.jpg` |
+| `poi/pha-tam-giang.jpg` | Phá Tam Giang | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/pha-tam-giang.jpg` |
+| `poi/song-huong.jpg` | Sông Hương | Người tập hợp trong dự án mẫu; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `images/pois/song-huong.jpg` |
+| `food/fallback-cafe.jpg` | Ẩm thực Huế — ảnh đại diện nhóm quán cà phê | Ảnh dẫn xuất từ ảnh mẫu `ca-phe-song-huong.jpg`; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `img/hero/ca-phe-song-huong.jpg` |
+| `food/fallback-restaurant.jpg` | Ẩm thực Huế — ảnh đại diện nhóm nhà hàng | Ảnh dẫn xuất từ ảnh mẫu `am-thuc-cung-dinh-dan-gian.jpg`; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `img/hero/am-thuc-cung-dinh-dan-gian.jpg` |
+| `food/fallback-bakery.jpg` | Ẩm thực Huế — ảnh đại diện nhóm tiệm bánh | Ảnh dẫn xuất từ ảnh mẫu `cho-dong-ba.jpg`; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `img/hero/cho-dong-ba.jpg` |
+| `food/fallback-food.jpg` | Ẩm thực Huế — ảnh đại diện nhóm món ăn | Ảnh dẫn xuất từ ảnh mẫu `am-thuc-cung-dinh-dan-gian.jpg`; giấy phép chưa xác minh | [Repo mẫu HUEGO](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git) — `img/hero/am-thuc-cung-dinh-dan-gian.jpg` |
+
+> Dự án mẫu HUEGO (`backend/` + `web-hue4u/public/`); ảnh do người tập hợp, giấy phép chưa được xác minh — dùng cho mục đích học tập.
+> Kho nguồn: [https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git](https://github.com/hoangduong030405-art/Do_An_Khoi_Nghiep_-MST.git)
+<!-- HUEGO_SAMPLE_IMAGES_END -->

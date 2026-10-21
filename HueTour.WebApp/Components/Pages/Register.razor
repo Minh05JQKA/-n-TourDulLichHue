@@ -1,0 +1,205 @@
+@page "/register"
+@attribute [AllowAnonymous]
+@using System.ComponentModel.DataAnnotations
+@using HueTour.CoreBusiness
+@using HueTour.UseCases.PluginInterfaces.DataStore
+@inject IUserAccountRepository UserAccountRepository
+@inject NavigationManager NavManager
+
+<PageTitle>Đăng Ký Tài Khoản - Hue Tour Booking</PageTitle>
+
+<div class="container py-5">
+    <div class="card border-0 shadow-sm mx-auto p-4 p-md-5" style="max-width: 520px; border-radius: 22px;">
+        <div class="text-center mb-4">
+            <span class="fs-1 text-gold">🏛️</span>
+            <h3 class="font-serif fw-bold text-purple mb-1">Đăng Ký Tài Khoản</h3>
+            <p class="text-muted small">Trở thành hội viên để đặt tour di sản &amp; nhận ưu đãi Cố Đô Huế</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger py-2 px-3 small mb-3 rounded-3">
+                <i class="bi bi-exclamation-circle-fill me-1"></i>@errorMessage
+            </div>
+        }
+
+        @if (isSuccess)
+        {
+            <div class="alert alert-success p-3 rounded-3 text-center mb-4">
+                <i class="bi bi-check-circle-fill fs-3 text-success d-block mb-2"></i>
+                <h5 class="fw-bold mb-1">Đăng Ký Thành Công!</h5>
+                <p class="small mb-3">Tài khoản <strong>@registerModel.Username</strong> đã được tạo. Bạn có thể đăng nhập ngay bây giờ.</p>
+                <a href="/login" class="btn btn-royal rounded-pill px-4 btn-sm fw-bold">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Đến Trang Đăng Nhập
+                </a>
+            </div>
+        }
+        else
+        {
+            <EditForm Model="@registerModel" OnValidSubmit="HandleRegisterAsync">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Họ và tên của bạn <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                        <InputText class="form-control" placeholder="VD: Nguyễn Văn Hoàng" @bind-Value="registerModel.FullName" />
+                    </div>
+                    <ValidationMessage For="@(() => registerModel.FullName)" class="validation-message" />
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6 col-12">
+                        <label class="form-label small fw-bold text-muted">Tên đăng nhập <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-person-badge"></i></span>
+                            <InputText class="form-control" placeholder="VD: hoangnguyen" @bind-Value="registerModel.Username" />
+                        </div>
+                        <ValidationMessage For="@(() => registerModel.Username)" class="validation-message" />
+                    </div>
+                    <div class="col-md-6 col-12">
+                        <label class="form-label small fw-bold text-muted">Số điện thoại <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-telephone"></i></span>
+                            <InputText class="form-control" placeholder="VD: 0905123456" @bind-Value="registerModel.PhoneNumber" />
+                        </div>
+                        <ValidationMessage For="@(() => registerModel.PhoneNumber)" class="validation-message" />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Địa chỉ Email <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-envelope"></i></span>
+                        <InputText class="form-control" type="email" placeholder="VD: hoang@gmail.com" @bind-Value="registerModel.Email" />
+                    </div>
+                    <ValidationMessage For="@(() => registerModel.Email)" class="validation-message" />
+                </div>
+
+                <div class="row g-2 mb-4">
+                    <div class="col-md-6 col-12">
+                        <label class="form-label small fw-bold text-muted">Mật khẩu <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-key"></i></span>
+                            <InputText class="form-control" type="password" placeholder="Tối thiểu 6 ký tự" @bind-Value="registerModel.Password" />
+                        </div>
+                        <ValidationMessage For="@(() => registerModel.Password)" class="validation-message" />
+                    </div>
+                    <div class="col-md-6 col-12">
+                        <label class="form-label small fw-bold text-muted">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-shield-lock"></i></span>
+                            <InputText class="form-control" type="password" placeholder="Nhập lại mật khẩu" @bind-Value="registerModel.ConfirmPassword" />
+                        </div>
+                        <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="validation-message" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-royal btn-lg rounded-pill w-100 fw-bold mb-3 shadow-sm" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span>Đang xử lý đăng ký...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-person-plus-fill me-1"></i>
+                        <span>Đăng Ký Tài Khoản</span>
+                    }
+                </button>
+            </EditForm>
+        }
+
+        <div class="text-center pt-3 border-top mt-2">
+            <span class="small text-muted me-1">Đã có tài khoản?</span>
+            <a href="/login" class="small fw-bold text-purple text-decoration-none">
+                Đăng nhập ngay &rarr;
+            </a>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="/" class="small text-muted text-decoration-none">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại Trang Chủ
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterViewModel registerModel = new();
+    private bool isSubmitting = false;
+    private bool isSuccess = false;
+    private string? errorMessage;
+
+    private async Task HandleRegisterAsync()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            var existingUser = await UserAccountRepository.GetByUsernameAsync(registerModel.Username);
+            if (existingUser != null)
+            {
+                errorMessage = "Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.";
+                return;
+            }
+
+            var newUser = new UserAccount
+            {
+                Username = registerModel.Username.Trim().ToLowerInvariant(),
+                PasswordHash = UserAccountPasswordHasher.Hash(registerModel.Password),
+                FullName = registerModel.FullName.Trim(),
+                Role = "Customer",
+                Email = registerModel.Email.Trim(),
+                PhoneNumber = registerModel.PhoneNumber.Trim()
+            };
+
+            bool created = await UserAccountRepository.RegisterUserAccountAsync(newUser);
+            if (created)
+            {
+                isSuccess = true;
+            }
+            else
+            {
+                errorMessage = "Không thể tạo tài khoản. Tên đăng nhập có thể đã tồn tại.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Có lỗi xảy ra: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    public class RegisterViewModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập họ và tên")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Họ tên phải từ 2 đến 100 ký tự")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Tên đăng nhập phải từ 3 đến 50 ký tự")]
+        [RegularExpression(@"^[a-zA-Z0-9_\.]+$", ErrorMessage = "Tên đăng nhập chỉ gồm chữ cái, số, dấu gạch dưới hoặc chấm")]
+        public string Username { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
+        [Phone(ErrorMessage = "Số điện thoại không đúng định dạng")]
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng nhập địa chỉ email")]
+        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
+        [MinLength(6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu")]
+        [Compare(nameof(Password), ErrorMessage = "Mật khẩu xác nhận không khớp")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}

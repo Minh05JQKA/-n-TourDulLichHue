@@ -11,4 +11,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!--
+    Dữ liệu địa điểm ẩm thực dùng chung cho cả kho In-memory và seed SQL.
+    Sinh bởi script scripts/import_food_places.py (đọc backend/data của repo mẫu HUEGO).
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\database\seed\dia-diem-am-thuc.json"
+                      Link="Data\dia-diem-am-thuc.json"
+                      LogicalName="HueTour.Plugins.DataStore.InMemory.Data.dia-diem-am-thuc.json" />
+  </ItemGroup>
+
 </Project>

@@ -19,6 +19,7 @@ public class HueTourChatClient : IChatClient
     private readonly ILogger<HueTourChatClient> _logger;
 
     public ChatClientMetadata Metadata { get; }
+    public bool LastCompletionUsedModel { get; private set; }
 
     public HueTourChatClient(
         HttpClient httpClient,
@@ -59,6 +60,7 @@ public class HueTourChatClient : IChatClient
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        LastCompletionUsedModel = false;
         string? apiKey = GetApiKey();
         string ollamaUrl = GetOllamaEndpoint();
 
@@ -96,6 +98,7 @@ public class HueTourChatClient : IChatClient
                         .GetProperty("content")
                         .GetString();
 
+                    LastCompletionUsedModel = true;
                     return new ChatCompletion(new ChatMessage(ChatRole.Assistant, content ?? string.Empty));
                 }
 
@@ -134,6 +137,7 @@ public class HueTourChatClient : IChatClient
                 using var doc = JsonDocument.Parse(jsonStr);
                 var content = doc.RootElement.GetProperty("message").GetProperty("content").GetString();
 
+                LastCompletionUsedModel = true;
                 return new ChatCompletion(new ChatMessage(ChatRole.Assistant, content ?? string.Empty));
             }
         }

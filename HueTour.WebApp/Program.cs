@@ -1,9 +1,11 @@
 using HueTour.WebApp.Components;
+using HueTour.WebApp.Configuration;
 using HueTour.WebApp.Services;
 using HueTour.UseCases.AiAssistant;
 using HueTour.UseCases.Auth;
 using HueTour.UseCases.Booking;
 using HueTour.UseCases.Departures;
+using HueTour.UseCases.FoodPlaces;
 using HueTour.UseCases.PluginInterfaces.DataStore;
 using HueTour.UseCases.PluginInterfaces.State;
 using HueTour.UseCases.Reports;
@@ -12,11 +14,15 @@ using HueTour.Plugins.DataStore.InMemory;
 using HueTour.Plugins.DataStore.SQL;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.AI;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
+
 var dataProtectionKeyPath = builder.Configuration["DataProtection:KeyPath"];
 if (!string.IsNullOrWhiteSpace(dataProtectionKeyPath))
 {
@@ -37,6 +43,7 @@ if (useSqlDatabase)
     builder.Services.AddScoped<IPriceRuleRepository, PriceRuleRepository>();
     builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
     builder.Services.AddScoped<ITourBookingRepository, TourBookingRepository>();
+    builder.Services.AddScoped<IFoodPlaceRepository, FoodPlaceRepository>();
 }
 else
 {
@@ -47,7 +54,25 @@ else
     builder.Services.AddSingleton<IPriceRuleRepository, PriceRuleInMemoryRepository>();
     builder.Services.AddSingleton<IUserAccountRepository, UserAccountInMemoryRepository>();
     builder.Services.AddSingleton<ITourBookingRepository, TourBookingInMemoryRepository>();
+    builder.Services.AddSingleton<IFoodPlaceRepository, FoodPlaceInMemoryRepository>();
 }
+builder.Services.Configure<VietQrPaymentOptions>(builder.Configuration.GetSection(VietQrPaymentOptions.SectionName));
+builder.Services.PostConfigure<VietQrPaymentOptions>(options =>
+{
+    var bankCode = Environment.GetEnvironmentVariable("HUETOUR_BANK_CODE");
+    var bankName = Environment.GetEnvironmentVariable("HUETOUR_BANK_NAME");
+    var accountNumber = Environment.GetEnvironmentVariable("HUETOUR_BANK_ACCOUNT_NUMBER");
+    var accountHolder = Environment.GetEnvironmentVariable("HUETOUR_BANK_ACCOUNT_HOLDER");
+    var qrImagePath = Environment.GetEnvironmentVariable("HUETOUR_BANK_QR_IMAGE_PATH");
+    var transferTemplate = Environment.GetEnvironmentVariable("HUETOUR_BANK_TRANSFER_CONTENT_TEMPLATE");
+
+    if (!string.IsNullOrWhiteSpace(bankCode)) options.BankCode = bankCode;
+    if (!string.IsNullOrWhiteSpace(bankName)) options.BankName = bankName;
+    if (!string.IsNullOrWhiteSpace(accountNumber)) options.AccountNumber = accountNumber;
+    if (!string.IsNullOrWhiteSpace(accountHolder)) options.AccountHolder = accountHolder;
+    if (!string.IsNullOrWhiteSpace(qrImagePath)) options.QrImagePath = qrImagePath;
+    if (!string.IsNullOrWhiteSpace(transferTemplate)) options.TransferContentTemplate = transferTemplate;
+});
 builder.Services.AddScoped<IBookingCartStateService, BookingCartStateService>();
 
 builder.Services.AddScoped<IViewToursUseCase, ViewToursUseCase>();
@@ -66,7 +91,14 @@ builder.Services.AddScoped<IAuthenticateUserUseCase, AuthenticateUserUseCase>();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IChatClient, HueTourChatClient>();
 builder.Services.AddScoped<IAiTourAdvisorUseCase, AiTourAdvisorUseCase>();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<ITravelDiscoveryService, TravelDiscoveryService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(25);
+});
+builder.Services.AddScoped<ITravelAssistantService, TravelAssistantService>();
 builder.Services.AddScoped<IExportBookingReportUseCase, ExportBookingReportUseCase>();
+builder.Services.AddScoped<IFoodPlaceCatalogUseCase, FoodPlaceCatalogUseCase>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -141,14 +173,14 @@ app.MapGet("/api/reports/bookings-csv", async (IExportBookingReportUseCase repor
     var csvBytes = await reportUseCase.ExportBookingsToCsvAsync();
     string fileName = $"HueTour_BaoCaoDatTour_{DateTime.Now:yyyyMMdd_HHmm}.csv";
     return Results.File(csvBytes, "text/csv; charset=utf-8", fileName);
-});
+}).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
 app.MapGet("/api/reports/passengers-csv/{departureId:int}", async (int departureId, IExportBookingReportUseCase reportUseCase) =>
 {
     var csvBytes = await reportUseCase.ExportDeparturePassengersToCsvAsync(departureId);
     string fileName = $"HueTour_Chuyen_{departureId}_HanhKhach_{DateTime.Now:yyyyMMdd}.csv";
     return Results.File(csvBytes, "text/csv; charset=utf-8", fileName);
-});
+}).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
 app.UseStaticFiles();
 app.MapRazorComponents<App>()

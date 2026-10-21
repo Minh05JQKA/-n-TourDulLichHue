@@ -18,7 +18,6 @@ class PlaceTourBookingUseCase
 class BookingBusinessRules
 class TourBookingRepository
 Tour "1" -- "0..*" Departure
-Tour "1" -- "0..*" PriceRule
 Departure "1" -- "0..*" TourBooking
 Customer "1" -- "0..*" TourBooking
 TourBooking "1" *-- "1..*" PassengerTicket

@@ -27,16 +27,56 @@
             </div>
         </EditForm>
     }
-    <div class="card border-0 shadow-sm p-3"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
-        <thead><tr><th>Tour</th><th>Khởi hành</th><th>Điểm tập trung</th><th>Chỗ</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-        <tbody>@foreach (var departure in departures)
-        {
-            <tr><td class="fw-semibold">@departure.Tour?.Title</td><td>@departure.DepartureDate.ToString("dd/MM/yyyy HH:mm")</td><td>@departure.MeetingPoint</td><td>@departure.BookedSeats / @departure.MaxCapacity</td><td>@departure.Status</td>
-            <td class="text-nowrap">
-                @if (departure.Status == DepartureStatus.Open) { <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Close(departure.Id)">Chốt</button><button class="btn btn-sm btn-outline-danger" @onclick="() => Cancel(departure.Id)">Hủy chuyến</button> }
-            </td></tr>
-        }</tbody>
-    </table></div></div>
+    <div class="card border-0 shadow-sm p-4" style="border-radius: 18px;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small">
+                    <tr>
+                        <th>Tuyến Tour</th>
+                        <th>Khởi hành</th>
+                        <th>Điểm tập trung</th>
+                        <th>Chỗ (Đã đặt / Sức chứa)</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Tác vụ điều hành</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var departure in departures)
+                    {
+                        <tr>
+                            <td class="fw-semibold text-purple">@departure.Tour?.Title</td>
+                            <td class="small">@departure.DepartureDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="small">@departure.MeetingPoint</td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <strong>@departure.BookedSeats</strong> / @departure.MaxCapacity chỗ
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge @(departure.Status == DepartureStatus.Open ? "bg-success" : departure.Status == DepartureStatus.Closed ? "bg-warning text-dark" : "bg-danger")">
+                                    @departure.Status
+                                </span>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a href="/api/reports/passengers-csv/@departure.Id" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1 me-1" target="_blank" download title="Xuất danh sách hành khách">
+                                    <i class="bi bi-file-earmark-person me-1"></i>Hành khách
+                                </a>
+                                @if (departure.Status == DepartureStatus.Open)
+                                {
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 me-1" @onclick="() => Close(departure.Id)">
+                                        Chốt
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" @onclick="() => Cancel(departure.Id)">
+                                        Hủy
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 @code {

@@ -20,6 +20,8 @@
 
 # Local secrets and environment files
 appsettings.*.local.json
+/HueTour.WebApp/appsettings.Local.json
+/HueTour.WebApp/wwwroot/images/vietqr-luongquangphieu.png
 .env
 .env.*
 !.env.example
@@ -27,3 +29,5 @@ appsettings.*.local.json
 # Local Codex artifacts
 /.codex/
 /output/
+/scratch/
+__pycache__/
