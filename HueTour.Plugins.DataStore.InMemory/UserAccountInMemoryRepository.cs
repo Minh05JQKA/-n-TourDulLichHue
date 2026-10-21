@@ -28,4 +28,20 @@ public class UserAccountInMemoryRepository : IUserAccountRepository
         var valid = user is not null && UserAccountPasswordHasher.Verify(user.PasswordHash, password);
         return Task.FromResult(valid ? user : null);
     }
+
+    public Task<bool> RegisterUserAccountAsync(UserAccount user)
+    {
+        lock (_users)
+        {
+            if (_users.Any(u => string.Equals(u.Username, user.Username.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                return Task.FromResult(false);
+            }
+
+            user.Id = _users.Count > 0 ? _users.Max(u => u.Id) + 1 : 1;
+            if (string.IsNullOrWhiteSpace(user.Role)) user.Role = "Customer";
+            _users.Add(user);
+            return Task.FromResult(true);
+        }
+    }
 }

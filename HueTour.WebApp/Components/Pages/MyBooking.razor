@@ -28,8 +28,16 @@
                    @bind="searchCode"
                    @bind:event="oninput"
                    @onkeyup="HandleKeyUp" />
-            <button class="btn btn-royal rounded-end-pill px-4" type="button" @onclick="SearchBooking">
-                <i class="bi bi-search me-1"></i>Tra Cứu
+            <button class="btn btn-royal rounded-end-pill px-4" type="button" @onclick="SearchBooking" disabled="@isSearching">
+                @if (isSearching)
+                {
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    <span>Đang tra cứu</span>
+                }
+                else
+                {
+                    <i class="bi bi-search me-1"></i><span>Tra Cứu</span>
+                }
             </button>
         </div>
 
@@ -38,7 +46,13 @@
             <a href="javascript:void(0)" class="text-purple fw-bold" @onclick="@(() => searchCode = "HUE-202610-001")">HUE-202610-001</a>
         </div>
 
-        @if (hasSearched && searchResult == null && !isSearching)
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="alert alert-danger mt-4 mb-0 small text-center" role="alert" style="border-radius: 12px;">
+                <i class="bi bi-exclamation-circle-fill me-1"></i>@errorMessage
+            </div>
+        }
+        else if (hasSearched && searchResult == null && !isSearching)
         {
             <div class="alert alert-danger mt-4 mb-0 small text-center" style="border-radius: 12px;">
                 <i class="bi bi-exclamation-circle-fill me-1"></i>Không tìm thấy đơn đặt tour với mã: <strong>@searchCode</strong>. Vui lòng kiểm tra lại.
@@ -105,16 +119,28 @@
     private TourBooking? searchResult;
     private bool hasSearched = false;
     private bool isSearching = false;
+    private string? errorMessage;
 
     private async Task SearchBooking()
     {
-        if (string.IsNullOrWhiteSpace(searchCode)) return;
+        errorMessage = null;
+        searchResult = null;
+        if (string.IsNullOrWhiteSpace(searchCode))
+        {
+            hasSearched = false;
+            errorMessage = "Vui lòng nhập mã đặt tour để tra cứu.";
+            return;
+        }
 
         isSearching = true;
         hasSearched = true;
         try
         {
             searchResult = await ViewBookingConfirmationUseCase.ExecuteAsync(searchCode.Trim());
+        }
+        catch (Exception)
+        {
+            errorMessage = "Chưa thể tra cứu đơn đặt tour lúc này. Vui lòng thử lại sau.";
         }
         finally
         {

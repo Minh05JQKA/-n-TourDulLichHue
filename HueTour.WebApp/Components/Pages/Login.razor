@@ -11,9 +11,16 @@
             <p class="text-muted small">Cổng thông tin đặt tour &amp; quản trị điều hành Cố Đô</p>
         </div>
 
+        @if (!string.IsNullOrEmpty(SuccessMessage))
+        {
+            <div class="alert alert-success py-2 px-3 small mb-3 rounded-3 text-center">
+                <i class="bi bi-check-circle-fill me-1"></i>@SuccessMessage
+            </div>
+        }
+
         @if (!string.IsNullOrEmpty(ErrorMessage))
         {
-            <div class="alert alert-danger py-2 px-3 small mb-3">
+            <div class="alert alert-danger py-2 px-3 small mb-3 rounded-3">
                 <i class="bi bi-exclamation-circle-fill me-1"></i>@ErrorMessage
             </div>
         }
@@ -38,10 +45,17 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-royal btn-lg rounded-pill w-100 fw-bold mb-3">
+            <button type="submit" class="btn btn-royal btn-lg rounded-pill w-100 fw-bold mb-3 shadow-sm">
                 <i class="bi bi-box-arrow-in-right me-1"></i>Đăng Nhập
             </button>
         </form>
+
+        <div class="text-center pt-2 pb-3 border-top mt-1 mb-3">
+            <span class="small text-muted me-1">Chưa có tài khoản?</span>
+            <a href="/register" class="small fw-bold text-purple text-decoration-none">
+                <i class="bi bi-person-plus me-1"></i>Đăng ký tài khoản mới &rarr;
+            </a>
+        </div>
 
         <!-- Tài khoản mẫu để chấm điểm (K4.1) -->
         <div class="p-3 bg-light rounded-3 border small">
@@ -67,6 +81,9 @@
 @code {
     [SupplyParameterFromQuery]
     public string? ErrorMessage { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? SuccessMessage { get; set; }
 
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; } = "/";

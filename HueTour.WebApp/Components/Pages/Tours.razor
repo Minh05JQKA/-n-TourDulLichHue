@@ -4,21 +4,24 @@
 
 <PageTitle>Danh Sách Tour Du Lịch Huế - Trọn Gói Giá Tốt</PageTitle>
 
-<div class="bg-purple text-white py-5 mb-4">
-    <div class="container text-center">
-        <span class="text-gold-light small fw-bold text-uppercase letter-spacing-1">
-            <i class="bi bi-geo-alt-fill me-1"></i>Điểm Đến Di Sản &amp; Danh Thắng
-        </span>
-        <h1 class="font-serif fw-bold display-5 mt-1">Danh Sách Tour Du Lịch Huế</h1>
-        <p class="text-light opacity-90 mx-auto mb-0" style="max-width: 650px;">
-            Chọn tuyến di sản, thiên nhiên, làng nghề hoặc ẩm thực. Lịch và mức giá đang hiển thị là dữ liệu mẫu của đồ án.
-        </p>
+<header class="tour-page-hero mb-4">
+    <div class="container">
+        <nav class="tour-breadcrumb" aria-label="Điều hướng">
+            <a href="/">Trang chủ</a>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            <span aria-current="page">Tour du lịch</span>
+        </nav>
+        <div class="tour-page-hero-copy">
+            <span class="tour-page-kicker"><i class="bi bi-compass me-2"></i>HÀNH TRÌNH KHÁM PHÁ HUẾ</span>
+            <h1 class="font-serif fw-bold">Chọn nhịp đi Huế của bạn</h1>
+            <p>Men theo dấu xưa, xuôi dòng Hương Giang hay khám phá hương vị và làng nghề — bắt đầu từ điều bạn yêu thích.</p>
+        </div>
     </div>
-</div>
+</header>
 
 <div class="container py-3">
     <!-- Search & Filter Controls -->
-    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+    <section class="tour-filter-card mb-4" aria-label="Tìm và lọc tour">
         <div class="row g-3 align-items-center">
             <div class="col-lg-3 col-md-6 col-12">
                 <div class="input-group">
@@ -60,6 +63,17 @@
                 </select>
             </div>
         </div>
+    </section>
+
+    <div class="tour-listing-toolbar">
+        <div>
+            <span class="section-eyebrow text-gold fw-bold small text-uppercase">GỢI Ý HÀNH TRÌNH</span>
+            <h2 class="font-serif fw-bold text-purple mb-0">Những chuyến đi đáng nhớ</h2>
+        </div>
+        @if (!isLoading)
+        {
+            <span class="tour-results-count"><i class="bi bi-map me-2"></i><strong>@filteredTours.Count</strong> tour phù hợp</span>
+        }
     </div>
 
     <!-- Tours Grid -->

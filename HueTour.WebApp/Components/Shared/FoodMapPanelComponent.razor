@@ -1,0 +1,265 @@
+@using System.Globalization
+@using HueTour.CoreBusiness
+@using HueTour.UseCases.FoodPlaces
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<aside class="food-map-panel">
+    <div class="food-map-head">
+        <div>
+            <h3><i class="bi bi-map me-2"></i>Bản đồ ẩm thực</h3>
+            <span class="food-map-note">Nguồn nền OpenStreetMap</span>
+        </div>
+        <div class="food-map-head-actions">
+            @if (HasSpatialFilter)
+            {
+                <button type="button" class="food-map-reset" @onclick="ResetSpatialFiltersAsync">
+                    Quay về toàn bộ kết quả
+                </button>
+            }
+            @if (OnCollapse.HasDelegate)
+            {
+                <button type="button" class="food-map-collapse" @onclick="OnCollapse" aria-controls="@ElementId" aria-label="Thu gọn bản đồ" title="Thu gọn bản đồ">
+                    <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                </button>
+            }
+        </div>
+    </div>
+
+    @if (ShowRadiusPicker)
+    {
+        <div class="food-map-tools">
+            <label for="food-radius">Bán kính</label>
+            <select id="food-radius" value="@SelectedRadiusKm.ToString(CultureInfo.InvariantCulture)" @onchange="ChangeRadiusAsync" aria-label="Chọn bán kính tìm kiếm">
+                <option value="1">1 km</option>
+                <option value="3">3 km</option>
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+            </select>
+            <button type="button" class="btn-royal-gold btn-sm" @onclick="FindNearMeAsync" disabled="@_locating">
+                @if (_locating)
+                {
+                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                }
+                else
+                {
+                    <i class="bi bi-crosshair me-1"></i>
+                }
+                Tìm quanh tôi
+            </button>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_locationMessage))
+    {
+        <p class="food-location-message" role="alert">@_locationMessage</p>
+    }
+
+    <div class="food-map-wrap">
+        <div id="@ElementId" class="food-map" role="application" aria-label="Bản đồ các địa điểm ẩm thực"></div>
+        <div class="food-map-legend" aria-label="Chú giải danh mục"></div>
+        @if (!Places.Any(place => place.HasCoordinates))
+        {
+            <div class="food-map-empty">
+                <i class="bi bi-geo-alt"></i>
+                <strong>Không có địa điểm trong khu vực này</strong>
+                <span>Thử mở rộng khung bản đồ hoặc xoá bộ lọc vị trí.</span>
+                <button type="button" class="btn-outline-royal btn-sm" @onclick="ResetSpatialFiltersAsync">
+                    Xem toàn bộ kết quả
+                </button>
+            </div>
+        }
+    </div>
+    <p class="food-map-hint">
+        Kéo bản đồ để tìm địa điểm trong khung nhìn. Chọn một thẻ để xem vị trí và thông tin quán.
+    </p>
+</aside>
+
+@code {
+    private const string ElementId = "hue-food-map";
+    private DotNetObjectReference<FoodMapPanelComponent>? _dotNetReference;
+    private bool _mapDirty = true;
+    private bool _centerDirty;
+    private bool _locating;
+    private (double Lat, double Lng)? _lastCenter;
+    private string? _locationMessage;
+
+    [Parameter] public IReadOnlyList<FoodPlace> Places { get; set; } = Array.Empty<FoodPlace>();
+
+    [Parameter] public bool ShowRadiusPicker { get; set; }
+
+    [Parameter] public bool HasSpatialFilter { get; set; }
+
+    [Parameter] public double SelectedRadiusKm { get; set; } = 3;
+
+    [Parameter] public EventCallback<double> SelectedRadiusKmChanged { get; set; }
+
+    [Parameter] public (double Lat, double Lng)? SearchCenter { get; set; }
+
+    [Parameter] public EventCallback<GeoViewport> OnViewportChanged { get; set; }
+
+    [Parameter] public EventCallback<(double Lat, double Lng)> OnUserLocated { get; set; }
+
+    [Parameter] public EventCallback<int> OnFocusPlace { get; set; }
+
+    [Parameter] public EventCallback OnCollapse { get; set; }
+
+    [Parameter] public EventCallback OnResetSpatialFilters { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        _mapDirty = true;
+        if (_lastCenter != SearchCenter)
+        {
+            _lastCenter = SearchCenter;
+            _centerDirty = SearchCenter.HasValue;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _dotNetReference ??= DotNetObjectReference.Create(this);
+
+        try
+        {
+            if (_mapDirty)
+            {
+                var points = Places
+                    .Where(place => place.HasCoordinates)
+                    .Select(place => new
+                    {
+                        place.Id,
+                        place.Name,
+                        place.Category,
+                        place.CategoryCode,
+                        place.Address,
+                        place.SignatureDish,
+                        place.PriceLabel,
+                        place.DistanceKm,
+                        place.Latitude,
+                        place.Longitude,
+                        Url = place.MapDetailsUrl
+                    })
+                    .ToList();
+
+                await JS.InvokeVoidAsync("hueFoodMap.render", ElementId, points, _dotNetReference);
+                _mapDirty = false;
+            }
+
+            if (_centerDirty && SearchCenter is { } center)
+            {
+                await JS.InvokeVoidAsync("hueFoodMap.focusCenter", ElementId, center.Lat, center.Lng);
+                _centerDirty = false;
+            }
+        }
+        catch (JSException)
+        {
+            // Bản đồ là phần bổ trợ, không ảnh hưởng tới danh sách địa điểm.
+        }
+        catch (InvalidOperationException)
+        {
+            // JS interop có thể chưa sẵn sàng khi chuyển trang.
+        }
+    }
+
+    public async Task FocusPlaceAsync(int placeId)
+    {
+        await JS.InvokeVoidAsync("hueFoodMap.focus", ElementId, placeId);
+    }
+
+    public async Task HighlightPlaceAsync(int placeId)
+    {
+        await JS.InvokeVoidAsync("hueFoodMap.highlight", ElementId, placeId);
+    }
+
+    public async Task RefreshSizeAsync()
+    {
+        await JS.InvokeVoidAsync("hueFoodMap.invalidateSize", ElementId);
+    }
+
+    public async Task ScrollToPlaceCardAsync(int placeId)
+    {
+        await JS.InvokeVoidAsync("hueFoodMap.scrollToCard", placeId);
+    }
+
+    private async Task ChangeRadiusAsync(ChangeEventArgs args)
+    {
+        if (double.TryParse(args.Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var radius)
+            && radius is 1 or 3 or 5 or 10)
+        {
+            SelectedRadiusKm = radius;
+            await SelectedRadiusKmChanged.InvokeAsync(radius);
+        }
+    }
+
+    private async Task FindNearMeAsync()
+    {
+        _locationMessage = null;
+        _locating = true;
+        try
+        {
+            var requested = await JS.InvokeAsync<bool>("hueFoodMap.requestLocation", _dotNetReference);
+            if (!requested)
+            {
+                _locating = false;
+            }
+        }
+        catch (JSException)
+        {
+            _locating = false;
+            _locationMessage = "Không thể lấy vị trí ngay lúc này. Hãy thử lại hoặc tìm theo tên quán.";
+        }
+    }
+
+    private Task ResetSpatialFiltersAsync() => OnResetSpatialFilters.InvokeAsync();
+
+    [JSInvokable("OnViewportChanged")]
+    public Task NotifyViewportChanged(double west, double south, double east, double north) =>
+        OnViewportChanged.InvokeAsync(new GeoViewport(west, south, east, north));
+
+    [JSInvokable("OnUserLocated")]
+    public async Task NotifyUserLocated(double latitude, double longitude)
+    {
+        _locating = false;
+        _locationMessage = null;
+        await OnUserLocated.InvokeAsync((latitude, longitude));
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task OnUserLocationError(string errorCode)
+    {
+        _locating = false;
+        _locationMessage = errorCode switch
+        {
+            "permission-denied" => "Bạn đã từ chối chia sẻ vị trí. Hãy bật quyền định vị cho trang rồi thử lại.",
+            "not-supported" => "Trình duyệt này chưa hỗ trợ xác định vị trí. Bạn vẫn có thể tìm theo tên hoặc địa chỉ.",
+            "insecure-context" => "Trình duyệt chỉ cho phép định vị trên kết nối an toàn. Hãy mở trang bằng HTTPS hoặc localhost.",
+            "position-unavailable" => "Chưa xác định được vị trí của bạn. Hãy kiểm tra GPS hoặc thử lại ở nơi thoáng hơn.",
+            "timeout" => "Tìm vị trí mất quá lâu. Hãy thử lại khi kết nối ổn định hơn.",
+            _ => "Không thể lấy vị trí ngay lúc này. Hãy thử lại hoặc tìm theo tên quán."
+        };
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public Task OnMarkerSelected(int placeId) => OnFocusPlace.InvokeAsync(placeId);
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("hueFoodMap.dispose", ElementId);
+        }
+        catch (JSDisconnectedException)
+        {
+            // The Blazor circuit may already be closed during navigation.
+        }
+        catch (InvalidOperationException)
+        {
+            // The component may be disposed before JS interop is available.
+        }
+
+        _dotNetReference?.Dispose();
+    }
+}

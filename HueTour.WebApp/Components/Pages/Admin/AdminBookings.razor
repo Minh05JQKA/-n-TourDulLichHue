@@ -19,21 +19,70 @@
         </div>
     </div>
     @if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info">@message</div> }
-    <div class="card border-0 shadow-sm p-3"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
-        <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tour / ngày đi</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-        <tbody>@foreach (var booking in bookings)
-        {
-            <tr><td class="fw-bold text-purple">@booking.BookingCode</td><td>@booking.Customer?.FullName<br /><small class="text-muted">@booking.Customer?.PhoneNumber</small></td>
-                <td>@booking.Departure?.Tour?.Title<br /><small class="text-muted">@booking.Departure?.DepartureDate.ToString("dd/MM/yyyy HH:mm")</small></td>
-                <td>@booking.BookingDate.ToString("dd/MM/yyyy HH:mm")</td><td>@booking.TotalAmount.ToString("N0") đ</td><td>@booking.Status</td>
-                <td class="text-nowrap">
-                    @if (booking.Status == TourBookingStatus.Pending) { <button class="btn btn-sm btn-outline-success me-1" @onclick="() => Confirm(booking.Id)">Xác nhận</button> }
-                    @if (booking.Status is TourBookingStatus.Pending or TourBookingStatus.Confirmed) { <button class="btn btn-sm btn-outline-danger me-1" @onclick="() => Cancel(booking.Id)">Hủy</button> }
-                    @if (booking.Status == TourBookingStatus.Confirmed) { <button class="btn btn-sm btn-outline-primary" @onclick="() => Complete(booking.Id)">Hoàn tất</button> }
-                </td>
-            </tr>
-        }</tbody>
-    </table></div></div>
+    <div class="card border-0 shadow-sm p-4" style="border-radius: 18px;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small">
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Tour / Ngày đi</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Tác vụ xử lý</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in bookings)
+                    {
+                        <tr>
+                            <td class="fw-bold text-purple">
+                                <a href="/booking-confirmation/@booking.BookingCode" target="_blank" class="text-purple text-decoration-none">
+                                    @booking.BookingCode
+                                </a>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">@booking.Customer?.FullName</div>
+                                <small class="text-muted"><i class="bi bi-telephone me-1"></i>@booking.Customer?.PhoneNumber</small>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-truncate" style="max-width: 260px;">@booking.Departure?.Tour?.Title</div>
+                                <small class="text-muted"><i class="bi bi-calendar me-1"></i>@booking.Departure?.DepartureDate.ToString("dd/MM/yyyy HH:mm")</small>
+                            </td>
+                            <td class="small">@booking.BookingDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="fw-bold text-purple">@booking.TotalAmount.ToString("N0") đ</td>
+                            <td>
+                                <span class="badge @(booking.Status == TourBookingStatus.Confirmed ? "bg-success" : booking.Status == TourBookingStatus.Cancelled ? "bg-danger" : booking.Status == TourBookingStatus.Completed ? "bg-primary" : "bg-warning text-dark")">
+                                    @booking.Status
+                                </span>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                @if (booking.Status == TourBookingStatus.Pending)
+                                {
+                                    <button class="btn btn-sm btn-success rounded-pill px-3 me-1" @onclick="() => Confirm(booking.Id)">
+                                        <i class="bi bi-check-lg me-1"></i>Xác nhận
+                                    </button>
+                                }
+                                @if (booking.Status is TourBookingStatus.Pending or TourBookingStatus.Confirmed)
+                                {
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3 me-1" @onclick="() => Cancel(booking.Id)">
+                                        <i class="bi bi-x-lg me-1"></i>Hủy đơn
+                                    </button>
+                                }
+                                @if (booking.Status == TourBookingStatus.Confirmed)
+                                {
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" @onclick="() => Complete(booking.Id)">
+                                        <i class="bi bi-flag me-1"></i>Hoàn tất
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 @code {

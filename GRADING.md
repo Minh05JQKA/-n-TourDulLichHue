@@ -6,28 +6,29 @@ Rubric dưới đây được sắp lại theo đúng mã K1.1–K5.3 trong đ�
 
 | Mã / yêu cầu chính thức | Bằng chứng trong dự án | Tình trạng |
 |---|---|---|
-| K1.1 — Đủ 4 project; CoreBusiness không tham chiếu project; UseCases chỉ tham chiếu CoreBusiness | `HueTour.CoreBusiness/HueTour.CoreBusiness.csproj:1-11`; `HueTour.UseCases/HueTour.UseCases.csproj:1-12`; project references trong `HueTour.WebApp/HueTour.WebApp.csproj:1-9`; danh sách project trong `HueTourApp.sln` | Chưa khớp hoàn toàn: solution có 5 project vì InMemory và SQL là hai project riêng; WebApp tham chiếu trực tiếp CoreBusiness, UseCases và cả hai plugin. CoreBusiness và UseCases giữ đúng hướng tham chiếu yêu cầu. Cân nhắc gộp hai plugin thành một project DataStore để khớp số project trong rubric. |
+| K1.1 — Đủ 4 project; CoreBusiness không tham chiếu project; UseCases chỉ tham chiếu CoreBusiness | `HueTour.CoreBusiness/HueTour.CoreBusiness.csproj:1-9`; `HueTour.UseCases/HueTour.UseCases.csproj:3-5`; project references trong `HueTour.WebApp/HueTour.WebApp.csproj:1-9`; chọn plugin tại `HueTour.WebApp/Program.cs:30-54`; danh sách project trong `HueTourApp.sln` | Đạt cấu trúc tối thiểu: rubric yêu cầu từ 4 project; solution có 5 project (CoreBusiness, UseCases, WebApp và hai plugin dữ liệu thay thế nhau InMemory/SQL theo pattern Video Part 5). CoreBusiness có 0 ProjectReference; UseCases chỉ tham chiếu CoreBusiness; WebApp chọn plugin tại Program.cs (composition root). |
 | K1.2 — Repository interface ở UseCases, plugin cài đặt; Razor inject interface | `HueTour.UseCases/PluginInterfaces/DataStore/ITourRepository.cs:1-10`; `HueTour.Plugins.DataStore.SQL/TourRepository.cs:1-8`; `HueTour.WebApp/Program.cs:13-37`; các trang Razor inject use case/interface | Có bằng chứng mã nguồn. |
-| K1.3 — Hai luật nghiệp vụ nằm trong CoreBusiness/UseCases, có lỗi thân thiện | `HueTour.CoreBusiness/BusinessRules/BookingBusinessRules.cs:20-169`; `HueTour.UseCases/Booking/PlaceTourBookingUseCase.cs:54-156` | Có triển khai sức chứa, khóa đặt trước 24 giờ, giá theo tuổi và kiểm tra tổng tiền. Cần demo hai ca vi phạm. |
+| K1.3 — Hai luật nghiệp vụ nằm trong CoreBusiness/UseCases, có lỗi thân thiện | `HueTour.CoreBusiness/BusinessRules/BookingBusinessRules.cs:20-169`; `HueTour.UseCases/Booking/PlaceTourBookingUseCase.cs:54-156` | Mã có kiểm tra thời hạn đặt và sức chứa cùng thông báo thân thiện. Hai ca vi phạm chưa có bằng chứng demo SQL; giá theo tuổi và tổng tiền có trong mã. |
 | K1.4 — Đăng ký DI; lựa chọn tạm dùng Scoped | `HueTour.WebApp/Program.cs:13-55`, đặc biệt `Program.cs:39` | Có đăng ký DI và booking cart scoped. |
 
 ## Cơ sở dữ liệu
 
 | Mã / yêu cầu chính thức | Bằng chứng trong dự án | Tình trạng |
 |---|---|---|
-| K2.1 — Ít nhất 5 bảng, 3NF, khóa ngoại, script tạo và seed dữ liệu | `database/HueTour_SchemaAndData.sql:1-330` | Có schema và dữ liệu mẫu; cần chạy script trên database trống để xác nhận. |
-| K2.2 — Header–line trong một transaction | `HueTour.Plugins.DataStore.SQL/TourBookingRepository.cs:19-95`; gọi từ `HueTour.UseCases/Booking/PlaceTourBookingUseCase.cs:148-149` | Có transaction cho giữ chỗ và ghi booking/vé; cần demo với SQL Server thật. |
+| K2.1 — Ít nhất 5 bảng, 3NF, khóa ngoại, script tạo và seed dữ liệu | `database/HueTour_SchemaAndData.sql`; `database/seed/DiaDiemAmThuc_Seed.sql`; `docs/diagrams/relational-schema.puml` | SQL Server trên localhost báo server name `Minnh` (default instance). HueTourDb có 8 bảng nghiệp vụ; schema đã chạy, 23 tour và 28 chuyến. Bảng `DiaDiemAmThuc` đã seed 600 địa điểm UTF-8 bằng `sqlcmd -f 65001`; truy vấn trực tiếp xác nhận 600 dòng. |
+| K2.2 — Header–line trong một transaction | `HueTour.Plugins.DataStore.SQL/TourBookingRepository.cs:19-95`; gọi từ `HueTour.UseCases/Booking/PlaceTourBookingUseCase.cs:148-149` | Đã đặt một booking thử qua giao diện app chạy SQL Server; truy vấn trực tiếp xác nhận header và một vé hành khách được lưu. Repository ghi header–line trong transaction. |
 | K2.3 — Truy vấn có tham số, không nối chuỗi SQL | `HueTour.Plugins.DataStore.SQL/TourRepository.cs:31-92`; `DepartureRepository.cs:31-129`; các repository SQL khác | Đã thấy truy vấn Dapper nhận tham số; cần rà toàn bộ plugin khi nộp. |
-| K2.4 — Luồng giao dịch chạy end-to-end và lưu trên SQL Server | Chọn plugin trong `HueTour.WebApp/Program.cs:13-37`; script `database/HueTour_SchemaAndData.sql`; hướng dẫn tại `README.md` mục “Kiểm chứng đặt tour trên SQL Server” | Chưa xác minh trên SQL Server thật. |
+| K2.4 — Luồng giao dịch chạy end-to-end và lưu trên SQL Server | Chọn plugin trong `HueTour.WebApp/Program.cs:13-37`; script `database/HueTour_SchemaAndData.sql`; `PlaceTourBookingUseCase` và `ManageBookingsUseCase` | Đã đặt booking thử qua giao diện app với `UseSqlDatabase=true`, sau đó gọi `ManageBookingsUseCase` và repository SQL để hủy. SQL xác nhận trạng thái `Cancelled`, còn một vé, số ghế đã đặt trở về 0 và không có lệch số ghế. Thao tác hủy dùng harness cục bộ vì phiên trình duyệt bị dừng; không phải ảnh chụp luồng hủy trên UI. |
 
 ## Giao diện và trải nghiệm
 
 | Mã / yêu cầu chính thức | Bằng chứng trong dự án | Tình trạng |
 |---|---|---|
-| K3.1 — Ít nhất 3 component tái sử dụng có Parameter/EventCallback | `HueTour.WebApp/Components/Shared/TourCardComponent.razor:41-43`; `SearchBarComponent.razor:39-47`; `PassengerItemComponent.razor:98-112`; `DepartureSelectorComponent.razor:79-87` | Có ít nhất 4 component. |
+| K3.1 — Ít nhất 3 component tái sử dụng có Parameter/EventCallback | `HueTour.WebApp/Components/Shared/TourCardComponent.razor:41-43`; `SearchBarComponent.razor:39-47`; `PassengerItemComponent.razor:98-112`; `DepartureSelectorComponent.razor:79-87`; `FoodMapPanelComponent.razor:87,99,101,107,216-225` (`[Parameter] Places`; `EventCallback` `OnViewportChanged`/`OnUserLocated`/`OnResetSpatialFilters`; `[JSInvokable]`) | Có ít nhất 5 component. |
 | K3.2 — EditForm, DataAnnotations và lỗi cạnh ô nhập | `HueTour.WebApp/Components/Pages/Booking.razor:95-98`; `AdminTours.razor:88-90`; `AdminDepartures.razor:18-20` | Có triển khai; cần demo nhập sai. |
 | K3.3 — Hai luật bị vi phạm hiện thông báo thân thiện | `Booking.razor:67-75,95-98`; `PlaceTourBookingUseCase.cs:81-86,142-156`; `BookingBusinessRules.cs:30-81,141-169` | Có xử lý trong mã; cần demo ca vi phạm. |
 | K3.4 — Dùng được ở bề rộng 390px | `HueTour.WebApp/wwwroot/app.css:555-590`; lưới Bootstrap trong các trang | Có quy tắc responsive; chưa xác minh trực quan ở 390px. |
+| Mở rộng ngoài rubric — Bản đồ ẩm thực tại `/am-thuc` | `FoodPlaces.razor:1,286-299,311-330`; `FoodMapPanelComponent.razor:29-50,73-75,87-107,216-225`; `FoodPlaceCatalogUseCase.cs:93-109`; `food-places-map.js:80-98,220-245` | Có tìm theo khung nhìn bản đồ, “Tìm quanh tôi” và lọc theo bán kính; trang trả HTTP 200 ở SQL mode. Chưa xác nhận quyền GPS qua giao diện. Đây là tính năng mở rộng ngoài rubric, không đánh thay mã K nào. |
 
 ## Bảo mật, phân quyền và tính năng nâng cao
 
@@ -43,7 +44,7 @@ Rubric dưới đây được sắp lại theo đúng mã K1.1–K5.3 trong đ�
 |---|---|---|
 | K5.1 — Use Case, Class, Sequence bằng PlantUML khớp code | `docs/diagrams/use-case.puml:1-27`; `docs/diagrams/class.puml:1-26`; `docs/diagrams/booking-sequence.puml:1-34` | Đã có sơ đồ; Sequence đã sửa theo luồng thực tế: repository giữ chỗ và ghi header–line trong cùng transaction. Cần xác nhận sơ đồ hiển thị tốt khi render PlantUML. |
 | K5.2 — Vấn đáp: chỉ đúng dòng cài luật, giải thích Dependency Rule | Bằng chứng luật tại `BookingBusinessRules.cs:20-169`; quan hệ project trong các `.csproj` | Không thể xác nhận từ file; từng thành viên cần tự trình bày. |
-| K5.3 — Mỗi thành viên có commit, trải trên ít nhất 3 tuần | Lịch sử Git hiện có | Đã có các commit trải dài qua các tuần (07/10/2026, 08/10/2026 và 15/10/2026). Nếu nhóm có nhiều thành viên, các thành viên cần thực hiện push/commit từ tài khoản GitHub tương ứng theo quy định. |
+| K5.3 — Mỗi thành viên có commit, trải trên ít nhất 3 tuần | Lịch sử Git hiện có; `docs/evidence/01-homepage.png`, `02-tour-list.png`, `03-tour-detail-departure.png`, `04-booking-form.png`, `04-booking-form-filled.png`, `05-booking-confirmation.png`, `am-thuc-food-map.jpg` | Đã thêm ảnh chụp thật của trang chủ, danh sách/chi tiết tour, form đặt tour, xác nhận và bản đồ ẩm thực. Chưa có ảnh `/kham-pha`, dashboard admin, hai ca vi phạm luật hoặc booking sau khi hủy; cần bổ sung nếu muốn các màn hình đó làm bằng chứng. Lịch sử commit hiện có các ngày 07/10/2026, 08/10/2026 và 15/10/2026; cần đối chiếu tác giả/thành viên trước khi kết luận tiêu chí “mỗi thành viên”. |
 
 ## Đối chiếu với nội dung video
 

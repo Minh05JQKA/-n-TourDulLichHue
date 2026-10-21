@@ -1,162 +1,279 @@
--- =========================================================================================
+﻿-- =========================================================================================
 -- ĐỒ ÁN CAPSTONE ECO2415 - ĐỀ TÀI 08: TOUR DU LỊCH HUẾ (HUE TOUR BOOKING)
--- HỆ CƠ SỞ DỮ LIỆU SQL SERVER - CHUẨN 3NF CÓ KHÓA NGOẠI & DỮ LIỆU MẪU ĐẶC SẮC CỐ ĐÔ HUẾ
--- Đáp ứng tiêu chí K2.1 (>= 5 bảng, 3NF, FK) & K2.2 (Header-Line Transaction)
+-- CSDL SQL SERVER: BẢNG GỐC VÀ CỘT ĐẶT TÊN TIẾNG VIỆT, CÓ ĐẦY ĐỦ PK/FK VÀ DỮ LIỆU MẪU.
+-- Script chỉ tạo mới HueTourDb khi CSDL chưa tồn tại; không tự xóa dữ liệu hiện có.
+-- Các VIEW tên tiếng Anh giữ tương thích với ứng dụng hiện tại.
 -- =========================================================================================
 
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'HueTourDb')
-BEGIN
-    CREATE DATABASE [HueTourDb];
-END
+USE [master];
 GO
 
+IF DB_ID(N'HueTourDb') IS NOT NULL
+    THROW 51004, N'HueTourDb đã tồn tại. Dừng để tránh xóa dữ liệu hiện có.', 1;
+GO
+
+CREATE DATABASE [HueTourDb];
+GO
 USE [HueTourDb];
 GO
 
--- XÓA BẢNG NẾU ĐÃ TỒN TẠI (THEO THỨ TỰ KHÓA NGOẠI)
-IF OBJECT_ID('dbo.PassengerTicket', 'U') IS NOT NULL DROP TABLE dbo.PassengerTicket;
-IF OBJECT_ID('dbo.TourBooking', 'U') IS NOT NULL DROP TABLE dbo.TourBooking;
-IF OBJECT_ID('dbo.Departure', 'U') IS NOT NULL DROP TABLE dbo.Departure;
-IF OBJECT_ID('dbo.Tour', 'U') IS NOT NULL DROP TABLE dbo.Tour;
-IF OBJECT_ID('dbo.PriceRule', 'U') IS NOT NULL DROP TABLE dbo.PriceRule;
-IF OBJECT_ID('dbo.Customer', 'U') IS NOT NULL DROP TABLE dbo.Customer;
-IF OBJECT_ID('dbo.UserAccount', 'U') IS NOT NULL DROP TABLE dbo.UserAccount;
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
 GO
 
--- 1. BẢNG QUẢN LÝ TÀI KHOẢN VÀ PHÂN QUYỀN (K4.1, K4.2)
-CREATE TABLE dbo.UserAccount (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    Username NVARCHAR(50) NOT NULL UNIQUE,
-    PasswordHash NVARCHAR(255) NOT NULL,
-    FullName NVARCHAR(150) NOT NULL,
-    Role NVARCHAR(50) NOT NULL DEFAULT 'Customer', -- 'Admin', 'Customer'
+-- 1. TÀI KHOẢN NGƯỜI DÙNG VÀ PHÂN QUYỀN
+CREATE TABLE dbo.TaiKhoanNguoiDung (
+    MaTaiKhoan INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_TaiKhoanNguoiDung PRIMARY KEY,
+    TenDangNhap NVARCHAR(50) NOT NULL CONSTRAINT UQ_TaiKhoanNguoiDung_TenDangNhap UNIQUE,
+    MatKhauBam NVARCHAR(255) NOT NULL,
+    HoTen NVARCHAR(150) NOT NULL,
+    VaiTro NVARCHAR(50) NOT NULL CONSTRAINT DF_TaiKhoanNguoiDung_VaiTro DEFAULT N'Customer',
     Email NVARCHAR(150) NULL,
-    PhoneNumber NVARCHAR(20) NULL,
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+    SoDienThoai NVARCHAR(20) NULL,
+    NgayTao DATETIME2 NOT NULL CONSTRAINT DF_TaiKhoanNguoiDung_NgayTao DEFAULT SYSDATETIME(),
+    CONSTRAINT CK_TaiKhoanNguoiDung_VaiTro CHECK (VaiTro IN (N'Admin', N'Customer'))
 );
 GO
 
--- 2. BẢNG KHÁCH HÀNG
-CREATE TABLE dbo.Customer (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    FullName NVARCHAR(150) NOT NULL,
+-- 2. HỒ SƠ KHÁCH HÀNG
+CREATE TABLE dbo.KhachHang (
+    MaKhachHang INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_KhachHang PRIMARY KEY,
+    MaTaiKhoan INT NULL,
+    HoTen NVARCHAR(150) NOT NULL,
     Email NVARCHAR(150) NOT NULL,
-    PhoneNumber NVARCHAR(20) NOT NULL,
-    Address NVARCHAR(255) NOT NULL,
-    IdentityCard NVARCHAR(50) NULL,
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+    SoDienThoai NVARCHAR(20) NOT NULL,
+    DiaChi NVARCHAR(255) NOT NULL,
+    SoGiayToTuyThan NVARCHAR(50) NULL,
+    NgayTao DATETIME2 NOT NULL CONSTRAINT DF_KhachHang_NgayTao DEFAULT SYSDATETIME(),
+    CONSTRAINT FK_KhachHang_TaiKhoanNguoiDung FOREIGN KEY (MaTaiKhoan)
+        REFERENCES dbo.TaiKhoanNguoiDung(MaTaiKhoan)
 );
 GO
-CREATE NONCLUSTERED INDEX IX_Customer_Phone ON dbo.Customer(PhoneNumber);
-CREATE NONCLUSTERED INDEX IX_Customer_Email ON dbo.Customer(Email);
+-- Một tài khoản gắn tối đa một hồ sơ; khách vãng lai không cần tài khoản.
+CREATE UNIQUE NONCLUSTERED INDEX UX_KhachHang_MaTaiKhoan
+    ON dbo.KhachHang(MaTaiKhoan) WHERE MaTaiKhoan IS NOT NULL;
+CREATE UNIQUE NONCLUSTERED INDEX UX_KhachHang_SoDienThoai ON dbo.KhachHang(SoDienThoai);
+CREATE UNIQUE NONCLUSTERED INDEX UX_KhachHang_Email ON dbo.KhachHang(Email);
 GO
 
--- 3. BẢNG QUY ĐỊNH GIÁ VÉ THEO LOẠI HÀNH KHÁCH (LUẬT NGHIỆP VỤ 2 - K1.3)
-CREATE TABLE dbo.PriceRule (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    PassengerType NVARCHAR(50) NOT NULL UNIQUE, -- 'Adult', 'Child', 'Infant'
-    DisplayName NVARCHAR(100) NOT NULL,
-    RateMultiplier DECIMAL(5,2) NOT NULL DEFAULT 1.00, -- 1.0 (100%), 0.5 (50%), 0.0 (Miễn phí)
-    MinAge INT NOT NULL,
-    MaxAge INT NULL,
-    Description NVARCHAR(255) NOT NULL,
-    IsActive BIT NOT NULL DEFAULT 1
-);
-GO
-
--- 4. BẢNG TOUR DU LỊCH HUẾ
-CREATE TABLE dbo.Tour (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    Code NVARCHAR(50) NOT NULL UNIQUE,
-    Title NVARCHAR(255) NOT NULL,
-    Category NVARCHAR(100) NOT NULL, -- Di tích Cố Đô, Sinh thái & Đầm phá, Thiên nhiên & Nghỉ dưỡng, Văn hóa & Ẩm thực, Sông Hương & Làng nghề
-    ShortDescription NVARCHAR(500) NOT NULL,
-    Description NVARCHAR(MAX) NOT NULL,
-    Itinerary NVARCHAR(MAX) NOT NULL,
-    Highlights NVARCHAR(1000) NOT NULL,
-    Duration NVARCHAR(50) NOT NULL DEFAULT '1 Ngày',
-    StartingLocation NVARCHAR(200) NOT NULL DEFAULT 'Trung tâm TP Huế',
-    BasePrice DECIMAL(18,2) NOT NULL,
-    ImageUrl NVARCHAR(500) NOT NULL,
-    IsActive BIT NOT NULL DEFAULT 1,
-    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE()
+-- 3. QUY TẮC GIÁ VÉ THEO LOẠI HÀNH KHÁCH
+CREATE TABLE dbo.QuyTacGiaVe (
+    MaQuyTac INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_QuyTacGiaVe PRIMARY KEY,
+    LoaiHanhKhach NVARCHAR(50) NOT NULL CONSTRAINT UQ_QuyTacGiaVe_Loai UNIQUE,
+    TenHienThi NVARCHAR(100) NOT NULL,
+    HeSoGia DECIMAL(5,2) NOT NULL CONSTRAINT DF_QuyTacGiaVe_HeSo DEFAULT 1.00,
+    TuoiToiThieu INT NOT NULL,
+    TuoiToiDa INT NULL,
+    MoTa NVARCHAR(255) NOT NULL,
+    DangApDung BIT NOT NULL CONSTRAINT DF_QuyTacGiaVe_DangApDung DEFAULT 1,
+    CONSTRAINT CK_QuyTacGiaVe_HeSo CHECK (HeSoGia BETWEEN 0 AND 1),
+    CONSTRAINT CK_QuyTacGiaVe_DoTuoi CHECK (TuoiToiThieu >= 0 AND (TuoiToiDa IS NULL OR TuoiToiDa >= TuoiToiThieu))
 );
 GO
 
--- 5. BẢNG CHUYẾN KHỞI HÀNH CỐ ĐỊNH (DEPARTURE) (LUẬT NGHIỆP VỤ 1 - K1.3)
-CREATE TABLE dbo.Departure (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    TourId INT NOT NULL,
-    DepartureDate DATETIME2 NOT NULL,
-    ReturnDate DATETIME2 NOT NULL,
-    MaxCapacity INT NOT NULL DEFAULT 25,
-    BookedSeats INT NOT NULL DEFAULT 0,
-    Status NVARCHAR(50) NOT NULL DEFAULT 'Open', -- 'Open' (Mở bán), 'Closed' (Chốt đoàn), 'Completed', 'Cancelled'
-    MeetingPoint NVARCHAR(255) NOT NULL DEFAULT 'Bến thuyền Tòa Khâm / Phu Văn Lâu',
-    TourGuideName NVARCHAR(100) NULL,
-    TourGuidePhone NVARCHAR(20) NULL,
-    CONSTRAINT FK_Departure_Tour FOREIGN KEY (TourId) REFERENCES dbo.Tour(Id) ON DELETE CASCADE
+-- 4. DANH MỤC TOUR DU LỊCH
+CREATE TABLE dbo.TourDuLich (
+    MaTour INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_TourDuLich PRIMARY KEY,
+    MaTourHienThi NVARCHAR(50) NOT NULL CONSTRAINT UQ_TourDuLich_MaTourHienThi UNIQUE,
+    TenTour NVARCHAR(255) NOT NULL,
+    DanhMuc NVARCHAR(100) NOT NULL,
+    MoTaNgan NVARCHAR(500) NOT NULL,
+    MoTaChiTiet NVARCHAR(MAX) NOT NULL,
+    LichTrinh NVARCHAR(MAX) NOT NULL,
+    DiemNoiBat NVARCHAR(1000) NOT NULL,
+    ThoiLuong NVARCHAR(50) NOT NULL CONSTRAINT DF_TourDuLich_ThoiLuong DEFAULT N'1 Ngày',
+    DiemKhoiHanh NVARCHAR(200) NOT NULL CONSTRAINT DF_TourDuLich_DiemKhoiHanh DEFAULT N'Trung tâm TP Huế',
+    GiaCoBan DECIMAL(18,2) NOT NULL,
+    DuongDanAnh NVARCHAR(500) NOT NULL,
+    DangMoBan BIT NOT NULL CONSTRAINT DF_TourDuLich_DangMoBan DEFAULT 1,
+    NgayTao DATETIME2 NOT NULL CONSTRAINT DF_TourDuLich_NgayTao DEFAULT SYSDATETIME(),
+    CONSTRAINT CK_TourDuLich_Gia CHECK (GiaCoBan >= 0)
 );
 GO
-CREATE NONCLUSTERED INDEX IX_Departure_TourDate ON dbo.Departure(TourId, DepartureDate);
-GO
 
--- 6. BẢNG ĐƠN ĐẶT TOUR (HEADER - K2.2)
-CREATE TABLE dbo.TourBooking (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    BookingCode NVARCHAR(50) NOT NULL UNIQUE,
-    DepartureId INT NOT NULL,
-    CustomerId INT NOT NULL,
-    BookingDate DATETIME2 NOT NULL DEFAULT GETDATE(),
-    TotalAmount DECIMAL(18,2) NOT NULL,
-    Status NVARCHAR(50) NOT NULL DEFAULT 'Pending', -- 'Pending', 'Confirmed', 'Completed', 'Cancelled'
-    Notes NVARCHAR(500) NULL,
-    SpecialRequests NVARCHAR(500) NULL,
-    PaymentMethod NVARCHAR(100) NOT NULL DEFAULT 'Thanh toán trực tiếp / QR Code',
-    CONSTRAINT FK_Booking_Departure FOREIGN KEY (DepartureId) REFERENCES dbo.Departure(Id),
-    CONSTRAINT FK_Booking_Customer FOREIGN KEY (CustomerId) REFERENCES dbo.Customer(Id)
+-- 5. LỊCH KHỞI HÀNH CỦA TOUR
+CREATE TABLE dbo.ChuyenKhoiHanh (
+    MaChuyen INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_ChuyenKhoiHanh PRIMARY KEY,
+    MaTour INT NOT NULL,
+    NgayKhoiHanh DATETIME2 NOT NULL,
+    NgayKetThuc DATETIME2 NOT NULL,
+    SucChuaToiDa INT NOT NULL CONSTRAINT DF_ChuyenKhoiHanh_SucChua DEFAULT 25,
+    SoChoDaDat INT NOT NULL CONSTRAINT DF_ChuyenKhoiHanh_SoCho DEFAULT 0,
+    TrangThai NVARCHAR(50) NOT NULL CONSTRAINT DF_ChuyenKhoiHanh_TrangThai DEFAULT N'Open',
+    DiemHen NVARCHAR(255) NOT NULL CONSTRAINT DF_ChuyenKhoiHanh_DiemHen DEFAULT N'Bến thuyền Tòa Khâm / Phu Văn Lâu',
+    TenHuongDanVien NVARCHAR(100) NULL,
+    SoDienThoaiHuongDanVien NVARCHAR(20) NULL,
+    CONSTRAINT FK_ChuyenKhoiHanh_TourDuLich FOREIGN KEY (MaTour)
+        REFERENCES dbo.TourDuLich(MaTour) ON DELETE CASCADE,
+    CONSTRAINT CK_ChuyenKhoiHanh_ThoiGian CHECK (NgayKetThuc >= NgayKhoiHanh),
+    CONSTRAINT CK_ChuyenKhoiHanh_SucChua CHECK (SucChuaToiDa > 0 AND SoChoDaDat BETWEEN 0 AND SucChuaToiDa),
+    CONSTRAINT CK_ChuyenKhoiHanh_TrangThai CHECK (TrangThai IN (N'Open', N'Closed', N'Completed', N'Cancelled'))
 );
 GO
-CREATE NONCLUSTERED INDEX IX_TourBooking_Code ON dbo.TourBooking(BookingCode);
-CREATE NONCLUSTERED INDEX IX_TourBooking_Departure ON dbo.TourBooking(DepartureId);
+CREATE NONCLUSTERED INDEX IX_ChuyenKhoiHanh_Tour_Ngay ON dbo.ChuyenKhoiHanh(MaTour, NgayKhoiHanh);
 GO
 
--- 7. BẢNG VÉ HÀNH KHÁCH (LINEITEM - K2.2)
-CREATE TABLE dbo.PassengerTicket (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    BookingId INT NOT NULL,
-    TicketCode NVARCHAR(50) NOT NULL,
-    FullName NVARCHAR(150) NOT NULL,
-    Gender NVARCHAR(20) NOT NULL DEFAULT 'Nam',
-    PassengerType NVARCHAR(50) NOT NULL, -- 'Adult', 'Child', 'Infant'
-    BirthYear INT NOT NULL,
-    Price DECIMAL(18,2) NOT NULL,
-    SeatNumber NVARCHAR(20) NULL,
-    Note NVARCHAR(255) NULL,
-    CONSTRAINT FK_Ticket_Booking FOREIGN KEY (BookingId) REFERENCES dbo.TourBooking(Id) ON DELETE CASCADE
+-- 6. ĐƠN ĐẶT TOUR (PHẦN ĐẦU ĐƠN)
+CREATE TABLE dbo.DonDatTour (
+    MaDonDatTour INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_DonDatTour PRIMARY KEY,
+    MaDatTour NVARCHAR(50) NOT NULL CONSTRAINT UQ_DonDatTour_MaDatTour UNIQUE,
+    MaChuyen INT NOT NULL,
+    MaKhachHang INT NOT NULL,
+    NgayDat DATETIME2 NOT NULL CONSTRAINT DF_DonDatTour_NgayDat DEFAULT SYSDATETIME(),
+    TongTien DECIMAL(18,2) NOT NULL,
+    TrangThai NVARCHAR(50) NOT NULL CONSTRAINT DF_DonDatTour_TrangThai DEFAULT N'Pending',
+    GhiChu NVARCHAR(500) NULL,
+    YeuCauDacBiet NVARCHAR(500) NULL,
+    PhuongThucThanhToan NVARCHAR(100) NOT NULL CONSTRAINT DF_DonDatTour_PhuongThuc DEFAULT N'Thanh toán trực tiếp / QR Code',
+    CONSTRAINT FK_DonDatTour_ChuyenKhoiHanh FOREIGN KEY (MaChuyen)
+        REFERENCES dbo.ChuyenKhoiHanh(MaChuyen),
+    CONSTRAINT FK_DonDatTour_KhachHang FOREIGN KEY (MaKhachHang)
+        REFERENCES dbo.KhachHang(MaKhachHang),
+    CONSTRAINT CK_DonDatTour_TongTien CHECK (TongTien >= 0),
+    CONSTRAINT CK_DonDatTour_TrangThai CHECK (TrangThai IN (N'Pending', N'Confirmed', N'Completed', N'Cancelled'))
 );
 GO
-CREATE NONCLUSTERED INDEX IX_Ticket_Booking ON dbo.PassengerTicket(BookingId);
+CREATE NONCLUSTERED INDEX IX_DonDatTour_MaChuyen ON dbo.DonDatTour(MaChuyen);
+CREATE NONCLUSTERED INDEX IX_DonDatTour_MaKhachHang ON dbo.DonDatTour(MaKhachHang);
 GO
 
+-- 7. VÉ HÀNH KHÁCH (CHI TIẾT ĐƠN)
+CREATE TABLE dbo.VeHanhKhach (
+    MaVeHanhKhach INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_VeHanhKhach PRIMARY KEY,
+    MaDonDatTour INT NOT NULL,
+    MaVe NVARCHAR(50) NOT NULL CONSTRAINT UQ_VeHanhKhach_MaVe UNIQUE,
+    HoTenHanhKhach NVARCHAR(150) NOT NULL,
+    GioiTinh NVARCHAR(20) NOT NULL CONSTRAINT DF_VeHanhKhach_GioiTinh DEFAULT N'Nam',
+    LoaiHanhKhach NVARCHAR(50) NOT NULL,
+    NamSinh INT NOT NULL,
+    GiaVe DECIMAL(18,2) NOT NULL,
+    SoGhe NVARCHAR(20) NULL,
+    GhiChu NVARCHAR(255) NULL,
+    CONSTRAINT FK_VeHanhKhach_DonDatTour FOREIGN KEY (MaDonDatTour)
+        REFERENCES dbo.DonDatTour(MaDonDatTour) ON DELETE CASCADE,
+    CONSTRAINT FK_VeHanhKhach_QuyTacGiaVe FOREIGN KEY (LoaiHanhKhach)
+        REFERENCES dbo.QuyTacGiaVe(LoaiHanhKhach),
+    CONSTRAINT CK_VeHanhKhach_Gia CHECK (GiaVe >= 0)
+);
+GO
+CREATE NONCLUSTERED INDEX IX_VeHanhKhach_MaDonDatTour ON dbo.VeHanhKhach(MaDonDatTour);
+CREATE NONCLUSTERED INDEX IX_VeHanhKhach_LoaiHanhKhach ON dbo.VeHanhKhach(LoaiHanhKhach);
+GO
+
+-- 8. ĐỊA ĐIỂM ẨM THỰC (NHÀ HÀNG · QUÁN CÀ PHÊ · TIỆM BÁNH)
+-- Nguồn dữ liệu: scripts/import_food_places.py đọc backend/data của dự án mẫu HUEGO.
+-- Nạp dữ liệu: chạy database/seed/DiaDiemAmThuc_Seed.sql sau khi tạo bảng này.
+CREATE TABLE dbo.DiaDiemAmThuc (
+    MaDiaDiem INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_DiaDiemAmThuc PRIMARY KEY,
+    Slug NVARCHAR(160) NOT NULL CONSTRAINT UQ_DiaDiemAmThuc_Slug UNIQUE,
+    TenDiaDiem NVARCHAR(250) NOT NULL,
+    DanhMuc NVARCHAR(80) NOT NULL,
+    MaDanhMuc NVARCHAR(50) NOT NULL,
+    MonDacTrung NVARCHAR(120) NULL,
+    MoTa NVARCHAR(1000) NULL,
+    DiaChi NVARCHAR(400) NULL,
+    PhuongXa NVARCHAR(120) NULL,
+    ToaDoLat DECIMAL(10,7) NULL,
+    ToaDoLng DECIMAL(10,7) NULL,
+    SoDienThoai NVARCHAR(40) NULL,
+    GiaThamKhao DECIMAL(18,0) NULL,
+    DiemDanhGia DECIMAL(3,2) NULL,
+    SoDanhGia INT NULL,
+    AnhMinhHoa NVARCHAR(400) NULL,
+    AnhGoc NVARCHAR(600) NULL,
+    Nguon NVARCHAR(80) NULL,
+    DuocDoiChieu BIT NOT NULL CONSTRAINT DF_DiaDiemAmThuc_DuocDoiChieu DEFAULT 0,
+    NgayTao DATETIME2(0) NOT NULL CONSTRAINT DF_DiaDiemAmThuc_NgayTao DEFAULT SYSDATETIME(),
+    CONSTRAINT CK_DiaDiemAmThuc_DiemDanhGia CHECK (DiemDanhGia IS NULL OR (DiemDanhGia >= 0 AND DiemDanhGia <= 5)),
+    CONSTRAINT CK_DiaDiemAmThuc_Gia CHECK (GiaThamKhao IS NULL OR GiaThamKhao >= 0)
+);
+GO
+CREATE NONCLUSTERED INDEX IX_DiaDiemAmThuc_MaDanhMuc ON dbo.DiaDiemAmThuc(MaDanhMuc);
+CREATE NONCLUSTERED INDEX IX_DiaDiemAmThuc_DiemDanhGia ON dbo.DiaDiemAmThuc(DiemDanhGia DESC);
+GO
+
+-- VIEW tương thích: ứng dụng Dapper đang dùng tên bảng/cột tiếng Anh.
+-- Các VIEW chỉ chiếu trực tiếp một bảng nên giữ khả năng SELECT/INSERT/UPDATE/DELETE.
+CREATE VIEW dbo.UserAccount AS
+SELECT MaTaiKhoan AS Id, TenDangNhap AS Username, MatKhauBam AS PasswordHash,
+       HoTen AS FullName, VaiTro AS Role, Email, SoDienThoai AS PhoneNumber, NgayTao AS CreatedAt
+FROM dbo.TaiKhoanNguoiDung;
+GO
+CREATE VIEW dbo.Customer AS
+SELECT MaKhachHang AS Id, MaTaiKhoan AS UserAccountId, HoTen AS FullName, Email,
+       SoDienThoai AS PhoneNumber, DiaChi AS Address, SoGiayToTuyThan AS IdentityCard, NgayTao AS CreatedAt
+FROM dbo.KhachHang;
+GO
+CREATE VIEW dbo.PriceRule AS
+SELECT MaQuyTac AS Id, LoaiHanhKhach AS PassengerType, TenHienThi AS DisplayName,
+       HeSoGia AS RateMultiplier, TuoiToiThieu AS MinAge, TuoiToiDa AS MaxAge,
+       MoTa AS Description, DangApDung AS IsActive
+FROM dbo.QuyTacGiaVe;
+GO
+CREATE VIEW dbo.Tour AS
+SELECT MaTour AS Id, MaTourHienThi AS Code, TenTour AS Title, DanhMuc AS Category,
+       MoTaNgan AS ShortDescription, MoTaChiTiet AS Description, LichTrinh AS Itinerary,
+       DiemNoiBat AS Highlights, ThoiLuong AS Duration, DiemKhoiHanh AS StartingLocation,
+       GiaCoBan AS BasePrice, DuongDanAnh AS ImageUrl, DangMoBan AS IsActive, NgayTao AS CreatedAt
+FROM dbo.TourDuLich;
+GO
+CREATE VIEW dbo.Departure AS
+SELECT MaChuyen AS Id, MaTour AS TourId, NgayKhoiHanh AS DepartureDate, NgayKetThuc AS ReturnDate,
+       SucChuaToiDa AS MaxCapacity, SoChoDaDat AS BookedSeats, TrangThai AS Status,
+       DiemHen AS MeetingPoint, TenHuongDanVien AS TourGuideName,
+       SoDienThoaiHuongDanVien AS TourGuidePhone
+FROM dbo.ChuyenKhoiHanh;
+GO
+CREATE VIEW dbo.TourBooking AS
+SELECT MaDonDatTour AS Id, MaDatTour AS BookingCode, MaChuyen AS DepartureId,
+       MaKhachHang AS CustomerId, NgayDat AS BookingDate, TongTien AS TotalAmount,
+       TrangThai AS Status, GhiChu AS Notes, YeuCauDacBiet AS SpecialRequests,
+       PhuongThucThanhToan AS PaymentMethod
+FROM dbo.DonDatTour;
+GO
+CREATE VIEW dbo.PassengerTicket AS
+SELECT MaVeHanhKhach AS Id, MaDonDatTour AS BookingId, MaVe AS TicketCode,
+       HoTenHanhKhach AS FullName, GioiTinh AS Gender, LoaiHanhKhach AS PassengerType,
+       NamSinh AS BirthYear, GiaVe AS Price, SoGhe AS SeatNumber, GhiChu AS Note
+FROM dbo.VeHanhKhach;
+GO
+CREATE VIEW dbo.FoodPlace AS
+SELECT MaDiaDiem AS Id, Slug, TenDiaDiem AS Name, DanhMuc AS Category, MaDanhMuc AS CategoryCode,
+       MonDacTrung AS SignatureDish, MoTa AS Description, DiaChi AS Address, PhuongXa AS Ward,
+       CAST(ToaDoLat AS FLOAT) AS Latitude, CAST(ToaDoLng AS FLOAT) AS Longitude, SoDienThoai AS Phone,
+       GiaThamKhao AS AveragePrice, CAST(DiemDanhGia AS FLOAT) AS Rating, SoDanhGia AS ReviewCount,
+       AnhMinhHoa AS ImageUrl, AnhGoc AS SourceImageUrl, Nguon AS Source,
+       DuocDoiChieu AS IsCurated, NgayTao AS CreatedAt
+FROM dbo.DiaDiemAmThuc;
+GO
 -- =========================================================================================
--- DỮ LIỆU MẪU KHỞI TẠO (SEED DATA)
+-- DỮ LIỆU MẪU BAN ĐẦU
 -- =========================================================================================
 
--- Seed Tài khoản
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    DECLARE @Now DATETIME2(0) = SYSDATETIME();
+    DECLARE @DepartureDaiNoi INT;
+    DECLARE @DepartureTamGiang INT;
+    DECLARE @DepartureSongHuong INT;
+    DECLARE @DepartureBachMa INT;
+    DECLARE @DepartureLichSu INT;
+
+-- Nạp tài khoản mẫu
 INSERT INTO dbo.UserAccount (Username, PasswordHash, FullName, Role, Email, PhoneNumber)
 VALUES
 ('admin', 'pbkdf2-sha256$210000$TYpsCxfi81mkwnGOZQO5Dw==$ee1h28DQ2N+52LzN226i2AjDWQbHpxT7I/OYftdo7rU=', N'Quản Trị Viên Tour Huế', 'Admin', 'admin@huetour.vn', '0905123456'),
 ('khachhang', 'pbkdf2-sha256$210000$oZw35LYF0o9xo8lOC1bygQ==$NLXpsp0sk3NANY+daDzdrc6sVxJXu441JuHH/VsI5xQ=', N'Nguyễn Văn An', 'Customer', 'an.nguyen@gmail.com', '0912345678');
 
--- Seed PriceRule (Luật 2: Người lớn 100%, Trẻ em 5-11t 50%, Em bé <5t 0% miễn phí)
+-- Nạp quy tắc giá mẫu (Luật 2: người lớn 100%, trẻ em 50%, em bé miễn phí)
 INSERT INTO dbo.PriceRule (PassengerType, DisplayName, RateMultiplier, MinAge, MaxAge, Description, IsActive)
 VALUES
 ('Adult', N'Người lớn', 1.00, 12, NULL, N'Hành khách từ 12 tuổi trở lên tính 100% giá gốc', 1),
 ('Child', N'Trẻ em (5 - 11 tuổi)', 0.50, 5, 11, N'Trẻ em từ 5 đến 11 tuổi tính 50% giá gốc', 1),
 ('Infant', N'Em bé (Dưới 5 tuổi)', 0.00, 0, 4, N'Em bé dưới 5 tuổi miễn phí vé tour (0 VNĐ)', 1);
 
--- Seed Tours
+-- Nạp danh sách tour mẫu
 INSERT INTO dbo.Tour (Code, Title, Category, ShortDescription, Description, Itinerary, Highlights, Duration, StartingLocation, BasePrice, ImageUrl, IsActive)
 VALUES
 (
@@ -392,61 +509,64 @@ VALUES
     N'Theo chương trình', N'Đại Nội Huế', 650000, '/images/hue-imperial-night-2024.jpg', 1
 );
 
--- Seed Chuyến khởi hành (Departures)
--- Lưu ý: Tạo chuyến có đủ thời gian đặt bình thường, chuyến trong thời hạn khóa và chuyến gần đầy để test Luật 1.
-DECLARE @Now DATETIME2 = GETDATE();
+-- Nạp lịch khởi hành mẫu
+-- Các chuyến không có booking seed bắt đầu với SoChoDaDat = 0 để số ghế luôn khớp vé.
 
--- Chuyến 1 cho Tour Đại Nội (Cách 3 ngày, còn 18 chỗ) -> Đặt được
+-- Chuyến 1 cho Tour Đại Nội (chuyến đặt mẫu; số chỗ sẽ đồng bộ theo vé phía dưới).
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (1, DATEADD(DAY, 3, @Now), DATEADD(DAY, 3, DATEADD(HOUR, 9, @Now)), 25, 7, 'Open', N'Cột cờ Phu Văn Lâu', N'Lê Văn Hoàng', '0905111222');
+SET @DepartureDaiNoi = CONVERT(INT, SCOPE_IDENTITY());
 
--- Chuyến 2 cho Tour Đại Nội (Cách 6 ngày, còn 22 chỗ) -> Đặt được
+-- Chuyến 2 cho Tour Đại Nội (không có booking seed; khởi tạo 0 chỗ đã đặt).
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (1, DATEADD(DAY, 6, @Now), DATEADD(DAY, 6, DATEADD(HOUR, 9, @Now)), 25, 3, 'Open', N'Cột cờ Phu Văn Lâu', N'Nguyễn Thị Thu', '0905333444');
+VALUES (1, DATEADD(DAY, 6, @Now), DATEADD(DAY, 6, DATEADD(HOUR, 9, @Now)), 25, 0, 'Open', N'Cột cờ Phu Văn Lâu', N'Nguyễn Thị Thu', '0905333444');
 
--- Chuyến 3 cho Tour Đại Nội (ĐÃ ĐẦY CHỖ: MaxCapacity 25, BookedSeats 25) -> TEST LUẬT 1: Quá số chỗ!
+-- Chuyến 3 cho Tour Đại Nội (không có booking seed; không giả lập vé bằng số chỗ đã đặt).
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (1, DATEADD(DAY, 4, @Now), DATEADD(DAY, 4, DATEADD(HOUR, 9, @Now)), 25, 25, 'Open', N'Cột cờ Phu Văn Lâu', N'Trần Minh Đức', '0905555666');
+VALUES (1, DATEADD(DAY, 4, @Now), DATEADD(DAY, 4, DATEADD(HOUR, 9, @Now)), 25, 0, 'Open', N'Cột cờ Phu Văn Lâu', N'Trần Minh Đức', '0905555666');
 
--- Chuyến 4 cho Tour Đại Nội còn ít giờ trước khởi hành -> TEST LUẬT 1: Thời hạn khóa đặt!
+-- Chuyến 4 cho Tour Đại Nội nằm trong thời hạn khóa đặt để kiểm tra RULE1_CUTOFF_VIOLATION.
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (1, DATEADD(HOUR, 10, @Now), DATEADD(HOUR, 19, @Now), 25, 12, 'Open', N'Cột cờ Phu Văn Lâu', N'Lê Văn Hoàng', '0905111222');
+VALUES (1, DATEADD(HOUR, 10, @Now), DATEADD(HOUR, 19, @Now), 25, 0, 'Open', N'Cột cờ Phu Văn Lâu', N'Lê Văn Hoàng', '0905111222');
 
 -- Chuyến cho Tour Đầm Phá Tam Giang
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (2, DATEADD(DAY, 2, @Now), DATEADD(DAY, 2, DATEADD(HOUR, 6, @Now)), 20, 8, 'Open', N'Bến thuyền Đầm Chuồn', N'Phan Thanh Sang', '0905777888');
+SET @DepartureTamGiang = CONVERT(INT, SCOPE_IDENTITY());
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (2, DATEADD(DAY, 5, @Now), DATEADD(DAY, 5, DATEADD(HOUR, 6, @Now)), 20, 2, 'Open', N'Bến thuyền Đầm Chuồn', N'Phan Thanh Sang', '0905777888');
+VALUES (2, DATEADD(DAY, 5, @Now), DATEADD(DAY, 5, DATEADD(HOUR, 6, @Now)), 20, 0, 'Open', N'Bến thuyền Đầm Chuồn', N'Phan Thanh Sang', '0905777888');
 
 -- Chuyến cho Tour Du Thuyền Sông Hương Nghe Ca Huế
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (3, DATEADD(DAY, 2, @Now), DATEADD(DAY, 2, DATEADD(HOUR, 3, @Now)), 30, 14, 'Open', N'Bến thuyền Tòa Khâm', N'Hoàng Yến Nhi', '0905999000');
+SET @DepartureSongHuong = CONVERT(INT, SCOPE_IDENTITY());
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (3, DATEADD(DAY, 4, @Now), DATEADD(DAY, 4, DATEADD(HOUR, 3, @Now)), 30, 6, 'Open', N'Bến thuyền Tòa Khâm', N'Hoàng Yến Nhi', '0905999000');
+VALUES (3, DATEADD(DAY, 4, @Now), DATEADD(DAY, 4, DATEADD(HOUR, 3, @Now)), 30, 0, 'Open', N'Bến thuyền Tòa Khâm', N'Hoàng Yến Nhi', '0905999000');
 
 -- Chuyến cho Tour Thủy Biều Làng Cổ
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (4, DATEADD(DAY, 3, @Now), DATEADD(DAY, 3, DATEADD(HOUR, 5, @Now)), 15, 5, 'Open', N'Chùa Thiên Mụ', N'Đặng Văn Phú', '0905222111');
+VALUES (4, DATEADD(DAY, 3, @Now), DATEADD(DAY, 3, DATEADD(HOUR, 5, @Now)), 15, 0, 'Open', N'Chùa Thiên Mụ', N'Đặng Văn Phú', '0905222111');
 
 -- Chuyến cho Tour Food Tour Đêm Huế
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (5, DATEADD(DAY, 2, @Now), DATEADD(DAY, 2, DATEADD(HOUR, 4, @Now)), 16, 4, 'Open', N'Cổng Khách sạn Hương Giang', N'Võ Thị Mỹ Linh', '0905444333');
+VALUES (5, DATEADD(DAY, 2, @Now), DATEADD(DAY, 2, DATEADD(HOUR, 4, @Now)), 16, 0, 'Open', N'Cổng Khách sạn Hương Giang', N'Võ Thị Mỹ Linh', '0905444333');
 
 -- Chuyến cho Tour Bạch Mã Trekking
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES (6, DATEADD(DAY, 5, @Now), DATEADD(DAY, 5, DATEADD(HOUR, 10, @Now)), 20, 6, 'Open', N'Trung tâm TP Huế', N'Bùi Quang Dũng', '0905666777');
+SET @DepartureBachMa = CONVERT(INT, SCOPE_IDENTITY());
 
 -- Lịch cho các tour khác
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (7, DATEADD(HOUR, 8, DATEADD(DAY, 4, CAST(@Now AS DATE))), DATEADD(MINUTE, 270, DATEADD(HOUR, 8, DATEADD(DAY, 4, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+VALUES (7, DATEADD(HOUR, 8, DATEADD(DAY, 4, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(MINUTE, 270, DATEADD(HOUR, 8, DATEADD(DAY, 4, CONVERT(DATETIME2, CAST(@Now AS DATE))))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (8, DATEADD(HOUR, 8, DATEADD(DAY, 3, CAST(@Now AS DATE))), DATEADD(HOUR, 13, DATEADD(DAY, 3, CAST(@Now AS DATE))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+VALUES (8, DATEADD(HOUR, 8, DATEADD(DAY, 3, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(HOUR, 13, DATEADD(DAY, 3, CONVERT(DATETIME2, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (9, DATEADD(HOUR, 7, DATEADD(DAY, 5, CAST(@Now AS DATE))), DATEADD(HOUR, 17, DATEADD(DAY, 5, CAST(@Now AS DATE))), 20, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+VALUES (9, DATEADD(HOUR, 7, DATEADD(DAY, 5, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(HOUR, 17, DATEADD(DAY, 5, CONVERT(DATETIME2, CAST(@Now AS DATE)))), 20, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 -- Chuyến cho Tour 10, 11, 12
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
@@ -460,88 +580,212 @@ VALUES (12, DATEADD(DAY, 7, @Now), DATEADD(DAY, 7, DATEADD(HOUR, 9, @Now)), 25, 
 
 -- Lịch khởi hành mẫu cho các tour gợi ý bổ sung (13-17)
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (13, DATEADD(HOUR, 8, DATEADD(DAY, 5, CAST(@Now AS DATE))), DATEADD(MINUTE, 510, DATEADD(HOUR, 8, DATEADD(DAY, 5, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+VALUES (13, DATEADD(HOUR, 8, DATEADD(DAY, 5, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(MINUTE, 510, DATEADD(HOUR, 8, DATEADD(DAY, 5, CONVERT(DATETIME2, CAST(@Now AS DATE))))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (14, DATEADD(HOUR, 5, DATEADD(DAY, 6, CAST(@Now AS DATE))), DATEADD(MINUTE, 330, DATEADD(HOUR, 5, DATEADD(DAY, 6, CAST(@Now AS DATE)))), 16, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+VALUES (14, DATEADD(HOUR, 5, DATEADD(DAY, 6, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(MINUTE, 330, DATEADD(HOUR, 5, DATEADD(DAY, 6, CONVERT(DATETIME2, CAST(@Now AS DATE))))), 16, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (15, DATEADD(HOUR, 16, DATEADD(DAY, 3, CAST(@Now AS DATE))), DATEADD(HOUR, 20, DATEADD(DAY, 3, CAST(@Now AS DATE))), 12, 0, 'Open', N'Cầu Trường Tiền', N'Công ty điều phối', NULL);
+VALUES (15, DATEADD(HOUR, 16, DATEADD(DAY, 3, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(HOUR, 20, DATEADD(DAY, 3, CONVERT(DATETIME2, CAST(@Now AS DATE)))), 12, 0, 'Open', N'Cầu Trường Tiền', N'Công ty điều phối', NULL);
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (16, DATEADD(MINUTE, 450, DATEADD(DAY, 8, CAST(@Now AS DATE))), DATEADD(MINUTE, 990, DATEADD(DAY, 8, CAST(@Now AS DATE))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+VALUES (16, DATEADD(MINUTE, 450, DATEADD(DAY, 8, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(MINUTE, 990, DATEADD(DAY, 8, CONVERT(DATETIME2, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
-VALUES (17, DATEADD(HOUR, 8, DATEADD(DAY, 9, CAST(@Now AS DATE))), DATEADD(HOUR, 16, DATEADD(DAY, 9, CAST(@Now AS DATE))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+VALUES (17, DATEADD(HOUR, 8, DATEADD(DAY, 9, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(HOUR, 16, DATEADD(DAY, 9, CONVERT(DATETIME2, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
 -- Lịch mẫu cho các tour gợi ý bổ sung (18-22); chỉ dùng thử luồng đặt chỗ capstone.
 INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
 VALUES
-(18, DATEADD(HOUR, 8, DATEADD(DAY, 6, CAST(@Now AS DATE))), DATEADD(MINUTE, 270, DATEADD(HOUR, 8, DATEADD(DAY, 6, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
-(19, DATEADD(MINUTE, 450, DATEADD(DAY, 7, CAST(@Now AS DATE))), DATEADD(HOUR, 12, DATEADD(DAY, 7, CAST(@Now AS DATE))), 16, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
-(20, DATEADD(HOUR, 8, DATEADD(DAY, 8, CAST(@Now AS DATE))), DATEADD(HOUR, 15, DATEADD(DAY, 8, CAST(@Now AS DATE))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
-(21, DATEADD(HOUR, 8, DATEADD(DAY, 5, CAST(@Now AS DATE))), DATEADD(HOUR, 13, DATEADD(DAY, 5, CAST(@Now AS DATE))), 16, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
-(22, DATEADD(HOUR, 7, DATEADD(DAY, 10, CAST(@Now AS DATE))), DATEADD(HOUR, 16, DATEADD(DAY, 10, CAST(@Now AS DATE))), 12, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
+(18, DATEADD(HOUR, 8, DATEADD(DAY, 6, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(MINUTE, 270, DATEADD(HOUR, 8, DATEADD(DAY, 6, CONVERT(DATETIME2, CAST(@Now AS DATE))))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
+(19, DATEADD(MINUTE, 450, DATEADD(DAY, 7, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(HOUR, 12, DATEADD(DAY, 7, CONVERT(DATETIME2, CAST(@Now AS DATE)))), 16, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
+(20, DATEADD(HOUR, 8, DATEADD(DAY, 8, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(HOUR, 15, DATEADD(DAY, 8, CONVERT(DATETIME2, CAST(@Now AS DATE)))), 18, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
+(21, DATEADD(HOUR, 8, DATEADD(DAY, 5, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(HOUR, 13, DATEADD(DAY, 5, CONVERT(DATETIME2, CAST(@Now AS DATE)))), 16, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL),
+(22, DATEADD(HOUR, 7, DATEADD(DAY, 10, CONVERT(DATETIME2, CAST(@Now AS DATE)))), DATEADD(HOUR, 16, DATEADD(DAY, 10, CONVERT(DATETIME2, CAST(@Now AS DATE)))), 12, 0, 'Open', N'Trung tâm TP Huế', N'Công ty điều phối', NULL);
 
--- Seed Khách hàng mẫu
-INSERT INTO dbo.Customer (FullName, Email, PhoneNumber, Address)
+-- Chuyến lịch sử để đơn Completed có ngày khởi hành hợp lý.
+INSERT INTO dbo.Departure (TourId, DepartureDate, ReturnDate, MaxCapacity, BookedSeats, Status, MeetingPoint, TourGuideName, TourGuidePhone)
+VALUES (1, DATEADD(DAY, -2, @Now), DATEADD(HOUR, 9, DATEADD(DAY, -2, @Now)), 25, 1, 'Completed', N'Cột cờ Phu Văn Lâu', N'Lê Văn Hoàng', '0905111222');
+SET @DepartureLichSu = CONVERT(INT, SCOPE_IDENTITY());
+
+-- Nạp khách hàng mẫu; tài khoản khachhang được liên kết với một hồ sơ tương ứng.
+INSERT INTO dbo.Customer (FullName, Email, PhoneNumber, Address, UserAccountId)
 VALUES
-(N'Trần Minh Tuấn', 'tuan.tran@gmail.com', '0988776655', N'12 Lê Lợi, TP Huế'),
-(N'Lê Thị Mai Anh', 'maianh.le@gmail.com', '0977889900', N'84 Nguyễn Huệ, TP Huế'),
-(N'Nguyễn Hoàng Long', 'long.nguyen@outlook.com', '0903112233', N'158 Phố Huế, Q. Hai Bà Trưng, Hà Nội'),
-(N'Vũ Minh Châu', 'minhchau.vu@gmail.com', '0918445566', N'45 Nguyễn Đình Chiểu, Q.1, TP. Hồ Chí Minh'),
-(N'Đặng Thu Thảo', 'thuthao.dang@gmail.com', '0935667788', N'22 Bạch Đằng, Q. Hải Châu, Đà Nẵng'),
-(N'Hoàng Đức Anh', 'ducanh.hoang@gmail.com', '0983990011', N'08 Hùng Vương, TP Huế');
+(N'Trần Minh Tuấn', 'tuan.tran@gmail.com', '0988776655', N'12 Lê Lợi, TP Huế', NULL),
+(N'Nguyễn Văn An', 'an.nguyen@gmail.com', '0912345678', N'84 Nguyễn Huệ, TP Huế', (SELECT Id FROM dbo.UserAccount WHERE Username = 'khachhang')),
+(N'Nguyễn Hoàng Long', 'long.nguyen@outlook.com', '0903112233', N'158 Phố Huế, Q. Hai Bà Trưng, Hà Nội', NULL),
+(N'Vũ Minh Châu', 'minhchau.vu@gmail.com', '0918445566', N'45 Nguyễn Đình Chiểu, Q.1, TP. Hồ Chí Minh', NULL),
+(N'Đặng Thu Thảo', 'thuthao.dang@gmail.com', '0935667788', N'22 Bạch Đằng, Q. Hải Châu, Đà Nẵng', NULL),
+(N'Hoàng Đức Anh', 'ducanh.hoang@gmail.com', '0983990011', N'08 Hùng Vương, TP Huế', NULL);
 
--- Seed Booking mẫu
-INSERT INTO dbo.TourBooking (BookingCode, DepartureId, CustomerId, BookingDate, TotalAmount, Status, Notes, SpecialRequests, PaymentMethod)
+-- Nạp đơn đặt tour mẫu. Lấy ID khách theo email thay vì phụ thuộc thứ tự IDENTITY.
+-- OUTPUT lưu ID phát sinh để gắn đúng vé hành khách với từng đơn.
+DECLARE @BookingIds TABLE
+(
+    BookingCode NVARCHAR(50) NOT NULL PRIMARY KEY,
+    BookingId INT NOT NULL
+);
+
+INSERT INTO dbo.DonDatTour (MaDatTour, MaChuyen, MaKhachHang, NgayDat, TongTien, TrangThai, GhiChu, YeuCauDacBiet, PhuongThucThanhToan)
+OUTPUT INSERTED.MaDatTour, INSERTED.MaDonDatTour INTO @BookingIds (BookingCode, BookingId)
 VALUES
-('HUE-202610-001', 1, 1, DATEADD(DAY, -1, @Now), 825000, 'Confirmed', N'Khách gia đình có 1 bé nhỏ', N'Sắp xếp xe ngồi gần cửa sổ', N'Chuyển khoản QR'),
-('HUE-202610-002', 5, 3, DATEADD(DAY, -2, @Now), 1200000, 'Confirmed', N'Đoàn tham gia chèo Sup hoàng hôn', N'Áo phao cho trẻ em', N'Chuyển khoản VietQR'),
-('HUE-202610-003', 7, 4, DATEADD(DAY, -1, @Now), 550000, 'Pending', N'Muốn ngồi tầng 2 du thuyền rồng', N'Thả hoa đăng giấy màu', N'Thanh toán trực tiếp'),
-('HUE-202610-004', 11, 5, DATEADD(DAY, -3, @Now), 1360000, 'Confirmed', N'Đoàn khám phá Bạch Mã', N'Ăn trưa picnic bên suối', N'Chuyển khoản QR'),
-('HUE-202610-005', 1, 6, DATEADD(DAY, -5, @Now), 550000, 'Completed', N'Khách đi 1 mình công tác', NULL, N'Thẻ tín dụng'),
-('HUE-202610-006', 2, 2, DATEADD(DAY, -1, @Now), 480000, 'Cancelled', N'Bận việc đột xuất xin hủy', NULL, N'Chuyển khoản');
+('HUE-202610-001', @DepartureDaiNoi, (SELECT Id FROM dbo.Customer WHERE Email = 'tuan.tran@gmail.com'), DATEADD(DAY, -1, @Now), 825000, 'Confirmed', N'Khách gia đình có 1 bé nhỏ', N'Sắp xếp xe ngồi gần cửa sổ', N'Chuyển khoản QR'),
+('HUE-202610-002', @DepartureTamGiang, (SELECT Id FROM dbo.Customer WHERE Email = 'long.nguyen@outlook.com'), DATEADD(DAY, -2, @Now), 1200000, 'Confirmed', N'Đoàn tham gia chèo SUP ngắm hoàng hôn', N'Chuẩn bị áo phao cho trẻ em', N'Chuyển khoản VietQR'),
+('HUE-202610-003', @DepartureSongHuong, (SELECT Id FROM dbo.Customer WHERE Email = 'minhchau.vu@gmail.com'), DATEADD(DAY, -1, @Now), 550000, 'Pending', N'Muốn ngồi tầng 2 du thuyền rồng', N'Thả hoa đăng giấy màu', N'Thanh toán trực tiếp'),
+('HUE-202610-004', @DepartureBachMa, (SELECT Id FROM dbo.Customer WHERE Email = 'thuthao.dang@gmail.com'), DATEADD(DAY, -3, @Now), 1360000, 'Confirmed', N'Đoàn khám phá Bạch Mã', N'Ăn trưa picnic bên suối', N'Chuyển khoản QR'),
+('HUE-202610-005', @DepartureLichSu, (SELECT Id FROM dbo.Customer WHERE Email = 'ducanh.hoang@gmail.com'), DATEADD(DAY, -5, @Now), 550000, 'Completed', N'Khách đi 1 mình công tác', NULL, N'Thẻ tín dụng'),
+('HUE-202610-006', @DepartureTamGiang, (SELECT Id FROM dbo.Customer WHERE Email = 'an.nguyen@gmail.com'), DATEADD(DAY, -1, @Now), 480000, 'Cancelled', N'Khách bận việc đột xuất, đã hủy đơn', NULL, N'Chuyển khoản');
 
--- Seed Vé mẫu của các Booking trên (Áp dụng chuẩn Luật 2: Người lớn 100%, Trẻ em 50%, Em bé 0%)
+-- Nạp vé hành khách mẫu (áp dụng quy tắc giá người lớn, trẻ em và em bé)
 -- Booking 1: 1 Người lớn 550k + 1 Trẻ em 275k = 825k
 INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
 VALUES
-(1, 'HUE-202610-001-01', N'Trần Minh Tuấn', 'Nam', 'Adult', 1990, 550000, 'G01'),
-(1, 'HUE-202610-001-02', N'Trần Tuấn Khang', 'Nam', 'Child', 2018, 275000, 'G02');
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-001'), 'HUE-202610-001-01', N'Trần Minh Tuấn', 'Nam', 'Adult', 1990, 550000, 'G01'),
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-001'), 'HUE-202610-001-02', N'Trần Tuấn Khang', 'Nam', 'Child', 2018, 275000, 'G02');
 
 -- Booking 2: 2 Người lớn (480k x 2 = 960k) + 1 Trẻ em (240k) + 1 Em bé (0k) = 1.200.000 VNĐ
 INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
 VALUES
-(2, 'HUE-202610-002-01', N'Nguyễn Hoàng Long', 'Nam', 'Adult', 1988, 480000, 'G01'),
-(2, 'HUE-202610-002-02', N'Lê Ngọc Bích', 'Nữ', 'Adult', 1991, 480000, 'G02'),
-(2, 'HUE-202610-002-03', N'Nguyễn Hoàng Nam', 'Nam', 'Child', 2016, 240000, 'G03'),
-(2, 'HUE-202610-002-04', N'Nguyễn Ngọc An', 'Nữ', 'Infant', 2023, 0, 'G04');
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-002'), 'HUE-202610-002-01', N'Nguyễn Hoàng Long', 'Nam', 'Adult', 1988, 480000, 'G01'),
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-002'), 'HUE-202610-002-02', N'Lê Ngọc Bích', 'Nữ', 'Adult', 1991, 480000, 'G02'),
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-002'), 'HUE-202610-002-03', N'Nguyễn Hoàng Nam', 'Nam', 'Child', 2016, 240000, 'G03'),
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-002'), 'HUE-202610-002-04', N'Nguyễn Ngọc An', 'Nữ', 'Infant', 2023, 0, 'G04');
 
 -- Booking 3: 2 Người lớn (220k x 2 = 440k) + 1 Trẻ em (110k) = 550.000 VNĐ
 INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
 VALUES
-(3, 'HUE-202610-003-01', N'Vũ Minh Châu', 'Nữ', 'Adult', 1995, 220000, 'G05'),
-(3, 'HUE-202610-003-02', N'Phạm Nhật Minh', 'Nam', 'Adult', 1993, 220000, 'G06'),
-(3, 'HUE-202610-003-03', N'Phạm Minh Nhi', 'Nữ', 'Child', 2019, 110000, 'G07');
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-003'), 'HUE-202610-003-01', N'Vũ Minh Châu', 'Nữ', 'Adult', 1995, 220000, 'G05'),
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-003'), 'HUE-202610-003-02', N'Phạm Nhật Minh', 'Nam', 'Adult', 1993, 220000, 'G06'),
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-003'), 'HUE-202610-003-03', N'Phạm Minh Nhi', 'Nữ', 'Child', 2019, 110000, 'G07');
 
 -- Booking 4: 2 Người lớn (680k x 2) = 1.360.000 VNĐ
 INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
 VALUES
-(4, 'HUE-202610-004-01', N'Đặng Thu Thảo', 'Nữ', 'Adult', 1997, 680000, 'G01'),
-(4, 'HUE-202610-004-02', N'Nguyễn Quang Vinh', 'Nam', 'Adult', 1996, 680000, 'G02');
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-004'), 'HUE-202610-004-01', N'Đặng Thu Thảo', 'Nữ', 'Adult', 1997, 680000, 'G01'),
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-004'), 'HUE-202610-004-02', N'Nguyễn Quang Vinh', 'Nam', 'Adult', 1996, 680000, 'G02');
 
--- Booking 5: 1 Người lớn = 550.000 VNĐ
+-- Booking 5: 1 Người lớn = 550.000 VNĐ, đi trên chuyến đã hoàn thành
 INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
 VALUES
-(5, 'HUE-202610-005-01', N'Hoàng Đức Anh', 'Nam', 'Adult', 1992, 550000, 'G08');
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-005'), 'HUE-202610-005-01', N'Hoàng Đức Anh', 'Nam', 'Adult', 1992, 550000, 'G08');
 
 -- Booking 6: 1 Người lớn = 480.000 VNĐ (đã hủy)
 INSERT INTO dbo.PassengerTicket (BookingId, TicketCode, FullName, Gender, PassengerType, BirthYear, Price, SeatNumber)
 VALUES
-(6, 'HUE-202610-006-01', N'Lê Thị Mai Anh', 'Nữ', 'Adult', 1994, 480000, 'G09');
+((SELECT BookingId FROM @BookingIds WHERE BookingCode = 'HUE-202610-006'), 'HUE-202610-006-01', N'Lê Thị Mai Anh', 'Nữ', 'Adult', 1994, 480000, 'G09');
+
+-- Đồng bộ số chỗ đã đặt theo các vé chưa bị hủy của những chuyến có đơn mẫu.
+UPDATE d
+SET d.BookedSeats =
+(
+    SELECT COUNT(*)
+    FROM dbo.TourBooking AS b
+    INNER JOIN dbo.PassengerTicket AS pt ON pt.BookingId = b.Id
+    WHERE b.DepartureId = d.Id
+      AND b.Status <> 'Cancelled'
+)
+FROM dbo.Departure AS d
+WHERE d.Id IN (@DepartureDaiNoi, @DepartureTamGiang, @DepartureSongHuong, @DepartureBachMa, @DepartureLichSu);
+
+-- Kiểm tra đơn nào cũng có vé và tổng tiền khớp tổng giá vé.
+IF EXISTS
+(
+    SELECT b.Id
+    FROM dbo.TourBooking AS b
+    LEFT JOIN dbo.PassengerTicket AS pt ON pt.BookingId = b.Id
+    GROUP BY b.Id, b.TotalAmount
+    HAVING COUNT(pt.Id) = 0 OR SUM(COALESCE(pt.Price, 0)) <> b.TotalAmount
+)
+BEGIN
+    ;THROW 51001, N'Dữ liệu mẫu không hợp lệ: đơn thiếu vé hoặc tổng tiền không khớp.', 1;
+END;
+
+-- Kiểm tra giá từng vé đúng với giá tour và hệ số theo loại hành khách.
+IF EXISTS
+(
+    SELECT 1
+    FROM dbo.PassengerTicket AS pt
+    INNER JOIN dbo.TourBooking AS b ON b.Id = pt.BookingId
+    INNER JOIN dbo.Departure AS d ON d.Id = b.DepartureId
+    INNER JOIN dbo.Tour AS t ON t.Id = d.TourId
+    INNER JOIN dbo.PriceRule AS pr ON pr.PassengerType = pt.PassengerType
+    WHERE pt.Price <> CONVERT(DECIMAL(18,2), t.BasePrice * pr.RateMultiplier)
+)
+BEGIN
+    ;THROW 51002, N'Dữ liệu mẫu không hợp lệ: giá vé không khớp giá tour hoặc loại hành khách.', 1;
+END;
+
+-- Kiểm tra số chỗ của các chuyến có đơn mẫu khớp với số vé chưa bị hủy.
+IF EXISTS
+(
+    SELECT 1
+    FROM dbo.Departure AS d
+    WHERE d.Id IN (@DepartureDaiNoi, @DepartureTamGiang, @DepartureSongHuong, @DepartureBachMa, @DepartureLichSu)
+      AND d.BookedSeats <>
+      (
+          SELECT COUNT(*)
+          FROM dbo.TourBooking AS b
+          INNER JOIN dbo.PassengerTicket AS pt ON pt.BookingId = b.Id
+          WHERE b.DepartureId = d.Id
+            AND b.Status <> 'Cancelled'
+      )
+)
+BEGIN
+    ;THROW 51003, N'Dữ liệu mẫu không hợp lệ: số chỗ đã đặt không khớp số vé còn hiệu lực.', 1;
+END;
+
+COMMIT TRANSACTION;
+
+-- Bảng tổng hợp đơn đặt tour để xem ngay trong SQL Server Management Studio.
+SELECT
+    b.BookingCode AS [Mã đặt tour],
+    c.FullName AS [Khách hàng],
+    t.Title AS [Tour],
+    d.DepartureDate AS [Ngày khởi hành],
+    CASE b.Status
+        WHEN 'Pending' THEN N'Chờ xác nhận'
+        WHEN 'Confirmed' THEN N'Đã xác nhận'
+        WHEN 'Completed' THEN N'Đã hoàn thành'
+        WHEN 'Cancelled' THEN N'Đã hủy'
+        ELSE b.Status
+    END AS [Trạng thái],
+    COUNT(pt.Id) AS [Số hành khách],
+    b.TotalAmount AS [Tổng tiền (VNĐ)]
+FROM dbo.TourBooking AS b
+INNER JOIN dbo.Customer AS c ON c.Id = b.CustomerId
+INNER JOIN dbo.Departure AS d ON d.Id = b.DepartureId
+INNER JOIN dbo.Tour AS t ON t.Id = d.TourId
+INNER JOIN dbo.PassengerTicket AS pt ON pt.BookingId = b.Id
+GROUP BY b.BookingCode, c.FullName, t.Title, d.DepartureDate, b.Status, b.TotalAmount, b.BookingDate
+ORDER BY b.BookingDate, b.BookingCode;
+
+-- Danh sách chi tiết từng hành khách và giá vé.
+SELECT
+    b.BookingCode AS [Mã đặt tour],
+    CASE b.Status
+        WHEN 'Pending' THEN N'Chờ xác nhận'
+        WHEN 'Confirmed' THEN N'Đã xác nhận'
+        WHEN 'Completed' THEN N'Đã hoàn thành'
+        WHEN 'Cancelled' THEN N'Đã hủy'
+        ELSE b.Status
+    END AS [Trạng thái],
+    pt.FullName AS [Hành khách],
+    pr.DisplayName AS [Loại vé],
+    pt.TicketCode AS [Mã vé],
+    pt.Price AS [Giá vé (VNĐ)]
+FROM dbo.PassengerTicket AS pt
+INNER JOIN dbo.TourBooking AS b ON b.Id = pt.BookingId
+INNER JOIN dbo.PriceRule AS pr ON pr.PassengerType = pt.PassengerType
+ORDER BY b.BookingCode, pt.TicketCode;
+
+    PRINT N'Cơ sở dữ liệu HueTourDb đã được khởi tạo và nạp dữ liệu mẫu hoàn tất thành công!';
+END TRY
+BEGIN CATCH
+    IF XACT_STATE() <> 0
+        ROLLBACK TRANSACTION;
+
+    THROW;
+END CATCH;
 
 GO
-
-PRINT N'Cơ sở dữ liệu HueTourDb đã được khởi tạo và nạp dữ liệu mẫu hoàn tất thành công!';
 

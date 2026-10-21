@@ -1,0 +1,796 @@
+@page "/kham-pha"
+@using System.Globalization
+@implements IAsyncDisposable
+@inject ITravelDiscoveryService DiscoveryService
+@inject ITravelAssistantService AssistantService
+@inject IViewToursUseCase ViewToursUseCase
+@inject IJSRuntime JS
+
+<PageTitle>Khám phá Huế · Bản đồ, thời tiết và cẩm nang | Huế Tour</PageTitle>
+
+<main class="travel-discovery-page">
+    <section class="discovery-hero">
+        <div class="container discovery-hero-inner">
+            <div class="discovery-hero-copy">
+                <span class="discovery-eyebrow"><i class="bi bi-flower1 me-2"></i>CHẠM VÀO MIỀN DI SẢN</span>
+                <h1>Khám phá Huế<br /><span>theo nhịp của bạn</span></h1>
+                <p>Tìm nơi đáng ghé, xem thời tiết và ghép thành một ngày thật vừa vặn ở Cố đô.</p>
+                <a class="discovery-hero-link" href="#discovery-search">Bắt đầu khám phá <i class="bi bi-arrow-down-right ms-2"></i></a>
+            </div>
+            <div class="discovery-hero-art" aria-hidden="true">
+                <div class="discovery-sun"></div>
+                <div class="discovery-river"></div>
+                <div class="discovery-hero-seal"><i class="bi bi-compass"></i><span>HUẾ<br />THƯƠNG</span></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container discovery-content">
+        <section id="discovery-search" class="discovery-search-card" aria-labelledby="discovery-search-title">
+            <div class="discovery-section-kicker">LÊN ĐƯỜNG TỪ ĐÂU?</div>
+            <h2 id="discovery-search-title">Chọn điểm đến của bạn</h2>
+            <p class="text-muted">Tìm thành phố hoặc khu vực tại Việt Nam. Chỉ gửi yêu cầu tìm kiếm khi bạn bấm nút.</p>
+            <div class="discovery-search-row">
+                <label class="visually-hidden" for="destination-query">Tên thành phố hoặc địa điểm</label>
+                <div class="discovery-destination-input">
+                    <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                    <input id="destination-query" class="form-control" @bind="destinationQuery" @bind:event="oninput"
+                           @onkeydown="HandleSearchKeyDown" placeholder="Ví dụ: Huế, Đà Lạt, Hội An" autocomplete="off" />
+                </div>
+                <button class="btn btn-royal discovery-search-button" type="button" @onclick="SearchDestinationAsync" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span><span>Đang tìm</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-search me-2"></i><span>Khám phá</span>
+                    }
+                </button>
+                <button class="btn btn-outline-royal discovery-location-button" type="button" @onclick="UseCurrentLocationAsync" disabled="@isLoading">
+                    <i class="bi bi-crosshair me-2"></i>Vị trí hiện tại
+                </button>
+            </div>
+            <div class="discovery-search-footnote"><i class="bi bi-shield-check me-1"></i>Tên địa điểm được tra cứu qua OpenStreetMap; nếu máy chủ bận, hệ thống thử Open-Meteo. Vị trí GPS chỉ dùng khi bạn chọn nút và không được lưu.</div>
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(pageNotice))
+        {
+            <div class="alert @(isError ? "alert-warning" : "alert-info") discovery-notice" role="status">
+                <i class="bi @(isError ? "bi-exclamation-circle" : "bi-info-circle") me-2"></i>@pageNotice
+            </div>
+        }
+
+        @if (destination is not null)
+        {
+            <section id="weather" class="discovery-weather-section" aria-labelledby="weather-title">
+                <div class="discovery-section-heading">
+                    <div>
+                        <span class="discovery-section-kicker">TRƯỚC KHI RA NGOÀI</span>
+                        <h2 id="weather-title">Thời tiết tại @destination.Name</h2>
+                    </div>
+                    <span class="discovery-live-badge"><span></span>Dữ liệu cập nhật từ Open-Meteo</span>
+                </div>
+
+                @if (weather is not null)
+                {
+                    <div class="weather-overview">
+                        <div class="weather-current-card">
+                            <div class="weather-current-header">
+                                <span class="weather-place-label"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i>@destination.Name</span>
+                                <span class="weather-current-pill"><span></span>Hiện tại</span>
+                            </div>
+                            <div class="weather-current-main">
+                                <div class="weather-current-symbol"><i class="bi @WeatherIcon(weather.Current.WeatherCode)" aria-hidden="true"></i></div>
+                                <div class="weather-current-copy">
+                                    <div class="weather-temperature">@weather.Current.TemperatureC.ToString("0")<span>°C</span></div>
+                                    <div class="weather-condition">@TravelAssistantService.WeatherDescription(weather.Current.WeatherCode)</div>
+                                    <div class="weather-feels"><i class="bi bi-thermometer-half" aria-hidden="true"></i>Cảm giác như @weather.Current.FeelsLikeC.ToString("0")°C</div>
+                                </div>
+                            </div>
+                            <div class="weather-detail-list">
+                                <div><i class="bi bi-droplet-half" aria-hidden="true"></i><span><small>Độ ẩm</small><strong>@weather.Current.HumidityPercent%</strong></span></div>
+                                <div><i class="bi bi-wind" aria-hidden="true"></i><span><small>Tốc độ gió</small><strong>@weather.Current.WindKmh.ToString("0.#") km/h</strong></span></div>
+                            </div>
+                        </div>
+                        <div class="weather-guidance @(CurrentWeatherIsRainy() ? "weather-guidance-rain" : "weather-guidance-clear")">
+                            <div class="weather-guidance-icon"><i class="bi @(CurrentWeatherIsRainy() ? "bi-umbrella" : "bi-sun")"></i></div>
+                            <div>
+                                <strong>@(CurrentWeatherIsRainy() ? "Ưu tiên lịch trình trong nhà" : "Thời tiết thuận lợi để khám phá")</strong>
+                                <p class="mb-0">@WeatherSuggestion()</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="weather-forecast-grid" aria-label="Dự báo thời tiết 7 ngày">
+                        @foreach (var day in weather.Forecast)
+                        {
+                            <div class="weather-day-card">
+                                <span class="weather-day-name">@FormatWeekday(day.Date)</span>
+                                <i class="bi @WeatherIcon(day.WeatherCode)" aria-hidden="true"></i>
+                                <span class="weather-day-condition">@TravelAssistantService.WeatherDescription(day.WeatherCode)</span>
+                                <strong>@day.MaximumC.ToString("0")° <span>@day.MinimumC.ToString("0")°</span></strong>
+                                <small><i class="bi bi-droplet"></i> @(day.PrecipitationChance.HasValue ? day.PrecipitationChance.Value + "% mưa" : "Chưa có xác suất mưa")</small>
+                            </div>
+                        }
+                    </div>
+                    <p class="weather-source-note">Dữ liệu dự báo: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · thời tiết có thể thay đổi, hãy cập nhật trước khi khởi hành.</p>
+                }
+                else
+                {
+                    <div class="discovery-empty-state"><i class="bi bi-cloud-slash"></i><span>@(weatherError ?? "Chưa có dữ liệu thời tiết cho địa điểm này.")</span></div>
+                }
+            </section>
+
+            <section id="places" class="discovery-places-section" aria-labelledby="places-title">
+                <div class="discovery-section-heading discovery-places-heading">
+                    <div>
+                        <span class="discovery-section-kicker">ĐỊA ĐIỂM QUANH BẠN</span>
+                        <h2 id="places-title">Từ quán ngon đến chốn di sản</h2>
+                        <p class="text-muted mb-0">Khoảng cách tính từ điểm xuất phát đang chọn. Kết quả bản đồ có thể thiếu ảnh, giá, giờ mở cửa hoặc đánh giá; chúng tôi sẽ báo rõ khi nguồn chưa có thông tin.</p>
+                    </div>
+                    <span class="discovery-count-pill"><i class="bi bi-pin-map me-2"></i>@VisiblePlaces.Count() địa điểm</span>
+                </div>
+
+                <div class="discovery-filter-bar">
+                    <label class="discovery-category-select">
+                        <span>Danh mục</span>
+                        <select class="form-select" @bind="selectedCategory">
+                            <option value="all">Tất cả địa điểm</option>
+                            <option value="food">Ăn uống</option>
+                            <option value="cafe">Cà phê &amp; thư giãn</option>
+                            <option value="stay">Khách sạn &amp; lưu trú</option>
+                            <option value="attraction">Tham quan &amp; di sản</option>
+                        </select>
+                    </label>
+                    <label class="discovery-category-select">
+                        <span>Gần điểm tham quan</span>
+                        <select class="form-select" @bind="nearPlaceId">
+                            <option value="">Tâm thành phố / vị trí tìm kiếm</option>
+                            @foreach (var landmark in availableLandmarks.Take(40))
+                            {
+                                <option value="@landmark.Id">@landmark.Name</option>
+                            }
+                        </select>
+                    </label>
+                    <label class="discovery-keyword-input">
+                        <span>Tên quán, món ăn hoặc khu vực</span>
+                        <span class="discovery-keyword-wrap"><i class="bi bi-search"></i><input class="form-control" @bind="placeKeyword" @bind:event="oninput" placeholder="Thử: bún bò, cà phê, bảo tàng" /></span>
+                    </label>
+                    <button class="btn btn-outline-royal discovery-refresh-button" type="button" @onclick="RefreshPlacesAsync" disabled="@isLoading">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Tìm danh mục này
+                    </button>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(placeError))
+                {
+                    <div class="discovery-source-error"><i class="bi bi-cloud-slash me-2"></i>@placeError</div>
+                }
+                else if (places.Count == 0)
+                {
+                    <div class="discovery-empty-state"><i class="bi bi-search"></i><span>Chưa có địa điểm phù hợp trong vùng tìm kiếm. Hãy đổi danh mục hoặc mở rộng từ khóa rồi tìm lại.</span></div>
+                }
+                else if (!VisiblePlaces.Any())
+                {
+                    <div class="discovery-empty-state"><i class="bi bi-funnel"></i><span>Không có kết quả khớp từ khóa “@placeKeyword”.</span></div>
+                }
+                else
+                {
+                    <div class="discovery-place-grid">
+                        @foreach (var place in VisiblePlaces.Take(24))
+                        {
+                            <article class="discovery-place-card" @key="place.Id">
+                                @if (!string.IsNullOrWhiteSpace(place.ImageUrl))
+                                {
+                                    <div class="discovery-place-image"><img src="@place.ImageUrl" alt="Ảnh do OpenStreetMap/Wikimedia gắn cho @place.Name" loading="lazy" referrerpolicy="no-referrer" /></div>
+                                }
+                                else
+                                {
+                                    <div class="discovery-place-image discovery-place-placeholder"><i class="bi @PlaceIcon(place.Category)"></i><span>Chưa có ảnh trong dữ liệu bản đồ</span></div>
+                                }
+                                <div class="discovery-place-body">
+                                    <div class="discovery-place-topline"><span class="discovery-place-category">@place.Category</span><span class="discovery-place-distance">@place.DistanceKm.ToString("0.0") km</span></div>
+                                    <h3>@place.Name</h3>
+                                    @if (!string.IsNullOrWhiteSpace(place.Address))
+                                    {
+                                        <p class="discovery-place-address"><i class="bi bi-geo-alt"></i>@place.Address</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="discovery-place-address"><i class="bi bi-geo-alt"></i>Địa chỉ chưa được ghi trong bản đồ</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(place.Cuisine))
+                                    {
+                                        <p class="discovery-place-cuisine"><i class="bi bi-cup-hot"></i>@FormatCuisine(place.Cuisine)</p>
+                                    }
+                                    <div class="discovery-place-data">
+                                        <span><i class="bi bi-star"></i>@(place.Rating.HasValue ? $"{place.Rating.Value:0.0} / 5 (OSM)" : "Chưa có đánh giá")</span>
+                                        <span><i class="bi bi-clock"></i>@(string.IsNullOrWhiteSpace(place.OpeningHours) ? "Chưa có giờ mở cửa" : place.OpeningHours)</span>
+                                        <span><i class="bi bi-cash-coin"></i>@(string.IsNullOrWhiteSpace(place.PriceInformation) ? "Chưa có giá/phí" : place.PriceInformation)</span>
+                                    </div>
+                                    <div class="discovery-place-actions">
+                                        <button class="btn btn-sm btn-outline-royal" type="button" @onclick="() => ShowPlaceOnMap(place)"><i class="bi bi-map me-1"></i>Bản đồ</button>
+                                        <a class="btn btn-sm btn-gold" href="@DirectionsUrl(place)" target="_blank" rel="noopener noreferrer"><i class="bi bi-sign-turn-right me-1"></i>Chỉ đường</a>
+                                        <a class="discovery-details-link" href="@place.MapDetailsUrl" target="_blank" rel="noopener noreferrer" title="Xem dữ liệu OpenStreetMap"><i class="bi bi-box-arrow-up-right"></i><span>Chi tiết</span></a>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                    @if (VisiblePlaces.Count() > 24)
+                    {
+                        <p class="discovery-result-limit">Đang hiển thị 24 trong @VisiblePlaces.Count() kết quả; các điểm còn lại vẫn xuất hiện trên bản đồ.</p>
+                    }
+                }
+            </section>
+
+            <section id="map" class="discovery-map-section" aria-labelledby="map-title">
+                <div class="discovery-section-heading">
+                    <div>
+                        <span class="discovery-section-kicker">NHÌN HUẾ TỪ TRÊN BẢN ĐỒ</span>
+                        <h2 id="map-title">Các điểm quanh @MapCenterLabel</h2>
+                    </div>
+                    <a class="discovery-map-external" href="@OpenStreetMapSearchUrl()" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right me-2"></i>Mở OpenStreetMap</a>
+                </div>
+                <div id="hue-discovery-map" class="discovery-map-canvas" role="application" aria-label="Bản đồ địa điểm du lịch"></div>
+                @if (!string.IsNullOrWhiteSpace(mapError))
+                {
+                    <p class="discovery-map-error"><i class="bi bi-info-circle me-1"></i>@mapError</p>
+                }
+                <p class="discovery-map-attribution">Bản đồ © OpenStreetMap contributors · Hiển thị địa điểm từ OpenStreetMap. Hãy kiểm tra thông tin trực tiếp trước khi đi.</p>
+            </section>
+
+            <section id="guide" class="discovery-guide-section" aria-labelledby="guide-title">
+                <div class="discovery-section-heading">
+                    <div>
+                        <span class="discovery-section-kicker">CẨM NANG XỨ HUẾ</span>
+                        <h2 id="guide-title">Một chút chuẩn bị, chuyến đi nhẹ nhàng hơn</h2>
+                    </div>
+                    <span class="guide-editorial-label"><i class="bi bi-journal-text me-1"></i>Gợi ý biên tập · không phải dữ liệu API</span>
+                </div>
+                <div class="guide-card-grid">
+                    <article class="guide-card guide-card-large">
+                        <div class="guide-card-icon"><i class="bi bi-bank"></i></div>
+                        <span>ĐI ĐÂU</span>
+                        <h3>Đi chậm giữa miền di sản</h3>
+                        <p>Chọn một cụm di tích hoặc một chủ đề trong ngày để có thời gian ngắm kiến trúc, nghe câu chuyện và nghỉ chân. Dùng các điểm tham quan trong kết quả bản đồ để chọn nơi phù hợp khu vực lưu trú.</p>
+                        <a href="#places">Xem địa điểm quanh bạn <i class="bi bi-arrow-right ms-1"></i></a>
+                    </article>
+                    <article class="guide-card">
+                        <div class="guide-card-icon"><i class="bi bi-egg-fried"></i></div>
+                        <span>ĂN GÌ</span>
+                        <h3>Hương vị Cố đô</h3>
+                        <p>Bún bò Huế, cơm hến, bánh bèo, nậm, lọc, bánh khoái và chè Huế là những món thường được nhắc đến trong ẩm thực địa phương. Dùng bộ lọc Ăn uống để xem quán có dữ liệu trên bản đồ.</p>
+                        <a href="#places" @onclick='() => SetSearchCategory("food")'>Tìm quán ăn <i class="bi bi-arrow-right ms-1"></i></a>
+                    </article>
+                    <article class="guide-card">
+                        <div class="guide-card-icon"><i class="bi bi-cup-hot"></i></div>
+                        <span>NGHỈ CHÂN</span>
+                        <h3>Cà phê &amp; những khoảng lặng</h3>
+                        <p>Để một quãng nghỉ giữa buổi tham quan. Giờ mở cửa và ảnh chỉ hiện khi địa điểm đã được người đóng góp ghi vào OpenStreetMap.</p>
+                        <a href="#places" @onclick='() => SetSearchCategory("cafe")'>Tìm quán cà phê <i class="bi bi-arrow-right ms-1"></i></a>
+                    </article>
+                    <article class="guide-card">
+                        <div class="guide-card-icon"><i class="bi bi-cloud-sun"></i></div>
+                        <span>THỜI ĐIỂM &amp; THỜI TIẾT</span>
+                        <h3>Điều chỉnh theo dự báo</h3>
+                        <p>Thời tiết miền Trung thay đổi theo mùa và có thể khác nhau trong ngày. Xem dự báo trước khi đi, chuẩn bị áo mưa nhẹ và kiểm tra thông báo tại điểm đến.</p>
+                        <a href="#weather">Xem dự báo 7 ngày <i class="bi bi-arrow-right ms-1"></i></a>
+                    </article>
+                    <article class="guide-card">
+                        <div class="guide-card-icon"><i class="bi bi-signpost-2"></i></div>
+                        <span>DI CHUYỂN &amp; CHI PHÍ</span>
+                        <h3>Để ngân sách có chỗ linh hoạt</h3>
+                        <p>Ưu tiên đi bộ trong cụm trung tâm, hỏi giá phương tiện trước khi khởi hành và xác nhận phí vé trực tiếp với điểm tham quan. Giá tour bên dưới lấy từ cơ sở dữ liệu HueTour của đồ án.</p>
+                        <a href="#itinerary">Lập lịch trình <i class="bi bi-arrow-right ms-1"></i></a>
+                    </article>
+                    <article class="guide-card">
+                        <div class="guide-card-icon"><i class="bi bi-house-heart"></i></div>
+                        <span>LƯU TRÚ &amp; LƯU Ý</span>
+                        <h3>Chừa thời gian để nghỉ ngơi</h3>
+                        <p>Tìm khách sạn quanh khu vực bạn muốn khám phá, xác nhận giờ nhận phòng, vị trí và điều kiện hủy với nơi lưu trú. Mang nước, giày dễ đi và tôn trọng quy định ở di tích.</p>
+                        <a href="#places" @onclick='() => SetSearchCategory("stay")'>Tìm nơi lưu trú <i class="bi bi-arrow-right ms-1"></i></a>
+                    </article>
+                </div>
+
+                @if (availableTours.Count > 0)
+                {
+                    <div class="guide-tour-strip">
+                        <div><span class="discovery-section-kicker">TOUR TRONG HUÉTOUR</span><h3>Hành trình có thể đặt trên website</h3><p>Giá và lịch khởi hành lấy từ cơ sở dữ liệu hiện tại của dự án.</p></div>
+                        @foreach (var tour in availableTours.Take(3))
+                        {
+                            <a class="guide-tour-item" href="/tour/@tour.Id">
+                                <span>@tour.Category</span><strong>@tour.Title</strong><small>@tour.Duration · từ @tour.BasePrice.ToString("N0") VNĐ/người</small>
+                            </a>
+                        }
+                    </div>
+                }
+            </section>
+
+            <section id="itinerary" class="discovery-itinerary-section" aria-labelledby="itinerary-title">
+                <div class="discovery-section-heading">
+                    <div>
+                        <span class="discovery-section-kicker">LỊCH TRÌNH LINH HOẠT</span>
+                        <h2 id="itinerary-title">Gợi ý một ngày theo thời tiết</h2>
+                        <p class="text-muted mb-0">Hệ thống ưu tiên tên địa điểm có trong kết quả bản đồ; nếu thiếu dữ liệu, gợi ý sẽ giữ ở mức hoạt động chung.</p>
+                    </div>
+                </div>
+                <div class="itinerary-builder">
+                    <div class="itinerary-form-grid">
+                        <label>Điểm đến<input class="form-control" value="@(destination?.Name ?? destinationQuery)" readonly /></label>
+                        <label>Số ngày<input class="form-control" type="number" min="1" max="7" @bind="tripDays" /></label>
+                        <label>Số người<input class="form-control" type="number" min="1" max="30" @bind="travelerCount" /></label>
+                        <label>Ngân sách tổng (VNĐ)<input class="form-control" type="number" min="0" step="100000" @bind="tripBudget" placeholder="Chưa cần nhập" /></label>
+                        <label>Sở thích<select class="form-select" @bind="tripInterest"><option>Di sản</option><option>Ẩm thực</option><option>Thiên nhiên</option><option>Cà phê</option><option>Gia đình</option></select></label>
+                        <label>Ngày bắt đầu<input class="form-control" type="date" @bind="tripStartDate" /></label>
+                        <label>Giờ bắt đầu<input class="form-control" type="time" @bind="tripStartTime" /></label>
+                    </div>
+                    <div class="itinerary-form-footer">
+                        @if (tripBudget.GetValueOrDefault() > 0 && travelerCount > 0 && tripDays > 0)
+                        {
+                            <span><i class="bi bi-wallet2 me-1"></i>Mức chi tiêu dự kiến: @((tripBudget!.Value / travelerCount / tripDays).ToString("N0")) VNĐ/người/ngày (phân bổ ngân sách bạn nhập, chưa phải báo giá).</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-info-circle me-1"></i>Chi phí ăn uống và lưu trú chỉ hiển thị khi nguồn có dữ liệu; không tự ước tính giá.</span>
+                        }
+                        <button class="btn btn-royal" type="button" @onclick="CreateItinerary" disabled="@(destination is null)"><i class="bi bi-magic me-2"></i>Tạo lịch trình</button>
+                    </div>
+                </div>
+
+                @if (itineraryGenerated)
+                {
+                    <div class="itinerary-result">
+                        <div class="itinerary-result-heading"><div><span class="discovery-section-kicker">GỢI Ý THEO DỮ LIỆU HIỆN CÓ</span><h3>@tripDays ngày tại @destination?.Name</h3></div><span>@tripInterest · @travelerCount người · bắt đầu @tripStartTime</span></div>
+                        @foreach (var day in BuildItinerary())
+                        {
+                            <article class="itinerary-day-card">
+                                <div class="itinerary-day-heading"><div><span>NGÀY @day.DayNumber</span><h4>@day.DateLabel</h4></div><span class="itinerary-weather-tag"><i class="bi @WeatherIcon(day.WeatherCode)"></i>@day.WeatherLabel</span></div>
+                                @if (day.RainPlan)
+                                {
+                                    <div class="itinerary-weather-note"><i class="bi bi-umbrella me-2"></i>Dự báo có mưa: ưu tiên bảo tàng, quán cà phê hoặc hoạt động trong nhà có trong dữ liệu; nếu không tìm thấy, lịch trình sẽ giữ phần tham quan ngoài trời ở khung giờ linh hoạt.</div>
+                                }
+                                <ol class="itinerary-timeline">
+                                    @foreach (var activity in day.Activities)
+                                    {
+                                        <li><time>@activity.Time</time><div><strong>@activity.Title</strong><p>@activity.Description</p></div></li>
+                                    }
+                                </ol>
+                            </article>
+                        }
+                        <p class="itinerary-footnote"><i class="bi bi-info-circle me-1"></i>Lịch trình là gợi ý tự động, chưa kiểm tra tình trạng hoạt động hoặc thời gian di chuyển giữa các điểm. Hãy xác nhận giờ mở cửa và thời tiết trước khi đi.</p>
+                    </div>
+                }
+            </section>
+
+            <section id="assistant" class="discovery-assistant-section" aria-labelledby="assistant-title">
+                <div class="assistant-intro">
+                    <span class="discovery-section-kicker">NGƯỜI BẠN ĐỒNG HÀNH</span>
+                    <h2 id="assistant-title">Hỏi trợ lý du lịch Huế</h2>
+                    <p>Gợi ý dựa trên địa điểm, dự báo và tour đang có trên trang. Tên quán, giá và giờ mở cửa chỉ được nêu khi nguồn cung cấp.</p>
+                    <div class="assistant-quick-prompts">
+                        <button type="button" @onclick='() => AskPresetAsync("Hôm nay tôi nên đi đâu?")'>Hôm nay nên đi đâu?</button>
+                        <button type="button" @onclick='() => AskPresetAsync("Gần đây có quán ăn nào?")'>Gần đây ăn gì?</button>
+                        <button type="button" @onclick='() => AskPresetAsync("Nếu trời mưa thì nên đi đâu?")'>Trời mưa thì sao?</button>
+                        <button type="button" @onclick='() => AskPresetAsync("Gợi ý lịch trình 1 ngày cho gia đình")'>Một ngày cho gia đình</button>
+                    </div>
+                </div>
+                <div class="assistant-chat-card">
+                    <div class="assistant-chat-header"><span class="assistant-avatar"><i class="bi bi-stars"></i></span><div><strong>Trợ lý du lịch Cố đô</strong><small>@(answer?.UsedModel == true ? "AI đang hỗ trợ · có dữ liệu trang" : "Sẵn sàng gợi ý từ dữ liệu hiện có")</small></div><span class="assistant-status-dot"></span></div>
+                    @if (answer is not null)
+                    {
+                        <div class="assistant-answer"><p>@answer.Message</p><small>@answer.Notice</small></div>
+                    }
+                    else
+                    {
+                        <div class="assistant-welcome"><i class="bi bi-chat-square-heart"></i><span>Hãy chọn một câu hỏi hoặc nhập điều bạn muốn biết. Tọa độ GPS không được gửi tới nhà cung cấp AI.</span></div>
+                    }
+                    <div class="assistant-input-row">
+                        <label class="visually-hidden" for="assistant-question">Câu hỏi cho trợ lý</label>
+                        <input id="assistant-question" class="form-control" @bind="assistantQuestion" @bind:event="oninput" @onkeydown="HandleAssistantKeyDown" placeholder="Ví dụ: quán ăn gần điểm tham quan, trời mưa nên làm gì?" />
+                        <button class="btn btn-royal" type="button" @onclick="AskAssistantAsync" disabled="@(isAsking || destination is null)">
+                            @if (isAsking) { <span class="spinner-border spinner-border-sm" role="status"></span> }
+                            else { <i class="bi bi-send-fill"></i> }
+                            <span class="visually-hidden">Gửi câu hỏi</span>
+                        </button>
+                    </div>
+                    @if (answer?.UsedModel == true)
+                    {
+                        <p class="assistant-privacy-note"><i class="bi bi-info-circle me-1"></i>Câu hỏi, tên điểm, thời tiết và dữ liệu tour có thể được gửi đến nhà cung cấp AI đã cấu hình; tọa độ chính xác không được gửi.</p>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+</main>
+
+@code {
+    private string destinationQuery = "Huế";
+    private string placeKeyword = string.Empty;
+    private string selectedCategory = "all";
+    private string nearPlaceId = string.Empty;
+    private TravelDestination? destination;
+    private TravelCoordinate? searchCenter;
+    private string searchAnchorName = string.Empty;
+    private TravelWeather? weather;
+    private readonly List<DiscoveryPlace> places = new();
+    private readonly List<DiscoveryPlace> availableLandmarks = new();
+    private List<Tour> availableTours = new();
+    private string? pageNotice;
+    private string? placeError;
+    private string? weatherError;
+    private string? mapError;
+    private bool isError;
+    private bool isLoading;
+    private bool isAsking;
+    private bool itineraryGenerated;
+    private bool disposed;
+    private string? renderedMapSignature;
+    private string assistantQuestion = string.Empty;
+    private TravelAssistantAnswer? answer;
+    private int tripDays = 1;
+    private int travelerCount = 2;
+    private decimal? tripBudget;
+    private string tripInterest = "Di sản";
+    private DateTime? tripStartDate = DateTime.Today.AddDays(1);
+    private TimeOnly? tripStartTime = new(8, 0);
+
+    private IEnumerable<DiscoveryPlace> VisiblePlaces => places.Where(place =>
+        string.IsNullOrWhiteSpace(placeKeyword)
+        || place.Name.Contains(placeKeyword, StringComparison.OrdinalIgnoreCase)
+        || place.Address.Contains(placeKeyword, StringComparison.OrdinalIgnoreCase)
+        || place.Cuisine.Contains(placeKeyword, StringComparison.OrdinalIgnoreCase)
+        || place.Category.Contains(placeKeyword, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            availableTours = (await ViewToursUseCase.ExecuteAsync(activeOnly: true)).ToList();
+        }
+        catch
+        {
+            availableTours = new List<Tour>();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (disposed || destination is null)
+            return;
+
+        var center = searchCenter ?? destination.Coordinate;
+        var signature = $"{center.Latitude:F4}:{center.Longitude:F4}:{string.Join(',', places.Select(place => place.Id))}";
+        if (signature == renderedMapSignature)
+            return;
+
+        renderedMapSignature = signature;
+        try
+        {
+            var points = places.Select(place => new
+            {
+                id = place.Id,
+                name = place.Name,
+                category = place.Category,
+                lat = place.Latitude,
+                lon = place.Longitude,
+                distance = place.DistanceKm,
+                detailsUrl = place.MapDetailsUrl
+            }).ToArray();
+            await JS.InvokeVoidAsync("hueDiscoveryMap.render", "hue-discovery-map", center.Latitude, center.Longitude, points);
+            mapError = null;
+        }
+        catch (JSException)
+        {
+            mapError = "Không tải được thư viện bản đồ. Bạn vẫn có thể mở OpenStreetMap hoặc dùng nút chỉ đường trên từng địa điểm.";
+        }
+        catch (InvalidOperationException)
+        {
+            // JS interop is unavailable during prerendering; the interactive render will retry.
+            renderedMapSignature = null;
+        }
+    }
+
+    private async Task HandleSearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            await SearchDestinationAsync();
+    }
+
+    private async Task SearchDestinationAsync()
+    {
+        if (isLoading)
+            return;
+        isLoading = true;
+        isError = false;
+        pageNotice = null;
+        placeError = null;
+        weatherError = null;
+        destination = null;
+        places.Clear();
+        availableLandmarks.Clear();
+        weather = null;
+        answer = null;
+        itineraryGenerated = false;
+        try
+        {
+            var resolved = await DiscoveryService.ResolveDestinationAsync(destinationQuery);
+            if (resolved is null)
+            {
+                isError = true;
+                pageNotice = "Không tìm thấy địa điểm trong Việt Nam. Hãy nhập tên thành phố hoặc khu vực rõ hơn.";
+                return;
+            }
+            await LoadDestinationDataAsync(resolved);
+        }
+        catch (Exception)
+        {
+            isError = true;
+            pageNotice = "Không thể tìm tọa độ lúc này. Kiểm tra kết nối hoặc thử lại sau.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task UseCurrentLocationAsync()
+    {
+        if (isLoading)
+            return;
+        isLoading = true;
+        isError = false;
+        pageNotice = null;
+        placeError = null;
+        weatherError = null;
+        places.Clear();
+        availableLandmarks.Clear();
+        weather = null;
+        answer = null;
+        itineraryGenerated = false;
+        try
+        {
+            var coordinate = await JS.InvokeAsync<TravelCoordinate>("hueDiscoveryMap.getCurrentPosition");
+            destinationQuery = "Vị trí hiện tại";
+            await LoadDestinationDataAsync(new TravelDestination("Vị trí hiện tại", coordinate, IsCurrentPosition: true));
+        }
+        catch (JSException ex)
+        {
+            isError = true;
+            pageNotice = ex.Message.Contains("denied", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("quyền", StringComparison.OrdinalIgnoreCase)
+                ? "Bạn chưa cấp quyền vị trí. Hãy cho phép trong trình duyệt hoặc nhập tên thành phố."
+                : "Không lấy được vị trí hiện tại. Hãy kiểm tra quyền vị trí hoặc nhập tên thành phố.";
+        }
+        catch (InvalidOperationException)
+        {
+            isError = true;
+            pageNotice = "Vị trí hiện tại chỉ dùng được khi trang đang chạy trong trình duyệt qua HTTPS hoặc localhost.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadDestinationDataAsync(TravelDestination resolved)
+    {
+        destination = resolved;
+        searchCenter = resolved.Coordinate;
+        searchAnchorName = resolved.Name;
+        nearPlaceId = string.Empty;
+        destinationQuery = resolved.IsCurrentPosition ? "Vị trí hiện tại" : resolved.Name;
+        var placeTask = DiscoveryService.SearchPlacesAsync(resolved.Coordinate, selectedCategory);
+        var weatherTask = DiscoveryService.GetWeatherAsync(resolved.Coordinate);
+        try
+        {
+            places.AddRange(await placeTask);
+            if (selectedCategory is "all" or "attraction")
+                availableLandmarks.AddRange(places.Where(IsAttraction));
+        }
+        catch (Exception ex)
+        {
+            placeError = ex is InvalidOperationException ? ex.Message : "Không tải được địa điểm từ bản đồ lúc này. Hãy thử lại sau.";
+        }
+
+        try
+        {
+            weather = await weatherTask;
+        }
+        catch
+        {
+            weatherError = "Không kết nối được Open-Meteo. Cẩm nang và kết quả bản đồ vẫn dùng được.";
+        }
+
+        if (places.Count == 0 && string.IsNullOrWhiteSpace(placeError))
+            pageNotice ??= "Nguồn bản đồ chưa có kết quả trong vùng tìm kiếm này. Thử danh mục khác hoặc đổi điểm xuất phát.";
+        renderedMapSignature = null;
+    }
+
+    private async Task RefreshPlacesAsync()
+    {
+        if (destination is null || isLoading)
+            return;
+        isLoading = true;
+        placeError = null;
+        answer = null;
+        itineraryGenerated = false;
+        var anchor = availableLandmarks.FirstOrDefault(place => place.Id == nearPlaceId);
+        searchCenter = anchor is null ? destination.Coordinate : new TravelCoordinate(anchor.Latitude, anchor.Longitude);
+        searchAnchorName = anchor?.Name ?? destination.Name;
+        places.Clear();
+        try
+        {
+            places.AddRange(await DiscoveryService.SearchPlacesAsync(searchCenter, selectedCategory));
+            if (selectedCategory is "all" or "attraction")
+            {
+                availableLandmarks.Clear();
+                availableLandmarks.AddRange(places.Where(IsAttraction));
+            }
+        }
+        catch (Exception ex)
+        {
+            placeError = ex is InvalidOperationException ? ex.Message : "Không tải được địa điểm từ bản đồ lúc này. Hãy thử lại sau.";
+        }
+        finally
+        {
+            isLoading = false;
+            renderedMapSignature = null;
+        }
+    }
+
+    private async Task AskAssistantAsync()
+    {
+        if (destination is null || isAsking || string.IsNullOrWhiteSpace(assistantQuestion))
+            return;
+        isAsking = true;
+        try
+        {
+            var contextQuestion = $"{assistantQuestion.Trim()} (Địa điểm đang khám phá: {destination.Name}; tâm tìm kiếm: {MapCenterLabel}; nhóm {travelerCount} người; sở thích: {tripInterest}; lịch dự kiến {tripDays} ngày; ngân sách tổng: {(tripBudget.HasValue ? tripBudget.Value.ToString("N0") + " VNĐ" : "chưa nhập")}).";
+            answer = await AssistantService.AskAsync(contextQuestion, places, weather, availableTours);
+            assistantQuestion = string.Empty;
+        }
+        finally
+        {
+            isAsking = false;
+        }
+    }
+
+    private async Task AskPresetAsync(string question)
+    {
+        assistantQuestion = question;
+        await AskAssistantAsync();
+    }
+
+    private async Task HandleAssistantKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+            await AskAssistantAsync();
+    }
+
+    private void CreateItinerary()
+    {
+        tripDays = Math.Clamp(tripDays, 1, 7);
+        travelerCount = Math.Clamp(travelerCount, 1, 30);
+        itineraryGenerated = destination is not null;
+    }
+
+    private IEnumerable<ItineraryDay> BuildItinerary()
+    {
+        var attractions = places.Where(IsAttraction).ToList();
+        var food = places.Where(place => place.Category == "Ăn uống").ToList();
+        var cafes = places.Where(place => place.Category == "Cà phê & thư giãn").ToList();
+        var indoors = places.Where(place => place.Category.Contains("Trong nhà", StringComparison.Ordinal)
+            || place.Category == "Cà phê & thư giãn" || place.Category == "Ăn uống").ToList();
+        var preferredActivities = tripInterest switch
+        {
+            "Ẩm thực" => food.Concat(cafes).ToList(),
+            "Cà phê" => cafes.Concat(attractions).ToList(),
+            "Thiên nhiên" => attractions.Where(place => place.Category.Contains("Cảnh quan", StringComparison.Ordinal)).ToList(),
+            _ => attractions
+        };
+        if (preferredActivities.Count == 0)
+            preferredActivities = attractions;
+        var startDate = DateOnly.FromDateTime(tripStartDate ?? DateTime.Today.AddDays(1));
+        var startHour = tripStartTime ?? new TimeOnly(8, 0);
+
+        for (var dayIndex = 0; dayIndex < tripDays; dayIndex++)
+        {
+            var dayDate = startDate.AddDays(dayIndex);
+            var forecast = weather?.Forecast.FirstOrDefault(item => item.Date == dayDate);
+            var weatherCode = forecast?.WeatherCode ?? -1;
+            var rainPlan = forecast is not null && (TravelAssistantService.IsRainy(forecast.WeatherCode) || forecast.PrecipitationChance.GetValueOrDefault() >= 60);
+            var selectedAttractions = rainPlan ? indoors : preferredActivities;
+            var morning = PickByDay(selectedAttractions, dayIndex * 2);
+            var afternoon = PickByDay(selectedAttractions, dayIndex * 2 + 1);
+            var breakfast = PickByDay(food, dayIndex * 3);
+            var lunch = PickByDay(food, dayIndex * 3 + 1);
+            var dinner = PickByDay(food, dayIndex * 3 + 2);
+            var cafe = PickByDay(cafes, dayIndex);
+
+            var activities = new List<ItineraryActivity>
+            {
+                new(startHour.ToString("HH:mm"), "Ăn sáng", breakfast is null ? "Chọn quán gần nơi lưu trú; dữ liệu bản đồ hiện chưa có gợi ý ăn sáng cụ thể." : "Tham khảo " + PlaceLabel(breakfast) + ". Giờ hoạt động cần xác nhận trực tiếp."),
+                new(AddMinutes(startHour, 60), rainPlan ? "Tham quan trong nhà" : "Khám phá điểm tham quan", morning is null ? (rainPlan ? "Ưu tiên bảo tàng, không gian trong nhà hoặc đổi sang khung giờ tạnh mưa." : "Chọn một điểm di sản gần khu vực lưu trú theo sở thích của bạn.") : "Ghé " + PlaceLabel(morning) + "."),
+                new(AddMinutes(startHour, 210), "Ăn trưa", lunch is null ? "Chọn quán ăn phù hợp gần điểm tham quan." : "Tham khảo " + PlaceLabel(lunch) + ". Chưa có dữ liệu giá món nếu thẻ nguồn còn thiếu."),
+                new(AddMinutes(startHour, 300), "Nghỉ ngơi / cà phê", cafe is null ? "Nghỉ tại nơi lưu trú hoặc chọn một quán gần khu vực." : "Nghỉ chân tại " + PlaceLabel(cafe) + "."),
+                new(AddMinutes(startHour, 390), rainPlan ? "Hoạt động linh hoạt trong nhà" : "Tham quan buổi chiều", afternoon is null ? "Chọn thêm một điểm theo sở thích; kiểm tra dự báo trước khi di chuyển." : "Ghé " + PlaceLabel(afternoon) + "."),
+                new(AddMinutes(startHour, 600), "Ăn tối", dinner is null ? "Chọn nơi ăn tối theo món bạn yêu thích và kiểm tra giờ mở cửa." : "Tham khảo " + PlaceLabel(dinner) + "."),
+                new(AddMinutes(startHour, 720), "Khoảng thời gian tự do", "Tản bộ hoặc nghỉ ngơi; cập nhật thông tin tại điểm đến nếu thời tiết thay đổi.")
+            };
+
+            yield return new ItineraryDay(dayIndex + 1, dayDate.ToString("dddd, dd/MM", CultureInfo.GetCultureInfo("vi-VN")), weatherCode,
+                weatherCode < 0 ? "Chưa có dự báo" : TravelAssistantService.WeatherDescription(weatherCode), rainPlan, activities);
+        }
+    }
+
+    private async Task ShowPlaceOnMap(DiscoveryPlace place)
+    {
+        await JS.InvokeVoidAsync("hueDiscoveryMap.focus", place.Latitude, place.Longitude, place.Id);
+    }
+
+    private async Task SetSearchCategory(string category)
+    {
+        selectedCategory = category;
+        await RefreshPlacesAsync();
+    }
+
+    private bool CurrentWeatherIsRainy() => weather is not null && TravelAssistantService.IsRainy(weather.Current.WeatherCode);
+
+    private string WeatherSuggestion() => CurrentWeatherIsRainy()
+        ? "Có mưa hoặc dông theo mã dự báo hiện tại. Ưu tiên bảo tàng, quán cà phê và điểm trong nhà; hệ thống sẽ đổi lịch trình nếu dự báo ngày đi có mưa."
+        : "Có thể cân nhắc di tích, điểm ngắm cảnh và hoạt động ngoài trời. Hãy xem xác suất mưa từng ngày trước khi khởi hành.";
+
+    private static bool IsAttraction(DiscoveryPlace place) => place.Category.Contains("Tham quan", StringComparison.Ordinal)
+        || place.Category.Contains("Di tích", StringComparison.Ordinal)
+        || place.Category.Contains("Tâm linh", StringComparison.Ordinal)
+        || place.Category.Contains("Trong nhà", StringComparison.Ordinal);
+
+    private static DiscoveryPlace? PickByDay(IReadOnlyList<DiscoveryPlace> candidates, int index) => candidates.Count == 0 ? null : candidates[index % candidates.Count];
+
+    private static string PlaceLabel(DiscoveryPlace place) => string.IsNullOrWhiteSpace(place.Address) ? place.Name : place.Name + " (" + place.Address + ")";
+
+    private static string AddMinutes(TimeOnly time, int minutes) => time.AddMinutes(minutes).ToString("HH:mm");
+
+    private static string FormatCuisine(string cuisine) => string.Join(", ", cuisine.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
+
+    private static string FormatWeekday(DateOnly date) => date.ToDateTime(TimeOnly.MinValue).ToString("ddd dd/MM", CultureInfo.GetCultureInfo("vi-VN"));
+
+    private static string WeatherIcon(int code) => code switch
+    {
+        0 => "bi-sun-fill",
+        1 or 2 => "bi-cloud-sun-fill",
+        3 => "bi-clouds-fill",
+        45 or 48 => "bi-cloud-fog2-fill",
+        71 or 73 or 75 or 77 or 85 or 86 => "bi-snow",
+        >= 51 and <= 67 or >= 80 and <= 99 => "bi-cloud-rain-heavy-fill",
+        _ => "bi-cloud-fill"
+    };
+
+    private static string PlaceIcon(string category) => category switch
+    {
+        "Ăn uống" => "bi-egg-fried",
+        "Cà phê & thư giãn" => "bi-cup-hot",
+        "Lưu trú" => "bi-house-door",
+        _ => "bi-geo-alt"
+    };
+
+    private string MapCenterLabel => string.IsNullOrWhiteSpace(searchAnchorName)
+        ? destination?.Name ?? "điểm tìm kiếm"
+        : searchAnchorName;
+
+    private static string DirectionsUrl(DiscoveryPlace place) =>
+        $"https://www.google.com/maps/dir/?api=1&destination={Uri.EscapeDataString(place.Latitude.ToString(CultureInfo.InvariantCulture) + "," + place.Longitude.ToString(CultureInfo.InvariantCulture))}";
+
+    private string OpenStreetMapSearchUrl() => destination is null
+        ? "https://www.openstreetmap.org"
+        : $"https://www.openstreetmap.org/?mlat={destination.Coordinate.Latitude.ToString(CultureInfo.InvariantCulture)}&mlon={destination.Coordinate.Longitude.ToString(CultureInfo.InvariantCulture)}#map=14/{destination.Coordinate.Latitude.ToString(CultureInfo.InvariantCulture)}/{destination.Coordinate.Longitude.ToString(CultureInfo.InvariantCulture)}";
+
+    public ValueTask DisposeAsync()
+    {
+        disposed = true;
+        return ValueTask.CompletedTask;
+    }
+
+    private sealed record ItineraryActivity(string Time, string Title, string Description);
+    private sealed record ItineraryDay(int DayNumber, string DateLabel, int WeatherCode, string WeatherLabel, bool RainPlan, IReadOnlyList<ItineraryActivity> Activities);
+}

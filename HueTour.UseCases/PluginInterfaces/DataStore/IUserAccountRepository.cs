@@ -6,4 +6,5 @@ public interface IUserAccountRepository
 {
     Task<UserAccount?> GetByUsernameAsync(string username);
     Task<UserAccount?> ValidateCredentialsAsync(string username, string password);
+    Task<bool> RegisterUserAccountAsync(UserAccount user);
 }

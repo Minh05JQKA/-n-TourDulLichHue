@@ -1,5 +1,6 @@
 @page "/booking-confirmation/{bookingCode}"
 @inject IViewBookingConfirmationUseCase ViewBookingConfirmationUseCase
+@inject IOptions<VietQrPaymentOptions> VietQrOptions
 @inject NavigationManager NavManager
 
 <PageTitle>Xác Nhận Đặt Tour Thành Công - @BookingCode</PageTitle>
@@ -140,6 +141,62 @@ else
                                 </tr>
                             </tfoot>
                         </table>
+                    </div>
+
+                    <!-- Hộp thanh toán VietQR chính chủ -->
+                    <div class="card border-0 shadow-sm p-4 mb-4 bg-white rounded-4 border-start border-4 border-success">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-2 mb-3">
+                            <h5 class="fw-bold text-purple mb-0">
+                                <i class="bi bi-qr-code-scan text-gold me-2"></i>Thanh Toán Chuyển Khoản Qua Mã VietQR
+                            </h5>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="bi bi-shield-check me-1"></i>VietQR Napas247 chính chủ
+                            </span>
+                        </div>
+                        <div class="row g-4 align-items-center">
+                            @if (!string.IsNullOrWhiteSpace(VietQrOptions.Value.QrImagePath))
+                            {
+                                <div class="col-md-4 text-center">
+                                <div class="p-2 border rounded-3 bg-light d-inline-block shadow-sm">
+                                    <img src="@VietQrOptions.Value.QrImagePath" alt="Mã VietQR thanh toán" class="img-fluid rounded-2" style="max-width: 200px;" />
+                                </div>
+                                <div class="small text-muted mt-2">
+                                    <i class="bi bi-phone me-1"></i>Mở ứng dụng ngân hàng để quét mã
+                                </div>
+                                </div>
+                            }
+                            <div class="@(string.IsNullOrWhiteSpace(VietQrOptions.Value.QrImagePath) ? "col-md-12" : "col-md-8")">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <div class="row g-3">
+                                        <div class="col-sm-6">
+                                            <span class="small text-muted d-block">Ngân hàng thụ hưởng:</span>
+                                            <strong class="text-dark"><span class="badge bg-danger me-1">@VietQrOptions.Value.BankCode</span> @VietQrOptions.Value.BankName</strong>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <span class="small text-muted d-block">Chủ tài khoản:</span>
+                                            <strong class="text-purple fs-6">@VietQrOptions.Value.AccountHolder</strong>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <span class="small text-muted d-block">Số tài khoản:</span>
+                                            <code class="fs-5 fw-bold text-dark p-1 px-2 bg-white rounded border d-inline-block">@VietQrOptions.Value.AccountNumber</code>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <span class="small text-muted d-block">Số tiền thanh toán:</span>
+                                            <strong class="text-success fs-5">@booking.TotalAmount.ToString("N0") VNĐ</strong>
+                                        </div>
+                                        <div class="col-12 border-top pt-2">
+                                            <span class="small text-muted d-block">Cú pháp nội dung chuyển khoản:</span>
+                                            <code class="fs-6 fw-bold text-purple p-1 px-2 bg-white rounded border d-inline-block mt-1">
+                                                @VietQrOptions.Value.FormatTransferContent(booking.BookingCode, booking.Customer?.PhoneNumber)
+                                            </code>
+                                            <div class="small text-muted mt-2">
+                                                <i class="bi bi-info-circle text-primary me-1"></i>Sau khi quý khách quét mã chuyển khoản, nhân viên điều hành Huế Tour sẽ kiểm tra và xác nhận vé trong vòng 5-15 phút.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Nút thao tác -->
