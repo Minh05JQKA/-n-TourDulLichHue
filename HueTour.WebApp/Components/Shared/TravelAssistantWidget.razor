@@ -1,0 +1,159 @@
+@inject ITravelAssistantService AssistantService
+
+<div class="travel-assistant-widget">
+    @if (isOpen)
+    {
+        <section class="travel-assistant-panel" aria-label="Trợ lý AI du lịch Huế" role="dialog">
+            <header class="travel-assistant-header">
+                <div class="travel-assistant-avatar"><i class="bi bi-stars" aria-hidden="true"></i></div>
+                <div class="travel-assistant-heading">
+                    <strong>Trợ lý AI du lịch Huế</strong>
+                    <span><span class="travel-assistant-status"></span>Sẵn sàng gợi ý món ăn và tour</span>
+                </div>
+                <button class="travel-assistant-close" type="button" @onclick="TogglePanel" aria-label="Đóng trò chuyện">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <div class="travel-assistant-messages" aria-live="polite">
+                @if (turns.Count == 0)
+                {
+                    <div class="travel-assistant-welcome">
+                        <strong>Xin chào! Mình có thể giúp gì cho chuyến đi Huế?</strong>
+                        <span>Hỏi mình về món ăn, quán Huế, tour hoặc ngân sách. Gợi ý được lấy từ danh mục ẩm thực và tour HueTour.</span>
+                        <div class="travel-assistant-presets">
+                            <button type="button" @onclick='() => AskPresetAsync("Gợi ý tour di sản Huế 1 ngày")'>Tour di sản 1 ngày</button>
+                            <button type="button" @onclick='() => AskPresetAsync("Tìm tour phù hợp cho gia đình có trẻ em")'>Tour cho gia đình</button>
+                            <button type="button" @onclick='() => AskPresetAsync("Gợi ý quán có món ăn đặc sản Huế")'>Món Huế nên thử</button>
+                            <button type="button" @onclick='() => AskPresetAsync("Gợi ý tour ẩm thực Huế và địa điểm ăn uống phù hợp")'>Tour ẩm thực</button>
+                        </div>
+                    </div>
+                }
+
+                @foreach (var turn in turns)
+                {
+                    <div class="travel-assistant-turn @(turn.IsUser ? "is-user" : "is-assistant")">
+                        <div class="travel-assistant-bubble">@turn.Text</div>
+                        @if (turn.Notice is not null)
+                        {
+                            <small class="travel-assistant-answer-note">@turn.Notice</small>
+                        }
+                        @if (turn.RecommendedFoodPlaces.Count > 0)
+                        {
+                            <div class="travel-assistant-recommendations" aria-label="Địa điểm ẩm thực được gợi ý">
+                                @foreach (var place in turn.RecommendedFoodPlaces)
+                                {
+                                    <a class="travel-assistant-tour travel-assistant-food" href="@(place.HasCoordinates ? place.DirectionsUrl : place.MapDetailsUrl)" target="_blank" rel="noopener noreferrer">
+                                        <span><i class="bi bi-cup-hot me-1" aria-hidden="true"></i>@place.Name</span>
+                                        <small>@(string.IsNullOrWhiteSpace(place.SignatureDish) ? place.Category : place.SignatureDish) · @place.PriceLabel</small>
+                                        <small class="travel-assistant-card-link">@(place.HasCoordinates ? "Chỉ đường" : "Xem bản đồ") <i class="bi bi-arrow-up-right" aria-hidden="true"></i></small>
+                                    </a>
+                                }
+                            </div>
+                        }
+                        @if (turn.RecommendedTours.Count > 0)
+                        {
+                            <div class="travel-assistant-recommendations" aria-label="Tour được gợi ý">
+                                @foreach (var tour in turn.RecommendedTours)
+                                {
+                                    <a class="travel-assistant-tour" href="/tour/@tour.Id">
+                                        <span><i class="bi bi-compass me-1" aria-hidden="true"></i>@tour.Title</span>
+                                        <small>@tour.Duration · @tour.BasePrice.ToString("N0") VNĐ/người</small>
+                                        <small class="travel-assistant-card-link">Xem tour <i class="bi bi-arrow-up-right" aria-hidden="true"></i></small>
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (isThinking)
+                {
+                    <div class="travel-assistant-turn is-assistant">
+                        <div class="travel-assistant-bubble travel-assistant-thinking"><span></span><span></span><span></span><span class="visually-hidden">Trợ lý đang suy nghĩ</span></div>
+                    </div>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="travel-assistant-error" role="alert">@errorMessage</div>
+            }
+
+            <form class="travel-assistant-compose" @onsubmit="SendAsync" @onsubmit:preventDefault="true">
+                <label class="visually-hidden" for="travel-assistant-input">Nhập câu hỏi cho trợ lý</label>
+                <input id="travel-assistant-input" type="text" @bind="draft" @bind:event="oninput"
+                       placeholder="Hỏi về món ăn hoặc tour Huế..." maxlength="500" disabled="@isThinking" />
+                <button type="submit" disabled="@(isThinking || string.IsNullOrWhiteSpace(draft))" aria-label="Gửi câu hỏi">
+                    <i class="bi bi-send-fill" aria-hidden="true"></i>
+                </button>
+            </form>
+            <div class="travel-assistant-footnote">Ẩm thực: giá tham khảo · Tour: giá niêm yết theo dữ liệu HueTour.</div>
+        </section>
+    }
+
+    <button class="travel-assistant-launcher" type="button" @onclick="TogglePanel"
+            aria-label="@(isOpen ? "Đóng trợ lý du lịch" : "Mở trợ lý du lịch Huế")"
+            aria-expanded="@isOpen.ToString().ToLowerInvariant()">
+        <i class="bi @(isOpen ? "bi-x-lg" : "bi-chat-heart-fill")" aria-hidden="true"></i>
+        <span>@(isOpen ? "Đóng" : "Hỏi AI")</span>
+    </button>
+</div>
+
+@code {
+    private readonly List<AssistantTurn> turns = new();
+    private string draft = string.Empty;
+    private string? errorMessage;
+    private bool isOpen;
+    private bool isThinking;
+
+    private void TogglePanel() => isOpen = !isOpen;
+
+    private async Task AskPresetAsync(string question)
+    {
+        draft = question;
+        await SendAsync();
+    }
+
+    private async Task SendAsync()
+    {
+        var question = draft.Trim();
+        if (question.Length == 0 || isThinking)
+            return;
+
+        draft = string.Empty;
+        errorMessage = null;
+        turns.Add(new AssistantTurn(question, true));
+        isThinking = true;
+
+        try
+        {
+            var response = await AssistantService.AskAsync(question);
+            turns.Add(new AssistantTurn(
+                response.Message,
+                false,
+                response.Notice,
+                response.RecommendedFoodPlaces ?? Array.Empty<FoodPlace>(),
+                response.RecommendedTours ?? Array.Empty<Tour>()));
+        }
+        catch
+        {
+            errorMessage = "Trợ lý đang bận. Bạn thử gửi lại sau ít phút nhé.";
+        }
+        finally
+        {
+            isThinking = false;
+        }
+    }
+
+    private sealed record AssistantTurn(
+        string Text,
+        bool IsUser,
+        string? Notice = null,
+        IReadOnlyList<FoodPlace>? FoodPlaces = null,
+        IReadOnlyList<Tour>? Tours = null)
+    {
+        public IReadOnlyList<FoodPlace> RecommendedFoodPlaces => FoodPlaces ?? Array.Empty<FoodPlace>();
+        public IReadOnlyList<Tour> RecommendedTours => Tours ?? Array.Empty<Tour>();
+    }
+}

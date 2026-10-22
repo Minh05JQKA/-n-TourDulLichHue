@@ -26,6 +26,10 @@
         <p class="tour-card-description text-muted small mb-3 flex-grow-1">
             @Tour.ShortDescription
         </p>
+        @if (!string.IsNullOrWhiteSpace(Tour.ProviderName))
+        {
+            <div class="small text-muted mb-2">Giá tham khảo từ @Tour.ProviderName</div>
+        }
 
         <div class="border-top pt-3 d-flex align-items-center justify-content-between mt-auto">
             <div>

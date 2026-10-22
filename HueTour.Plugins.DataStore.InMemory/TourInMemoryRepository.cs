@@ -403,6 +403,8 @@ public class TourInMemoryRepository : ITourRepository
                 CreatedAt = DateTime.Now
             }
         };
+
+        _tours.AddRange(HueTourMarketCatalog.Create());
     }
 
     public Task<IEnumerable<Tour>> GetAllToursAsync(bool activeOnly = true)
@@ -467,6 +469,9 @@ public class TourInMemoryRepository : ITourRepository
             existing.StartingLocation = tour.StartingLocation;
             existing.BasePrice = tour.BasePrice;
             existing.ImageUrl = tour.ImageUrl;
+            existing.ProviderName = tour.ProviderName;
+            existing.SourceUrl = tour.SourceUrl;
+            existing.PriceVerifiedAt = tour.PriceVerifiedAt;
             existing.IsActive = tour.IsActive;
         }
         return Task.CompletedTask;

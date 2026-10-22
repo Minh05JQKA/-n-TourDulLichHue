@@ -14,6 +14,9 @@ public class Tour
     public string StartingLocation { get; set; } = "Trung tâm TP Huế";
     public decimal BasePrice { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
+    public string ProviderName { get; set; } = string.Empty;
+    public string SourceUrl { get; set; } = string.Empty;
+    public DateTime? PriceVerifiedAt { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 

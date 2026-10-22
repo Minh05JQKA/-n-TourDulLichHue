@@ -64,8 +64,8 @@ public class TourRepository : ITourRepository
     {
         using IDbConnection conn = _connectionFactory.CreateConnection();
         const string sql = @"
-            INSERT INTO dbo.Tour (Code, Title, Category, ShortDescription, Description, Itinerary, Highlights, Duration, StartingLocation, BasePrice, ImageUrl, IsActive, CreatedAt)
-            VALUES (@Code, @Title, @Category, @ShortDescription, @Description, @Itinerary, @Highlights, @Duration, @StartingLocation, @BasePrice, @ImageUrl, @IsActive, @CreatedAt);
+            INSERT INTO dbo.Tour (Code, Title, Category, ShortDescription, Description, Itinerary, Highlights, Duration, StartingLocation, BasePrice, ImageUrl, ProviderName, SourceUrl, PriceVerifiedAt, IsActive, CreatedAt)
+            VALUES (@Code, @Title, @Category, @ShortDescription, @Description, @Itinerary, @Highlights, @Duration, @StartingLocation, @BasePrice, @ImageUrl, @ProviderName, @SourceUrl, @PriceVerifiedAt, @IsActive, @CreatedAt);
             SELECT CAST(SCOPE_IDENTITY() as int);";
 
         return await conn.ExecuteScalarAsync<int>(sql, tour);
@@ -79,7 +79,8 @@ public class TourRepository : ITourRepository
             SET Code = @Code, Title = @Title, Category = @Category, ShortDescription = @ShortDescription,
                 Description = @Description, Itinerary = @Itinerary, Highlights = @Highlights,
                 Duration = @Duration, StartingLocation = @StartingLocation, BasePrice = @BasePrice,
-                ImageUrl = @ImageUrl, IsActive = @IsActive
+                ImageUrl = @ImageUrl, ProviderName = @ProviderName, SourceUrl = @SourceUrl,
+                PriceVerifiedAt = @PriceVerifiedAt, IsActive = @IsActive
             WHERE Id = @Id";
 
         await conn.ExecuteAsync(sql, tour);

@@ -127,6 +127,18 @@
                             <label class="form-label small fw-bold">Link Ảnh Bìa (URL):</label>
                             <InputText class="form-control" @bind-Value="formModel.ImageUrl" />
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Đơn vị tổ chức (nếu có):</label>
+                            <InputText class="form-control" @bind-Value="formModel.ProviderName" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Ngày kiểm tra giá (nếu có):</label>
+                            <InputDate TValue="DateTime?" class="form-control" @bind-Value="formModel.PriceVerifiedAt" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Nguồn thông tin / giá (URL):</label>
+                            <InputText class="form-control" @bind-Value="formModel.SourceUrl" />
+                        </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">Mô Tả Ngắn:</label>
                             <InputTextArea class="form-control" rows="2" @bind-Value="formModel.ShortDescription" />
@@ -174,6 +186,9 @@
         public string StartingLocation { get; set; } = string.Empty;
         [Required(ErrorMessage = "Vui lòng nhập đường dẫn ảnh")]
         public string ImageUrl { get; set; } = string.Empty;
+        public string ProviderName { get; set; } = string.Empty;
+        public string SourceUrl { get; set; } = string.Empty;
+        public DateTime? PriceVerifiedAt { get; set; }
         public string ShortDescription { get; set; } = string.Empty;
         public string Highlights { get; set; } = string.Empty;
         public string Itinerary { get; set; } = string.Empty;
@@ -210,7 +225,7 @@
             Highlights = "Xe đưa đón; Vé tham quan; HDV nhiệt tình",
             Itinerary = "08:00 Đón khách -> 11:30 Ăn trưa -> 17:00 Trả khách"
         };
-        formModel = new TourFormModel { Code = editingTour.Code, Title = editingTour.Title, Category = editingTour.Category, BasePrice = editingTour.BasePrice, Duration = editingTour.Duration, StartingLocation = editingTour.StartingLocation, ImageUrl = editingTour.ImageUrl, ShortDescription = editingTour.ShortDescription, Highlights = editingTour.Highlights, Itinerary = editingTour.Itinerary };
+        formModel = new TourFormModel { Code = editingTour.Code, Title = editingTour.Title, Category = editingTour.Category, BasePrice = editingTour.BasePrice, Duration = editingTour.Duration, StartingLocation = editingTour.StartingLocation, ImageUrl = editingTour.ImageUrl, ProviderName = editingTour.ProviderName, SourceUrl = editingTour.SourceUrl, PriceVerifiedAt = editingTour.PriceVerifiedAt, ShortDescription = editingTour.ShortDescription, Highlights = editingTour.Highlights, Itinerary = editingTour.Itinerary };
         showModal = true;
     }
 
@@ -226,13 +241,16 @@
             Duration = tour.Duration,
             StartingLocation = tour.StartingLocation,
             ImageUrl = tour.ImageUrl,
+            ProviderName = tour.ProviderName,
+            SourceUrl = tour.SourceUrl,
+            PriceVerifiedAt = tour.PriceVerifiedAt,
             ShortDescription = tour.ShortDescription,
             Description = tour.Description,
             Highlights = tour.Highlights,
             Itinerary = tour.Itinerary,
             IsActive = tour.IsActive
         };
-        formModel = new TourFormModel { Code = tour.Code, Title = tour.Title, Category = tour.Category, BasePrice = tour.BasePrice, Duration = tour.Duration, StartingLocation = tour.StartingLocation, ImageUrl = tour.ImageUrl, ShortDescription = tour.ShortDescription, Highlights = tour.Highlights, Itinerary = tour.Itinerary };
+        formModel = new TourFormModel { Code = tour.Code, Title = tour.Title, Category = tour.Category, BasePrice = tour.BasePrice, Duration = tour.Duration, StartingLocation = tour.StartingLocation, ImageUrl = tour.ImageUrl, ProviderName = tour.ProviderName, SourceUrl = tour.SourceUrl, PriceVerifiedAt = tour.PriceVerifiedAt, ShortDescription = tour.ShortDescription, Highlights = tour.Highlights, Itinerary = tour.Itinerary };
         showModal = true;
     }
 
@@ -250,6 +268,9 @@
         editingTour.Duration = formModel.Duration;
         editingTour.StartingLocation = formModel.StartingLocation;
         editingTour.ImageUrl = formModel.ImageUrl;
+        editingTour.ProviderName = formModel.ProviderName;
+        editingTour.SourceUrl = formModel.SourceUrl;
+        editingTour.PriceVerifiedAt = formModel.PriceVerifiedAt;
         editingTour.ShortDescription = formModel.ShortDescription;
         editingTour.Highlights = formModel.Highlights;
         editingTour.Itinerary = formModel.Itinerary;

@@ -63,6 +63,8 @@ public sealed record GeoViewport(double West, double South, double East, double 
 
 public interface IFoodPlaceCatalogUseCase
 {
+    Task<IReadOnlyList<FoodPlace>> GetAllAsync(CancellationToken cancellationToken = default);
+
     Task<FoodPlaceQueryResult> SearchAsync(FoodPlaceQuery query, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<FoodPlace>> GetFeaturedAsync(int take = 8, string? categoryCode = null, CancellationToken cancellationToken = default);
@@ -80,6 +82,14 @@ public class FoodPlaceCatalogUseCase : IFoodPlaceCatalogUseCase
     public FoodPlaceCatalogUseCase(IFoodPlaceRepository repository)
     {
         _repository = repository;
+    }
+
+    public async Task<IReadOnlyList<FoodPlace>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var places = await _repository.GetAllAsync();
+        cancellationToken.ThrowIfCancellationRequested();
+        return places.ToList();
     }
 
     public async Task<FoodPlaceQueryResult> SearchAsync(FoodPlaceQuery query, CancellationToken cancellationToken = default)
