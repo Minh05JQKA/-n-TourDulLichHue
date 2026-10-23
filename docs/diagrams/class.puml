@@ -1,6 +1,5 @@
 # Sơ đồ Class (các lớp miền và ranh giới chính)
 
-```plantuml
 @startuml
 class Tour
 class Departure
@@ -27,4 +26,3 @@ PlaceTourBookingUseCase ..> ICustomerRepository
 PlaceTourBookingUseCase ..> ITourBookingRepository
 TourBookingRepository ..|> ITourBookingRepository
 @enduml
-```

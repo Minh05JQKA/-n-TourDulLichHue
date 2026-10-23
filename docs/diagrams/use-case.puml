@@ -1,6 +1,3 @@
-# Sơ đồ Use Case Hue Tour
-
-```plantuml
 @startuml
 left to right direction
 actor Visitor as Visitor
@@ -29,4 +26,3 @@ Admin --> UC8
 Admin --> UC9
 UC3 .> UC4 : <<include>>
 @enduml
-```
