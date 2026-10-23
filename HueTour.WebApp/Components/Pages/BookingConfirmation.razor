@@ -143,14 +143,14 @@ else
                         </table>
                     </div>
 
-                    <!-- Hộp thanh toán VietQR chính chủ -->
+                    <!-- Thông tin QR demo; không dùng để nhận thanh toán thật -->
                     <div class="card border-0 shadow-sm p-4 mb-4 bg-white rounded-4 border-start border-4 border-success">
                         <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-2 mb-3">
                             <h5 class="fw-bold text-purple mb-0">
-                                <i class="bi bi-qr-code-scan text-gold me-2"></i>Thanh Toán Chuyển Khoản Qua Mã VietQR
+                                <i class="bi bi-qr-code-scan text-gold me-2"></i>Thông Tin Thanh Toán Demo
                             </h5>
                             <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                <i class="bi bi-shield-check me-1"></i>VietQR Napas247 chính chủ
+                                <i class="bi bi-info-circle me-1"></i>QR minh họa
                             </span>
                         </div>
                         <div class="row g-4 align-items-center">
@@ -158,10 +158,10 @@ else
                             {
                                 <div class="col-md-4 text-center">
                                 <div class="p-2 border rounded-3 bg-light d-inline-block shadow-sm">
-                                    <img src="@VietQrOptions.Value.QrImagePath" alt="Mã VietQR thanh toán" class="img-fluid rounded-2" style="max-width: 200px;" />
+                                    <img src="@VietQrOptions.Value.QrImagePath" alt="Mã QR minh họa, không dùng để chuyển tiền" class="img-fluid rounded-2" style="max-width: 200px;" />
                                 </div>
-                                <div class="small text-muted mt-2">
-                                    <i class="bi bi-phone me-1"></i>Mở ứng dụng ngân hàng để quét mã
+                                <div class="small text-danger fw-semibold mt-2">
+                                    Mã QR minh họa phục vụ demo, không dùng để chuyển tiền.
                                 </div>
                                 </div>
                             }
@@ -190,7 +190,7 @@ else
                                                 @VietQrOptions.Value.FormatTransferContent(booking.BookingCode, booking.Customer?.PhoneNumber)
                                             </code>
                                             <div class="small text-muted mt-2">
-                                                <i class="bi bi-info-circle text-primary me-1"></i>Sau khi quý khách quét mã chuyển khoản, nhân viên điều hành Huế Tour sẽ kiểm tra và xác nhận vé trong vòng 5-15 phút.
+                                                <i class="bi bi-info-circle text-primary me-1"></i>Thông tin thanh toán trên trang này chỉ phục vụ minh họa, không phát sinh giao dịch thật.
                                             </div>
                                         </div>
                                     </div>

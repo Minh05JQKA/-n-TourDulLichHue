@@ -203,10 +203,10 @@ else
                                                checked="@(formModel.PaymentMethod == "Chuyển khoản VietQR")"
                                                @onchange='() => formModel.PaymentMethod = "Chuyển khoản VietQR"' />
                                         <label for="pay1" class="small fw-bold mb-0" style="cursor: pointer;">
-                                            <i class="bi bi-qr-code-scan text-purple me-1"></i>Chuyển khoản Quét mã VietQR 24/7
+                                            <i class="bi bi-qr-code-scan text-purple me-1"></i>Chuyển khoản VietQR (demo)
                                         </label>
                                     </div>
-                                    <small class="text-muted d-block mt-1 ps-4">Quét mã bằng App Ngân Hàng bất kỳ (MB Bank, VCB, BIDV...)</small>
+                                    <small class="text-muted d-block mt-1 ps-4">Thông tin thanh toán minh họa, không tạo giao dịch thật.</small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-12">
@@ -234,9 +234,9 @@ else
                                     {
                                         <div class="col-sm-5 text-center">
                                         <div class="p-2 border rounded-3 bg-light d-inline-block shadow-sm">
-                                            <img src="@VietQrOptions.Value.QrImagePath" alt="Mã VietQR thanh toán" class="img-fluid rounded-2" style="max-width: 190px;" />
+                                            <img src="@VietQrOptions.Value.QrImagePath" alt="Mã QR minh họa, không dùng để chuyển tiền" class="img-fluid rounded-2" style="max-width: 190px;" />
                                         </div>
-                                        <div class="small text-muted mt-1"><i class="bi bi-shield-check text-success me-1"></i>Quét mã bằng ứng dụng ngân hàng</div>
+                                        <div class="small text-danger fw-semibold mt-1">Mã QR minh họa phục vụ demo, không dùng để chuyển tiền.</div>
                                         </div>
                                     }
                                     <div class="@(string.IsNullOrWhiteSpace(VietQrOptions.Value.QrImagePath) ? "col-12" : "col-sm-7")">
