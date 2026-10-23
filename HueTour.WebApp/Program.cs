@@ -6,6 +6,7 @@ using HueTour.UseCases.Auth;
 using HueTour.UseCases.Booking;
 using HueTour.UseCases.Departures;
 using HueTour.UseCases.FoodPlaces;
+using HueTour.UseCases.MapExplorer;
 using HueTour.UseCases.PluginInterfaces.DataStore;
 using HueTour.UseCases.PluginInterfaces.State;
 using HueTour.UseCases.Reports;
@@ -99,6 +100,8 @@ builder.Services.AddHttpClient<ITravelDiscoveryService, TravelDiscoveryService>(
 builder.Services.AddScoped<ITravelAssistantService, TravelAssistantService>();
 builder.Services.AddScoped<IExportBookingReportUseCase, ExportBookingReportUseCase>();
 builder.Services.AddScoped<IFoodPlaceCatalogUseCase, FoodPlaceCatalogUseCase>();
+builder.Services.AddScoped<IDiscoveryMapDataSource, TravelDiscoveryMapDataSource>();
+builder.Services.AddScoped<IMapPoiCatalogUseCase, MapPoiCatalogUseCase>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -168,6 +171,16 @@ app.MapGet("/auth/logout", async (HttpContext context) =>
 });
 
 // TIÊU CHÍ K4.3: Endpoint xuất báo cáo Excel/CSV từ dữ liệu thật
+app.MapGet("/api/reports/bookings.xlsx", async (IExportBookingReportUseCase reportUseCase) =>
+{
+    var excelBytes = await reportUseCase.ExportBookingsToExcelAsync();
+    string fileName = $"HueTour_BaoCaoDatTour_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+    return Results.File(
+        excelBytes,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        fileName);
+}).RequireAuthorization(policy => policy.RequireRole("Admin"));
+
 app.MapGet("/api/reports/bookings-csv", async (IExportBookingReportUseCase reportUseCase) =>
 {
     var csvBytes = await reportUseCase.ExportBookingsToCsvAsync();

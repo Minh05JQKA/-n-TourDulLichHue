@@ -7,12 +7,13 @@ Website đặt tour du lịch Huế bằng Blazor Server và .NET 8 LTS, tổ ch
 | Mục | Thông tin |
 |---|---|
 | Họ và tên | Lương Quang Hoàng Minh |
+| Hình thức | Đồ án cá nhân (01 thành viên) |
 | MSSV | 23K4080038 |
 | Lớp / Khóa | K57HTTTQL |
 | Môn học | Lập Trình Web / Phát Triển Ứng Dụng Web (.NET) |
 | Giảng viên hướng dẫn | Hà Ngọc Long |
 | Khoa / Trường | Khoa Tin Học Kinh Tế, Đại Học Kinh Tế Huế |
-| Ngày hoàn thành / nộp bài | 29/09/2026 |
+| Ngày hoàn thành / nộp bài | 23/10/2026 (bản hiện tại) |
 | GitHub | [Minh05JQKA](https://github.com/Minh05JQKA) · [Repository Hue Tour](https://github.com/Minh05JQKA/-n-TourDulLichHue) |
 
 ## Mở và chạy
@@ -41,13 +42,14 @@ Mật khẩu demo được băm PBKDF2 khi ứng dụng khởi động. Không d
 ## Bật SQL Server
 
 1. Cài SQL Server và SQL Server Management Studio.
-2. Mở `database/HueTour_SchemaAndData.sql` trong SSMS và chạy trên đúng SQL Server của đồ án. Script chỉ tạo `HueTourDb` khi database chưa tồn tại và sẽ dừng nếu database đã có để tránh xóa dữ liệu. Tám bảng vật lý và cột dùng tên tiếng Việt; các view tên tiếng Anh giữ tương thích với ứng dụng. Khi chạy tệp UTF-8 bằng `sqlcmd`, truyền `-f 65001` để giữ nguyên tiếng Việt.
-3. Sau khi tạo schema, chạy `database/seed/DiaDiemAmThuc_Seed.sql` để nạp 600 địa điểm ẩm thực. Tệp seed này thay thế dữ liệu trong bảng `DiaDiemAmThuc`.
-4. Tạo sơ đồ trong Object Explorer → `HueTourDb` → `Database Diagrams` → `New Database Diagram`, rồi chọn tám bảng tiếng Việt để xem đầy đủ các bảng và khóa ngoại.
-5. Cấu hình chuỗi kết nối `ConnectionStrings:HueTourDb` trong `HueTour.WebApp/appsettings.json` theo SQL Server trên máy bạn (máy hiện tại báo server name `Minnh`, default instance; ví dụ `Server=localhost;Database=HueTourDb;Trusted_Connection=True;TrustServerCertificate=True`).
-6. Để bật SQL trong môi trường Development mà không sửa cấu hình dùng chung, tạo `HueTour.WebApp/appsettings.Local.json`; tệp này được bỏ qua bởi Git và tự nạp sau cấu hình môi trường. Đặt `UseSqlDatabase` thành `true` và thêm chuỗi kết nối máy cục bộ của bạn vào tệp này. Nếu không có tệp local, Development tiếp tục chạy bằng dữ liệu InMemory.
-7. Mặc định demo dùng các giá trị ngân hàng placeholder trong `appsettings.Local.json` và `VietQrPayment:QrImagePath=/images/vietqr-demo.png`. QR được sinh có thể kiểm toán bằng `python -m pip install segno` rồi `python tools/make-demo-qr.py`; payload chứa `0123456789` và ghi rõ đây là mã minh họa, không dùng để chuyển tiền.
-8. Mọi thông tin ngân hàng có trong repository chỉ là placeholder/demo, không phải thông tin thật. Không dùng QR demo để chuyển tiền. Nếu triển khai thanh toán thật, chỉ cấu hình thông tin thật ngoài repository trong `appsettings.Local.json` (đã được Git bỏ qua) hoặc các biến môi trường `HUETOUR_BANK_CODE`, `HUETOUR_BANK_NAME`, `HUETOUR_BANK_ACCOUNT_NUMBER`, `HUETOUR_BANK_ACCOUNT_HOLDER`, `HUETOUR_BANK_QR_IMAGE_PATH` và `HUETOUR_BANK_TRANSFER_CONTENT_TEMPLATE`; tuyệt đối không commit số tài khoản, tên chủ tài khoản hay ảnh QR cá nhân.
+2. Mở `database/HueTour_SchemaAndData.sql` trong SSMS và chạy trên đúng SQL Server của đồ án. Script chỉ tạo `HueTourDb` khi database chưa tồn tại và sẽ dừng nếu database đã có để tránh xóa dữ liệu. Chín bảng vật lý và cột dùng tên tiếng Việt; các view tên tiếng Anh giữ tương thích với ứng dụng. Khi chạy tệp UTF-8 bằng `sqlcmd`, truyền `-f 65001` để giữ nguyên tiếng Việt.
+3. Chạy `database/seed/AddHueMarketTours_2026.sql`, sau đó `database/migrations/AlignMarketTourIds_1002_1012.sql`. Hai script bảo đảm đủ 11 tour thị trường với ID 1002–1012, nhà cung cấp/nguồn giá/ngày kiểm tra; migration dừng nếu ID đích bị tour khác chiếm hoặc tour thị trường đã có chuyến. 11 tour này chỉ tham khảo, không có chuyến giả.
+4. Với database cũ được tạo trước chuẩn hóa 3NF, chạy `database/migrations/NormalizeFoodCategories_3NF.sql` một lần. Trên schema mới, bảng danh mục đã có sẵn. Sau đó chạy `database/seed/DiaDiemAmThuc_Seed.sql` để nạp 600 địa điểm; tệp seed thay thế dữ liệu địa điểm hiện tại.
+5. Tạo sơ đồ trong Object Explorer → `HueTourDb` → `Database Diagrams` → `New Database Diagram`, rồi chọn chín bảng tiếng Việt để xem đầy đủ các bảng và khóa ngoại.
+6. Cấu hình chuỗi kết nối `ConnectionStrings:HueTourDb` trong `HueTour.WebApp/appsettings.json` theo SQL Server trên máy bạn (máy hiện tại báo server name `Minnh`, default instance; ví dụ `Server=localhost;Database=HueTourDb;Trusted_Connection=True;TrustServerCertificate=True`).
+7. Để bật SQL trong môi trường Development mà không sửa cấu hình dùng chung, tạo `HueTour.WebApp/appsettings.Local.json`; tệp này được bỏ qua bởi Git và tự nạp sau cấu hình môi trường. Đặt `UseSqlDatabase` thành `true` và thêm chuỗi kết nối máy cục bộ của bạn vào tệp này. Nếu không có tệp local, Development tiếp tục chạy bằng dữ liệu InMemory.
+8. Mặc định trong repository dùng giá trị ngân hàng placeholder, `VietQrPayment:IsDemo=true` và `QrImagePath=/images/vietqr-demo.png`. QR demo có thể sinh lại bằng `python -m pip install segno` rồi `python tools/make-demo-qr.py`; payload chỉ là nội dung minh họa, không dùng để chuyển tiền.
+9. Mọi thông tin ngân hàng được Git theo dõi chỉ là placeholder/demo. Khi cần dùng tài khoản thật trên máy local, cấu hình trong `appsettings.Local.json` (đã được Git bỏ qua), đặt `IsDemo=false` và trỏ `QrImagePath` tới một ảnh QR cũng đã được Git bỏ qua. Sinh ảnh VietQR chuẩn EMVCo bằng `python tools/make-vietqr.py --bank-bin <BIN> --account <STK> --holder "<TEN CHU TK>" --output HueTour.WebApp/wwwroot/images/vietqr-local.png`; script không lưu thông tin tài khoản trong mã nguồn. Không commit số tài khoản, tên chủ tài khoản hoặc ảnh QR thật. Có thể dùng biến môi trường `HUETOUR_BANK_*` thay cho tệp local nếu môi trường triển khai hỗ trợ.
 
 Tài khoản được seed trong SQL là `admin` / `Admin@123` và `khachhang` / `User@123`. Mật khẩu seed đã được băm PBKDF2.
 
@@ -58,14 +60,19 @@ Tài khoản được seed trong SQL là `admin` / `Admin@123` và `khachhang` /
 - `HueTour.Plugins.DataStore.InMemory`: dữ liệu và repository mẫu.
 - `HueTour.Plugins.DataStore.SQL`: truy cập SQL Server bằng Dapper.
 - `HueTour.WebApp`: giao diện Blazor Server, xác thực cookie và phân quyền.
+- `HueTour.UseCases/MapExplorer`: use case hợp nhất dữ liệu ẩm thực curated với điểm OSM cho bản đồ dùng chung.
+- `HueTour.WebApp/Components/Shared/UnifiedMapExplorerComponent.razor`, `wwwroot/js/unified-map.js`, `wwwroot/css/unified-map.css`: component bản đồ, Leaflet interop và giao diện responsive cho `/kham-pha`. `/am-thuc` không render bản đồ riêng mà liên kết sang bản đồ khám phá với bộ lọc ẩm thực.
+- `HueTour.WebApp/wwwroot/css/booking.css`: giao diện thẻ hỗ trợ lưu trú, gợi ý khu vực, bộ chọn số phòng và thanh đặt tour cố định trên mobile.
 - `database/HueTour_SchemaAndData.sql`: schema và dữ liệu minh họa.
 - `docs/diagrams/relational-schema.puml`: sơ đồ quan hệ CSDL SQL Server và các khóa chính/ngoại.
-- Trong SSMS, mở **Database Diagrams > New Database Diagram** và thêm tám bảng tiếng Việt; SQL Server sẽ tự hiện các quan hệ từ khóa ngoại trong script.
+- Trong SSMS, mở **Database Diagrams > New Database Diagram** và thêm chín bảng tiếng Việt; SQL Server sẽ tự hiện các quan hệ từ khóa ngoại trong script.
 - `docs/diagrams`: các sơ đồ PlantUML theo yêu cầu đồ án.
 - `GRADING.md`: bảng đối chiếu tiêu chí với vị trí triển khai và phần còn cần xác minh.
 - `HueTour.WebApp/wwwroot/images`: ảnh Huế đã lưu cùng dự án; ghi công tại `ASSETS.md`.
 
 Giỏ đặt chỗ dùng state theo phạm vi phiên Blazor. Hệ thống áp dụng quy tắc không vượt sức chứa, khóa đặt chỗ theo hạn định của luật nghiệp vụ và tính giá trẻ em theo độ tuổi.
+
+Form đặt tour có mục **Yêu cầu hỗ trợ lưu trú** tùy chọn: khách chọn khu vực/khách sạn mong muốn, ngày nhận/trả phòng, số phòng và ghi chú. Giao diện dùng thẻ bật/tắt, gợi ý nhanh khu vực, nút tăng/giảm số phòng, tự tính số đêm và hiển thị bản tóm tắt ngay trong cột đặt tour. Đây chỉ là yêu cầu để nhân viên liên hệ tư vấn, chưa phải đặt phòng và không cộng vào tổng tiền tour; nội dung được lưu vào cột `YeuCauDacBiet` của đơn đặt tour và hiển thị lại ở trang xác nhận, tra cứu vé và danh sách đơn của quản trị viên. Trên mobile có thanh tổng tiền và nút đặt tour cố định ở cuối màn hình; nút tóm tắt và thanh mobile đều gọi `EditContext.Validate()` trước khi chạy nghiệp vụ.
 
 ## Kiểm chứng đặt tour trên SQL Server
 
@@ -73,16 +80,23 @@ Giỏ đặt chỗ dùng state theo phạm vi phiên Blazor. Hệ thống áp d�
 2. Chạy `database/HueTour_SchemaAndData.sql` trong SSMS, nạp `database/seed/DiaDiemAmThuc_Seed.sql`, đặt `UseSqlDatabase=true` trong `HueTour.WebApp/appsettings.Local.json`, rồi chạy ứng dụng.
 3. Chọn chuyến gần đầy hoặc khởi hành trong thời hạn khóa đặt, thử đặt tour và xác nhận thông báo thân thiện xuất hiện, không có booking/vé mới và số ghế không đổi.
 4. Đặt chuyến hợp lệ và xác nhận booking cùng `PassengerTicket` được tạo, đồng thời `Departure.BookedSeats` tăng đúng số hành khách.
+5. Chọn **Yêu cầu hỗ trợ lưu trú**, nhập khu vực, ngày nhận/trả phòng, số phòng và ghi chú, sau đó đặt tour. Xác nhận nội dung hiển thị ở trang xác nhận, tra cứu vé và danh sách đơn quản trị; kiểm tra cột `YeuCauDacBiet` trong `dbo.DonDatTour` bằng `sqlcmd`.
 
 SQL Server thật cần thiết để xác minh transaction và truy vấn cập nhật số ghế.
 
 ### Kết quả kiểm chứng gần nhất
 
-Ngày 22/10/2026, app chạy với plugin SQL Server trên localhost. Một booking thử được tạo từ giao diện; truy vấn SQL xác nhận có header và một vé, số ghế đã đặt tăng từ 0 lên 1. Sau đó `ManageBookingsUseCase` cùng repository SQL hủy booking; truy vấn xác nhận trạng thái `Cancelled`, vé vẫn được lưu, số ghế trở về 0 và không có chuyến nào lệch giữa số vé với số ghế. Do phiên trình duyệt bị dừng, bước hủy được gọi bằng harness cục bộ thay vì nút hủy trên giao diện. Ảnh kiểm tra tour Admin ghi nhận 34 tour, 33 tour ở trạng thái “Mở bán”; lần truy vấn trước ghi nhận 28 chuyến. 11 tour thị trường mới có thông tin nhà cung cấp/nguồn giá nhưng chưa có chuyến, nên chỉ để tham khảo và chưa thể đặt. QR demo mới đã giải mã đúng payload placeholder; HTTP/UI không được xác minh lại ngày 23/10/2026 vì SQL Server và truy cập loopback không khả dụng trong môi trường chạy.
+Trong phiên rà soát ngày 23/10/2026, `dotnet build HueTourApp.sln -m:1` thành công với 0 cảnh báo và 0 lỗi. Workbook `.xlsx` được kiểm tra cấu trúc với sáu đơn mẫu InMemory. SQL Server `localhost\Minnh` không kết nối được từ môi trường này và trình duyệt không mở được app qua localhost; vì vậy các thay đổi 3NF/ID tour chưa được áp dụng lên database đang chạy, chưa kiểm tra tải báo cáo từ SQL, và ảnh Luật 2/booking mobile chưa được chụp trong phiên này. Các số liệu SQL bên dưới là kết quả lần kiểm tra trước, không phải lần xác minh mới.
+
+Ngày 23/10/2026, cấu hình QR ngân hàng thật được kiểm tra cục bộ qua `appsettings.Local.json` (Git bỏ qua): UI hiển thị MB Bank, đúng chủ tài khoản, ảnh QR tải thành công và được giải mã lại đúng BIN/số tài khoản/đồng tiền/quốc gia. Ảnh QR thật và tệp cấu hình không được commit.
+
+Ngày 23/10/2026, app chạy với plugin SQL Server (`UseSqlDatabase=true`, server `Minnh`, database `HueTourDb`). Truy vấn `sqlcmd -C` xác nhận 34 tour (33 tour mở bán), 28 chuyến, 600 địa điểm ẩm thực, 7 đơn đặt tour (2 đơn `Cancelled`); 11 tour thị trường mã 1002–1012 chưa có chuyến nên chỉ để tham khảo. Booking thử `HUE-20261022-5BC0` đã được hủy, vé vẫn được lưu và số ghế trở về 0. Trang `/booking/14` hiển thị QR demo 294×294 từ `/images/vietqr-demo.png`, cảnh báo “Mã QR minh họa phục vụ demo, không dùng để chuyển tiền.” và số placeholder `0123456789`; ảnh `docs/evidence/20-booking-qr-demo.png`. Đăng nhập `khachhang` rồi mở `/admin` bị chuyển về `/login?ReturnUrl=%2Fadmin` (ảnh `14-customer-admin-blocked.png`). Bản đồ hợp nhất chỉ còn được render tại `/kham-pha` và đã kiểm tra ở desktop (ảnh `19-unified-map-kham-pha.png`) cùng đúng 390×844 (ảnh `15-mobile-390.png`): 600 marker curated từ SQL; ảnh `15`/`19` ghi nhận cảnh báo nguồn bản đồ khi Overpass công cộng lỗi, trang không treo. Ảnh `18-food-list-no-map.png` xác nhận `/am-thuc` chỉ còn danh sách và nút mở bản đồ ẩm thực. Các mirror Overpass công cộng không ổn định trong lúc chụp, nên chưa có ảnh chứng minh nhánh OSM live thành công; luồng GPS mới được thử bằng tọa độ mô phỏng, chưa phải thiết bị thật.
 
 ## Khám phá Huế: bản đồ, thời tiết và cẩm nang
 
-Trang mới `/kham-pha` bổ sung tìm địa điểm quanh thành phố hoặc một điểm tham quan đang có trên bản đồ, dự báo thời tiết 7 ngày, cẩm nang Huế, lịch trình theo sở thích và gợi ý từ trợ lý. Trang tiếp tục dùng dữ liệu tour hiện tại của HueTour; danh sách quán và điểm tham quan được lấy trực tiếp từ OpenStreetMap.
+Trang `/kham-pha` bổ sung tìm địa điểm quanh thành phố hoặc một điểm tham quan đang có trên bản đồ, dự báo thời tiết 7 ngày, cẩm nang Huế, lịch trình theo sở thích và gợi ý từ trợ lý. Trang `/am-thuc` chỉ còn danh sách quán và bộ lọc ẩm thực; nút **Mở bản đồ ẩm thực** đưa sang `/kham-pha?category=food#map`, nơi bản đồ duy nhất của hệ thống tự tải dữ liệu Huế. Hai route cũ được giữ để không phá liên kết.
+
+Bản đồ hợp nhất nằm trong `HueTour.WebApp/Components/Shared/UnifiedMapExplorerComponent.razor`, dùng `HueTour.UseCases/MapExplorer/MapPoiCatalogUseCase.cs` để hợp nhất dữ liệu ẩm thực curated từ SQL với điểm tham quan/quán lấy từ OpenStreetMap, sau đó dedupe theo tên chuẩn hóa. Dữ liệu curated (600 địa điểm) được hiển thị trước; enrichment OSM chỉ chạy sau khi JS interop sẵn sàng, không gọi trong prerender/SSR. Bộ lọc gồm từ khóa, loại địa điểm, bán kính và khung nhìn. `/kham-pha` ẩn bộ chọn bán kính và giữ bản đồ quanh điểm đến 10 km. `/am-thuc` không còn bản đồ riêng hay bộ lọc không gian; trang giữ danh sách, tìm kiếm, danh mục và phân trang, sau đó liên kết sang bản đồ duy nhất tại `/kham-pha?category=food#map`.
 
 ### Nguồn dữ liệu và cấu hình
 
@@ -93,13 +107,13 @@ Trang mới `/kham-pha` bổ sung tìm địa điểm quanh thành phố hoặc 
 | [Open-Meteo](https://open-meteo.com/en/docs) | Thời tiết hiện tại và dự báo 7 ngày, gồm nhiệt độ, cảm giác như, độ ẩm, gió và xác suất mưa | Không cần cho sử dụng phi thương mại thông thường |
 | [Leaflet](https://leafletjs.com/) + bản đồ nền OpenStreetMap | Bản đồ, điểm đánh dấu và cửa sổ thông tin | Không |
 
-Các địa chỉ dịch vụ có thể thay trong `TravelApis` ở `HueTour.WebApp/appsettings.json` (hoặc nguồn cấu hình .NET tương ứng): `NominatimEndpoint`, `OverpassEndpoints`, `WeatherEndpoint`. Không cần tạo hay lưu API key cho các cấu hình mặc định. Dữ liệu thời tiết được giữ trong bộ nhớ 15 phút; kết quả địa điểm 15 phút; địa chỉ tìm kiếm 24 giờ. Nếu một máy chủ Overpass không phản hồi, ứng dụng thử máy chủ dự phòng.
+Các địa chỉ dịch vụ có thể thay trong `TravelApis` ở `HueTour.WebApp/appsettings.json` (hoặc nguồn cấu hình .NET tương ứng): `NominatimEndpoint`, `OverpassEndpoints`, `WeatherEndpoint`. Danh sách Overpass mặc định gồm `overpass-api.de`, `overpass.kumi.systems` và mirror `overpass.openstreetmap.fr`; nếu một máy không phản hồi, ứng dụng thử máy kế tiếp. Không cần tạo hay lưu API key cho các cấu hình mặc định. Dữ liệu thời tiết được giữ trong bộ nhớ 15 phút; kết quả địa điểm 15 phút; địa chỉ tìm kiếm 24 giờ. Trang `/kham-pha` tải thời tiết và địa điểm độc lập, hiển thị khung chờ cho từng phần và giới hạn yêu cầu thời tiết trong 6 giây, nên một mirror Overpass chậm không kéo theo dự báo. `TravelDiscoveryMapDataSource` tái sử dụng kết quả OSM trong bán kính 3 km/10 phút khi người dùng pan nhỏ, và cache theo ô địa lý. Khi tất cả mirror lỗi hoặc quá chậm, bản đồ vẫn giữ dữ liệu curated từ SQL và hiện cảnh báo thay vì treo trang.
 
 Nominatim chỉ được gọi sau thao tác tìm kiếm của người dùng, có bộ đệm và giới hạn tối thiểu một giây giữa các truy vấn. Dịch vụ công cộng có giới hạn tải; khi vận hành lượng truy cập lớn, hãy cấu hình dịch vụ bản đồ/thời tiết do mình quản lý hoặc nhà cung cấp có SLA. Không dùng dịch vụ Nominatim công cộng cho tự động gợi ý khi gõ hoặc truy vấn hàng loạt.
 
-Ứng dụng không bịa giá, đánh giá, giờ mở cửa hay ảnh địa điểm. Khi OpenStreetMap không có trường dữ liệu tương ứng, trang ghi “chưa có dữ liệu”; ảnh dự phòng chỉ là biểu tượng danh mục. Các món ăn trong cẩm nang là nội dung biên tập chung, được phân biệt với quán thật lấy từ API. Nếu tìm địa điểm hoặc thời tiết lỗi, trang hiển thị thông báo và vẫn giữ cẩm nang, tour trong cơ sở dữ liệu cùng gợi ý dự phòng.
+Ứng dụng không bịa giá, đánh giá, giờ mở cửa hay ảnh địa điểm. Khi OpenStreetMap không có trường dữ liệu tương ứng, trang ghi “chưa có dữ liệu”; ảnh dự phòng chỉ là biểu tượng danh mục. Dữ liệu ẩm thực curated lấy từ bảng `DiaDiemAmThuc` (600 địa điểm) được hiển thị trước, sau đó marker OSM mới được bổ sung; nếu OSM lỗi, trang giữ marker curated và ghi rõ nguồn bản đồ đang bận. Các món ăn trong cẩm nang là nội dung biên tập chung, được phân biệt với quán thật lấy từ API. Nếu tìm địa điểm hoặc thời tiết lỗi, trang hiển thị thông báo và vẫn giữ cẩm nang, tour trong cơ sở dữ liệu cùng gợi ý dự phòng.
 
-Trình duyệt chỉ hỏi vị trí khi người dùng bấm **Vị trí hiện tại**. Tọa độ dùng để truy vấn địa điểm/thời tiết và không được lưu trong ứng dụng hay gửi cho trợ lý AI. Nếu đã cấu hình AI từ xa, câu hỏi cùng tên địa điểm, thời tiết và tour hiện trên trang sẽ được gửi tới nhà cung cấp AI đã cấu hình; trang thông báo điều này cạnh câu trả lời.
+Trình duyệt chỉ hỏi vị trí khi người dùng bấm **Vị trí hiện tại** hoặc **Tìm quanh tôi** trên bản đồ. Tọa độ dùng để truy vấn địa điểm/thời tiết và không được lưu trong ứng dụng hay gửi cho trợ lý AI. Luồng này đã được thử bằng tọa độ mô phỏng trong trình duyệt (16.4637, 107.5909) và cần kiểm tra lại trên thiết bị thật. Nếu đã cấu hình AI từ xa, câu hỏi cùng tên địa điểm, thời tiết và tour hiện trên trang sẽ được gửi tới nhà cung cấp AI đã cấu hình; trang thông báo điều này cạnh câu trả lời.
 
 Giữ dòng ghi công OpenStreetMap trên bản đồ và dòng nguồn Open-Meteo ở phần dự báo. Dịch vụ API và bản đồ công cộng là best-effort, không có cam kết luôn sẵn sàng; giá và độ đầy đủ của thẻ OSM tùy đóng góp cộng đồng.
 

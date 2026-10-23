@@ -26,7 +26,8 @@ public interface IPlaceTourBookingUseCase
         Customer customer,
         List<PassengerTicket> passengers,
         string? notes = null,
-        string? paymentMethod = null);
+        string? paymentMethod = null,
+        string? specialRequests = null);
 }
 
 public class PlaceTourBookingUseCase : IPlaceTourBookingUseCase
@@ -56,7 +57,8 @@ public class PlaceTourBookingUseCase : IPlaceTourBookingUseCase
         Customer customer,
         List<PassengerTicket> passengers,
         string? notes = null,
-        string? paymentMethod = null)
+        string? paymentMethod = null,
+        string? specialRequests = null)
     {
         // 1. Kiểm tra thông tin hành khách
         if (passengers == null || passengers.Count == 0)
@@ -140,6 +142,7 @@ public class PlaceTourBookingUseCase : IPlaceTourBookingUseCase
             TotalAmount = 0,
             Status = TourBookingStatus.Pending,
             Notes = notes,
+            SpecialRequests = specialRequests,
             PaymentMethod = paymentMethod ?? "Thanh toán khi khởi hành / Chuyển khoản QR",
             PassengerTickets = passengers
         };

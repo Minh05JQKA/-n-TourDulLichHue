@@ -136,6 +136,48 @@ public static class BookingBusinessRules
     }
 
     /// <summary>
+    /// Kiểm tra năm sinh có khớp với loại khách hay không.
+    /// Năm sinh chỉ có độ chính xác theo năm nên tuổi được tính theo năm hiện tại.
+    /// </summary>
+    public static BusinessRuleResult ValidatePassengerAge(
+        PassengerTicket ticket,
+        int passengerIndex,
+        IEnumerable<PriceRule>? priceRules,
+        int currentYear)
+    {
+        if (ticket.BirthYear < 1900 || ticket.BirthYear > currentYear)
+        {
+            return BusinessRuleResult.Failure(
+                $"Hành khách thứ {passengerIndex + 1} có năm sinh {ticket.BirthYear} không hợp lệ. Vui lòng nhập năm sinh từ 1900 đến {currentYear}.",
+                "RULE2_INVALID_BIRTH_YEAR");
+        }
+
+        var rule = priceRules?.FirstOrDefault(r => r.IsActive &&
+            string.Equals(r.PassengerType, ticket.PassengerType, StringComparison.OrdinalIgnoreCase));
+        if (rule == null)
+        {
+            return BusinessRuleResult.Failure(
+                $"Hành khách thứ {passengerIndex + 1} có loại khách '{ticket.PassengerType}' không hợp lệ.",
+                "RULE2_UNKNOWN_PASSENGER_TYPE");
+        }
+
+        int age = currentYear - ticket.BirthYear;
+        bool tooYoung = age < rule.MinAge;
+        bool tooOld = rule.MaxAge.HasValue && age > rule.MaxAge.Value;
+        if (tooYoung || tooOld)
+        {
+            string range = rule.MaxAge.HasValue
+                ? $"{rule.MinAge}–{rule.MaxAge} tuổi"
+                : $"từ {rule.MinAge} tuổi trở lên";
+            return BusinessRuleResult.Failure(
+                $"Hành khách thứ {passengerIndex + 1} ({ticket.FullName}) sinh năm {ticket.BirthYear}, khoảng {age} tuổi, không khớp loại '{rule.DisplayName}' ({range}). Vui lòng chọn đúng loại khách hoặc kiểm tra lại năm sinh.",
+                "RULE2_AGE_TYPE_MISMATCH");
+        }
+
+        return BusinessRuleResult.Success();
+    }
+
+    /// <summary>
     /// Xác thực toàn bộ danh sách vé và tổng tiền
     /// </summary>
     public static BusinessRuleResult ValidateBookingFares(
@@ -156,6 +198,12 @@ public static class BookingBusinessRules
             if (string.IsNullOrWhiteSpace(ticket.FullName))
             {
                 return BusinessRuleResult.Failure($"Hành khách thứ {i + 1} chưa nhập họ và tên.", "RULE2_INVALID_NAME");
+            }
+
+            var ageResult = ValidatePassengerAge(ticket, i, priceRules, DateTime.Now.Year);
+            if (!ageResult.IsSuccess)
+            {
+                return ageResult;
             }
 
             decimal expectedPrice = CalculatePassengerFare(tourBasePrice, ticket.PassengerType, priceRules);

@@ -60,7 +60,11 @@ public sealed class TravelDiscoveryService : ITravelDiscoveryService
     private const string DefaultFallbackGeocodingEndpoint = "https://geocoding-api.open-meteo.com/v1/search";
     private const string DefaultWeatherEndpoint = "https://api.open-meteo.com/v1/forecast";
     private static readonly string[] DefaultOverpassEndpoints =
-    ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
+    [
+        "https://overpass.openstreetmap.fr/api/interpreter",
+        "https://overpass-api.de/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter"
+    ];
     private static readonly SemaphoreSlim GeocodingGate = new(1, 1);
     private static DateTime LastGeocodingRequestUtc = DateTime.MinValue;
 
@@ -217,29 +221,77 @@ public sealed class TravelDiscoveryService : ITravelDiscoveryService
         if (_cache.TryGetValue(cacheKey, out IReadOnlyList<DiscoveryPlace>? cached))
             return cached!;
 
+        var failureKey = "travel-places-failure:" + cacheKey;
+        if (_cache.TryGetValue(failureKey, out _))
+            throw new InvalidOperationException("Nguồn bản đồ đang bận hoặc không phản hồi. Bạn có thể thử lại sau; thời tiết và cẩm nang vẫn hoạt động.");
+
         var query = BuildOverpassQuery(center, normalizedCategory);
-        foreach (var endpoint in _overpassEndpoints)
+        // Public Overpass instances are uneven: some answer quickly, some return
+        // 5xx and some hang. Query the configured mirrors together and keep the
+        // first valid answer, capped at 12 seconds so a page never waits on two
+        // 25-second HTTP timeouts.
+        using var overpassTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        overpassTimeout.CancelAfter(TimeSpan.FromSeconds(12));
+        var pending = _overpassEndpoints
+            .Select(endpoint => QueryOverpassAsync(endpoint, query, center, overpassTimeout.Token))
+            .ToList();
+        try
         {
-            try
+            while (pending.Count > 0)
             {
-                using var content = new FormUrlEncodedContent([new KeyValuePair<string, string>("data", query)]);
-                using var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
-                response.EnsureSuccessStatusCode();
-                using var document = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
-                var places = ParsePlaces(document.RootElement, center)
-                    .OrderBy(place => place.DistanceKm)
-                    .Take(80)
-                    .ToList();
-                _cache.Set(cacheKey, places, TimeSpan.FromMinutes(15));
-                return places;
+                var completed = await Task.WhenAny(pending);
+                pending.Remove(completed);
+                try
+                {
+                    var places = await completed;
+                    _cache.Remove(failureKey);
+                    _cache.Set(cacheKey, places, TimeSpan.FromMinutes(15));
+                    return places;
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                {
+                    // The shared 12 second budget expired; drain the remaining tasks.
+                }
+                catch (Exception ex) when ((ex is HttpRequestException or TaskCanceledException or JsonException)
+                    && !cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogWarning(ex, "An Overpass endpoint failed; waiting for another public mirror.");
+                }
             }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+        }
+        finally
+        {
+            overpassTimeout.Cancel();
+            // Observe tasks that lost the race so their cancellation is not unobserved.
+            var remaining = pending
+                .Select(task => task.ContinueWith(static _ => { }, TaskScheduler.Default))
+                .ToArray();
+            if (remaining.Length > 0)
             {
-                _logger.LogWarning(ex, "Overpass endpoint {Endpoint} failed; trying the next public endpoint.", endpoint);
+                await Task.WhenAll(remaining);
             }
         }
 
+        _cache.Set(failureKey, true, TimeSpan.FromSeconds(45));
         throw new InvalidOperationException("Nguồn bản đồ đang bận hoặc không phản hồi. Bạn có thể thử lại sau; thời tiết và cẩm nang vẫn hoạt động.");
+    }
+
+    private async Task<IReadOnlyList<DiscoveryPlace>> QueryOverpassAsync(
+        string endpoint,
+        string query,
+        TravelCoordinate center,
+        CancellationToken cancellationToken)
+    {
+        using var content = new FormUrlEncodedContent([new KeyValuePair<string, string>("data", query)]);
+        using var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        using var document = await JsonDocument.ParseAsync(
+            await response.Content.ReadAsStreamAsync(cancellationToken),
+            cancellationToken: cancellationToken);
+        return ParsePlaces(document.RootElement, center)
+            .OrderBy(place => place.DistanceKm)
+            .Take(80)
+            .ToList();
     }
 
     public async Task<TravelWeather> GetWeatherAsync(TravelCoordinate coordinate, CancellationToken cancellationToken = default)

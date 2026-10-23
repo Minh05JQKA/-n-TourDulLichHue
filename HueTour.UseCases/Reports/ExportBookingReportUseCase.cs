@@ -6,6 +6,7 @@ namespace HueTour.UseCases.Reports;
 public interface IExportBookingReportUseCase
 {
     Task<byte[]> ExportBookingsToCsvAsync();
+    Task<byte[]> ExportBookingsToExcelAsync();
     Task<byte[]> ExportDeparturePassengersToCsvAsync(int departureId);
 }
 
@@ -52,6 +53,40 @@ public class ExportBookingReportUseCase : IExportBookingReportUseCase
         }
 
         return Encoding.UTF8.GetBytes(sb.ToString());
+    }
+
+    public async Task<byte[]> ExportBookingsToExcelAsync()
+    {
+        var bookings = (await _bookingRepository.GetAllBookingsAsync()).ToList();
+        var rows = new List<IReadOnlyList<object?>>
+        {
+            new object?[]
+            {
+                "Mã đặt tour", "Ngày đặt", "Tên tour", "Ngày khởi hành", "Họ tên khách",
+                "Số điện thoại", "Email", "Tổng tiền (VNĐ)", "Trạng thái",
+                "Phương thức thanh toán", "Ghi chú"
+            }
+        };
+
+        foreach (var booking in bookings)
+        {
+            rows.Add(new object?[]
+            {
+                booking.BookingCode,
+                booking.BookingDate.ToString("dd/MM/yyyy HH:mm"),
+                booking.Departure?.Tour?.Title ?? "Chưa có thông tin tour",
+                booking.Departure?.DepartureDate.ToString("dd/MM/yyyy HH:mm") ?? "Chưa có thông tin",
+                booking.Customer?.FullName ?? "Chưa có thông tin khách",
+                booking.Customer?.PhoneNumber ?? string.Empty,
+                booking.Customer?.Email ?? string.Empty,
+                booking.TotalAmount,
+                booking.Status,
+                booking.PaymentMethod,
+                booking.Notes ?? string.Empty
+            });
+        }
+
+        return ExcelWorkbookWriter.Create("DonDatTour", rows);
     }
 
     public async Task<byte[]> ExportDeparturePassengersToCsvAsync(int departureId)

@@ -41,23 +41,30 @@ public class TourRepository : ITourRepository
     public async Task<IEnumerable<Tour>> SearchToursAsync(string? searchTerm, string? category)
     {
         using IDbConnection conn = _connectionFactory.CreateConnection();
-        var sql = "SELECT * FROM dbo.Tour WHERE IsActive = 1";
-        var parameters = new DynamicParameters();
+        const string sql = """
+            SELECT *
+            FROM dbo.Tour
+            WHERE IsActive = 1
+              AND (@SearchPattern IS NULL
+                   OR Title LIKE @SearchPattern
+                   OR ShortDescription LIKE @SearchPattern
+                   OR Highlights LIKE @SearchPattern)
+              AND (@Category IS NULL OR Category = @Category)
+            ORDER BY Id DESC;
+            """;
 
-        if (!string.IsNullOrWhiteSpace(searchTerm))
+        string? trimmedSearch = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim();
+        string? trimmedCategory = string.IsNullOrWhiteSpace(category) ? null : category.Trim();
+        if (string.Equals(trimmedCategory, "Tất cả", StringComparison.OrdinalIgnoreCase))
         {
-            sql += " AND (Title LIKE @SearchPattern OR ShortDescription LIKE @SearchPattern OR Highlights LIKE @SearchPattern)";
-            parameters.Add("SearchPattern", $"%{searchTerm.Trim()}%");
+            trimmedCategory = null;
         }
 
-        if (!string.IsNullOrWhiteSpace(category) && category != "Tất cả")
+        return await conn.QueryAsync<Tour>(sql, new
         {
-            sql += " AND Category = @Category";
-            parameters.Add("Category", category.Trim());
-        }
-
-        sql += " ORDER BY Id DESC";
-        return await conn.QueryAsync<Tour>(sql, parameters);
+            SearchPattern = trimmedSearch is null ? null : $"%{trimmedSearch}%",
+            Category = trimmedCategory
+        });
     }
 
     public async Task<int> AddTourAsync(Tour tour)

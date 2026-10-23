@@ -168,6 +168,19 @@
     text-transform: uppercase;
 }
 
+.food-map-cta {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 20px;
+    color: var(--food-gold);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.food-map-cta:hover {
+    color: #fff;
+}
+
 /* Hero artwork */
 .food-hero-art {
     position: relative;
@@ -429,10 +442,7 @@
 
 /* -------------------------------------------------------------- RESULTS */
 .food-results-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 30px;
-    align-items: start;
+    display: block;
 }
 
 .food-grid {

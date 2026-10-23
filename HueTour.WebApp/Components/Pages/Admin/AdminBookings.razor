@@ -12,9 +12,12 @@
             <span class="badge bg-purple text-gold">ĐIỀU HÀNH</span>
             <h2 class="font-serif fw-bold text-purple mb-0">Đơn đặt tour</h2>
         </div>
-        <div>
-            <a href="/api/reports/bookings-csv" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm fw-bold" target="_blank" download>
-                <i class="bi bi-file-earmark-excel-fill me-1"></i>Xuất Báo Cáo Excel (CSV)
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="/api/reports/bookings.xlsx" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm fw-bold" download>
+                <i class="bi bi-file-earmark-excel-fill me-1"></i>Xuất Excel (.xlsx)
+            </a>
+            <a href="/api/reports/bookings-csv" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold" download>
+                <i class="bi bi-filetype-csv me-1"></i>Xuất CSV
             </a>
         </div>
     </div>
@@ -45,6 +48,15 @@
                             <td>
                                 <div class="fw-semibold">@booking.Customer?.FullName</div>
                                 <small class="text-muted"><i class="bi bi-telephone me-1"></i>@booking.Customer?.PhoneNumber</small>
+                                @if (!string.IsNullOrWhiteSpace(booking.SpecialRequests))
+                                {
+                                    <div class="mt-1">
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle"
+                                              title="@booking.SpecialRequests">
+                                            <i class="bi bi-building-check me-1"></i>Có yêu cầu đặc biệt
+                                        </span>
+                                    </div>
+                                }
                             </td>
                             <td>
                                 <div class="fw-semibold text-truncate" style="max-width: 260px;">@booking.Departure?.Tour?.Title</div>

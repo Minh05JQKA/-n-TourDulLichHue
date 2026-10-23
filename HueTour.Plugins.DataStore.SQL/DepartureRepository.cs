@@ -17,18 +17,19 @@ public class DepartureRepository : IDepartureRepository
     public async Task<IEnumerable<Departure>> GetDeparturesByTourIdAsync(int tourId, bool futureOnly = false)
     {
         using IDbConnection conn = _connectionFactory.CreateConnection();
-        string sql = @"
+        const string sql = """
             SELECT * FROM dbo.Departure
-            WHERE TourId = @TourId";
+            WHERE TourId = @TourId
+              AND (@FutureOnly = 0 OR DepartureDate >= @Now)
+            ORDER BY DepartureDate ASC;
+            """;
 
-        if (futureOnly)
+        return await conn.QueryAsync<Departure>(sql, new
         {
-            sql += " AND DepartureDate >= @Now";
-        }
-
-        sql += " ORDER BY DepartureDate ASC";
-
-        return await conn.QueryAsync<Departure>(sql, new { TourId = tourId, Now = DateTime.Now });
+            TourId = tourId,
+            FutureOnly = futureOnly,
+            Now = DateTime.Now
+        });
     }
 
     public async Task<IEnumerable<Departure>> GetAllDeparturesAsync()

@@ -58,9 +58,6 @@ public class FoodPlaceQueryResult
     public string? Keyword { get; set; }
 }
 
-/// <summary>Phạm vi địa lý của khung nhìn bản đồ.</summary>
-public sealed record GeoViewport(double West, double South, double East, double North);
-
 public interface IFoodPlaceCatalogUseCase
 {
     Task<IReadOnlyList<FoodPlace>> GetAllAsync(CancellationToken cancellationToken = default);

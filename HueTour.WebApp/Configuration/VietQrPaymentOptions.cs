@@ -4,6 +4,7 @@ public sealed class VietQrPaymentOptions
 {
     public const string SectionName = "VietQrPayment";
 
+    public bool IsDemo { get; set; } = true;
     public string BankCode { get; set; } = "DEMO";
     public string BankName { get; set; } = "Demo Bank";
     public string AccountHolder { get; set; } = "NGUYEN VAN A";

@@ -87,6 +87,20 @@ else
                         </div>
                     </div>
 
+                    @if (!string.IsNullOrWhiteSpace(booking.SpecialRequests))
+                    {
+                        <div class="alert alert-warning border-warning-subtle rounded-4 mb-4">
+                            <h6 class="fw-bold text-dark mb-2">
+                                <i class="bi bi-building-check me-2 text-warning"></i>Yêu Cầu Đặc Biệt &amp; Hỗ Trợ Lưu Trú
+                            </h6>
+                            <div class="small" style="white-space: pre-line;">@booking.SpecialRequests</div>
+                            <div class="small text-muted mt-2">
+                                <i class="bi bi-info-circle me-1"></i>Yêu cầu lưu trú chỉ là thông tin hỗ trợ, chưa phải đặt phòng.
+                                Nhân viên Hue Tour sẽ liên hệ với Quý khách để xác nhận.
+                            </div>
+                        </div>
+                    }
+
                     <!-- Danh sách vé hành khách (LineItems) -->
                     <h6 class="fw-bold text-purple mb-3">
                         <i class="bi bi-people-fill me-2 text-gold"></i>Danh Sách Vé Hành Khách (@booking.PassengerTickets.Count vé)
@@ -143,14 +157,15 @@ else
                         </table>
                     </div>
 
-                    <!-- Thông tin QR demo; không dùng để nhận thanh toán thật -->
+                    <!-- Thông tin chuyển khoản; nội dung cảnh báo phụ thuộc cấu hình demo hay tài khoản thật -->
                     <div class="card border-0 shadow-sm p-4 mb-4 bg-white rounded-4 border-start border-4 border-success">
                         <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-2 mb-3">
                             <h5 class="fw-bold text-purple mb-0">
-                                <i class="bi bi-qr-code-scan text-gold me-2"></i>Thông Tin Thanh Toán Demo
+                                <i class="bi bi-qr-code-scan text-gold me-2"></i>Thông Tin Thanh Toán
                             </h5>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                <i class="bi bi-info-circle me-1"></i>QR minh họa
+                            <span class="badge @(VietQrOptions.Value.IsDemo ? "bg-warning-subtle text-warning-emphasis border-warning-subtle" : "bg-success-subtle text-success border-success-subtle")">
+                                <i class="bi @(VietQrOptions.Value.IsDemo ? "bi-info-circle" : "bi-shield-check") me-1"></i>
+                                @(VietQrOptions.Value.IsDemo ? "QR minh họa" : "QR chuyển khoản")
                             </span>
                         </div>
                         <div class="row g-4 align-items-center">
@@ -158,11 +173,23 @@ else
                             {
                                 <div class="col-md-4 text-center">
                                 <div class="p-2 border rounded-3 bg-light d-inline-block shadow-sm">
-                                    <img src="@VietQrOptions.Value.QrImagePath" alt="Mã QR minh họa, không dùng để chuyển tiền" class="img-fluid rounded-2" style="max-width: 200px;" />
+                                    <img src="@VietQrOptions.Value.QrImagePath"
+                                         alt="@(VietQrOptions.Value.IsDemo ? "Mã QR minh họa, không dùng để chuyển tiền" : $"Mã QR chuyển khoản {VietQrOptions.Value.BankName} đến {VietQrOptions.Value.AccountHolder}")"
+                                         class="img-fluid rounded-2" style="max-width: 200px;" />
                                 </div>
-                                <div class="small text-danger fw-semibold mt-2">
-                                    Mã QR minh họa phục vụ demo, không dùng để chuyển tiền.
-                                </div>
+                                @if (VietQrOptions.Value.IsDemo)
+                                {
+                                    <div class="small text-danger fw-semibold mt-2">
+                                        Mã QR minh họa phục vụ demo, không dùng để chuyển tiền.
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="small text-success fw-semibold mt-2">
+                                        <i class="bi bi-shield-check me-1"></i>Quét mã bằng ứng dụng ngân hàng và kiểm tra đúng người nhận trước khi chuyển.
+                                    </div>
+                                    <div class="small text-muted mt-1">Mã QR chứa thông tin tài khoản; vui lòng nhập đúng số tiền và nội dung chuyển khoản bên cạnh.</div>
+                                }
                                 </div>
                             }
                             <div class="@(string.IsNullOrWhiteSpace(VietQrOptions.Value.QrImagePath) ? "col-md-12" : "col-md-8")">
@@ -190,7 +217,14 @@ else
                                                 @VietQrOptions.Value.FormatTransferContent(booking.BookingCode, booking.Customer?.PhoneNumber)
                                             </code>
                                             <div class="small text-muted mt-2">
-                                                <i class="bi bi-info-circle text-primary me-1"></i>Thông tin thanh toán trên trang này chỉ phục vụ minh họa, không phát sinh giao dịch thật.
+                                                @if (VietQrOptions.Value.IsDemo)
+                                                {
+                                                    <span><i class="bi bi-info-circle text-primary me-1"></i>Thông tin thanh toán trên trang này chỉ phục vụ minh họa, không phát sinh giao dịch thật.</span>
+                                                }
+                                                else
+                                                {
+                                                    <span><i class="bi bi-shield-check text-success me-1"></i>Vui lòng chuyển đúng số tiền và nội dung để Hue Tour đối chiếu đơn đặt tour.</span>
+                                                }
                                             </div>
                                         </div>
                                     </div>

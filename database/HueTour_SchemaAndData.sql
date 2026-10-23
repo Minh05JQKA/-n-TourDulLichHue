@@ -166,11 +166,27 @@ GO
 -- 8. ĐỊA ĐIỂM ẨM THỰC (NHÀ HÀNG · QUÁN CÀ PHÊ · TIỆM BÁNH)
 -- Nguồn dữ liệu: scripts/import_food_places.py đọc backend/data của dự án mẫu HUEGO.
 -- Nạp dữ liệu: chạy database/seed/DiaDiemAmThuc_Seed.sql sau khi tạo bảng này.
+CREATE TABLE dbo.DanhMucAmThuc (
+    MaDanhMuc NVARCHAR(50) NOT NULL CONSTRAINT PK_DanhMucAmThuc PRIMARY KEY,
+    TenDanhMuc NVARCHAR(80) NOT NULL CONSTRAINT UQ_DanhMucAmThuc_Ten UNIQUE
+);
+GO
+INSERT INTO dbo.DanhMucAmThuc (MaDanhMuc, TenDanhMuc) VALUES
+    (N'bakery', N'Tiệm bánh'),
+    (N'bar', N'Quán bar'),
+    (N'cafe', N'Quán cà phê'),
+    (N'dessert', N'Tiệm bánh ngọt · kem'),
+    (N'grill', N'Quán nướng'),
+    (N'hotpot', N'Quán lẩu'),
+    (N'noodle', N'Quán mì · bún'),
+    (N'restaurant', N'Nhà hàng'),
+    (N'seafood', N'Nhà hàng hải sản'),
+    (N'vegetarian', N'Nhà hàng chay');
+GO
 CREATE TABLE dbo.DiaDiemAmThuc (
     MaDiaDiem INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_DiaDiemAmThuc PRIMARY KEY,
     Slug NVARCHAR(160) NOT NULL CONSTRAINT UQ_DiaDiemAmThuc_Slug UNIQUE,
     TenDiaDiem NVARCHAR(250) NOT NULL,
-    DanhMuc NVARCHAR(80) NOT NULL,
     MaDanhMuc NVARCHAR(50) NOT NULL,
     MonDacTrung NVARCHAR(120) NULL,
     MoTa NVARCHAR(1000) NULL,
@@ -187,6 +203,8 @@ CREATE TABLE dbo.DiaDiemAmThuc (
     Nguon NVARCHAR(80) NULL,
     DuocDoiChieu BIT NOT NULL CONSTRAINT DF_DiaDiemAmThuc_DuocDoiChieu DEFAULT 0,
     NgayTao DATETIME2(0) NOT NULL CONSTRAINT DF_DiaDiemAmThuc_NgayTao DEFAULT SYSDATETIME(),
+    CONSTRAINT FK_DiaDiemAmThuc_DanhMucAmThuc FOREIGN KEY (MaDanhMuc)
+        REFERENCES dbo.DanhMucAmThuc(MaDanhMuc),
     CONSTRAINT CK_DiaDiemAmThuc_DiemDanhGia CHECK (DiemDanhGia IS NULL OR (DiemDanhGia >= 0 AND DiemDanhGia <= 5)),
     CONSTRAINT CK_DiaDiemAmThuc_Gia CHECK (GiaThamKhao IS NULL OR GiaThamKhao >= 0)
 );

@@ -3,7 +3,6 @@
 @using HueTour.CoreBusiness
 @using HueTour.UseCases.FoodPlaces
 @inject IFoodPlaceCatalogUseCase CatalogUseCase
-@inject IJSRuntime JS
 
 <PageTitle>Ẩm thực Huế · Nhà hàng, quán cà phê, tiệm bánh | Huế Tour</PageTitle>
 
@@ -38,6 +37,9 @@
                     <div><strong>@_result.Categories.Count</strong><span>nhóm món</span></div>
                     <div><strong>@_featured.Count</strong><span>gợi ý nổi bật</span></div>
                 </div>
+                <a class="food-map-cta" href="/kham-pha?category=food#map">
+                    <i class="bi bi-map me-2"></i>Mở bản đồ ẩm thực
+                </a>
             </div>
 
             <div class="food-hero-art" aria-hidden="true">
@@ -67,8 +69,7 @@
             </nav>
         }
 
-        @if (_featured.Count > 0 && string.IsNullOrEmpty(_keyword) && string.IsNullOrEmpty(_categoryCode)
-            && !_searchCenter.HasValue && _viewport is null)
+        @if (_featured.Count > 0 && string.IsNullOrEmpty(_keyword) && string.IsNullOrEmpty(_categoryCode))
         {
             <section class="food-featured">
                 <header class="food-section-head">
@@ -107,7 +108,7 @@
             </section>
         }
 
-        <section class="food-results @(_mobileMapMode ? "is-map-mode" : "is-list-mode")">
+        <section class="food-results">
             <header class="food-section-head">
                 <div>
                     <span class="food-section-kicker">DANH MỤC</span>
@@ -129,17 +130,12 @@
                 <p class="food-section-note">
                     Hiển thị @(_result.Items.Count) / @_result.TotalCount địa điểm · Trang @_result.Page/@_result.TotalPages
                 </p>
-                <div class="food-view-switch" role="group" aria-label="Chế độ hiển thị">
-                    <button type="button" class="@(_mobileMapMode ? string.Empty : "is-active")" aria-pressed="@(!_mobileMapMode)" @onclick="ShowListAsync">
-                        <i class="bi bi-list-ul me-1"></i>Danh sách
-                    </button>
-                    <button type="button" class="@(_mobileMapMode ? "is-active" : string.Empty)" aria-pressed="@_mobileMapMode" @onclick="ShowMapAsync">
-                        <i class="bi bi-map me-1"></i>Bản đồ
-                    </button>
-                </div>
+                <a class="btn-outline-royal btn-sm" href="/kham-pha?category=food#map">
+                    <i class="bi bi-map me-1"></i>Bản đồ ẩm thực
+                </a>
             </header>
 
-            <div class="food-results-layout @(_mobileMapMode ? "is-map-mode" : "is-list-mode")">
+            <div class="food-results-layout">
                 <div class="food-grid">
                     @if (_result.Items.Count == 0)
                     {
@@ -154,10 +150,7 @@
                     {
                         @foreach (var place in _result.Items)
                         {
-                            <article class="food-card @(place.Id == _focusedPlaceId ? "is-highlight" : string.Empty)"
-                                     data-food-id="@place.Id" tabindex="0"
-                                     @onmouseenter="() => HighlightMapMarkerAsync(place.Id)"
-                                     @onfocusin="() => HighlightMapMarkerAsync(place.Id)">
+                            <article class="food-card">
                                 <div class="food-card-media">
                                     <img src="@ResolveImage(place)" alt="@place.Name" loading="lazy" />
                                     <span class="food-badge">@place.Category</span>
@@ -190,9 +183,9 @@
                                         }
                                     </div>
                                     <div class="food-card-actions">
-                                        <button type="button" class="btn-outline-royal btn-sm" @onclick="() => FocusPlaceOnMapAsync(place.Id)">
-                                            <i class="bi bi-map me-1"></i>Xem trên bản đồ
-                                        </button>
+                                        <a class="btn-outline-royal btn-sm" href="/kham-pha?category=food#map">
+                                            <i class="bi bi-map me-1"></i>Bản đồ ẩm thực
+                                        </a>
                                         <a class="btn-royal-gold btn-sm" href="@place.DirectionsUrl" target="_blank" rel="noopener noreferrer">
                                             <i class="bi bi-signpost-split me-1"></i>Đường đi
                                         </a>
@@ -205,19 +198,6 @@
                         }
                     }
                 </div>
-
-                <FoodMapPanelComponent @ref="_mapPanel"
-                                       Places="_result.MapItems"
-                                       ShowRadiusPicker="true"
-                                       HasSpatialFilter="@(_searchCenter.HasValue || _viewport is not null)"
-                                       SearchCenter="_searchCenter"
-                                       SelectedRadiusKm="_radiusKm"
-                                       SelectedRadiusKmChanged="HandleRadiusChangedAsync"
-                                       OnViewportChanged="HandleViewportChangedAsync"
-                                       OnUserLocated="HandleUserLocatedAsync"
-                                       OnFocusPlace="HandleMapFocusAsync"
-                                       OnCollapse="ShowListAsync"
-                                       OnResetSpatialFilters="ResetSpatialFiltersAsync" />
             </div>
 
             @if (_result.TotalPages > 1)
@@ -259,13 +239,6 @@
     private string? _keyword;
     private string? _categoryCode;
     private bool _loading = true;
-    private bool _mobileMapMode;
-    private int? _focusedPlaceId;
-    private double _radiusKm = 3;
-    private (double Lat, double Lng)? _searchCenter;
-    private GeoViewport? _viewport;
-    private GeoViewport? _lastQueriedViewport;
-    private FoodMapPanelComponent? _mapPanel;
 
     private const int PageSize = 18;
 
@@ -286,113 +259,17 @@
         {
             Keyword = _keyword,
             CategoryCode = _categoryCode,
-            NearLatitude = _searchCenter?.Lat,
-            NearLongitude = _searchCenter?.Lng,
-            RadiusKm = _searchCenter.HasValue ? _radiusKm : null,
-            BoundsWest = _viewport?.West,
-            BoundsSouth = _viewport?.South,
-            BoundsEast = _viewport?.East,
-            BoundsNorth = _viewport?.North,
             Page = page,
             PageSize = PageSize
         });
 
-        if (string.IsNullOrEmpty(_keyword) && string.IsNullOrEmpty(_categoryCode)
-            && !_searchCenter.HasValue && _viewport is null)
+        if (string.IsNullOrEmpty(_keyword) && string.IsNullOrEmpty(_categoryCode))
         {
             _featured = await CatalogUseCase.GetFeaturedAsync(6);
         }
 
         _loading = false;
         StateHasChanged();
-    }
-
-    private Task HandleViewportChangedAsync(GeoViewport viewport)
-    {
-        if (_lastQueriedViewport is { } previous
-            && !FoodPlaceCatalogUseCase.IsViewportShiftSignificant(previous, viewport))
-        {
-            return Task.CompletedTask;
-        }
-
-        _lastQueriedViewport = viewport;
-        _viewport = viewport;
-        return LoadAsync(1);
-    }
-
-    private Task HandleUserLocatedAsync((double Lat, double Lng) location)
-    {
-        _searchCenter = location;
-        _viewport = null;
-        _lastQueriedViewport = null;
-        return LoadAsync(1);
-    }
-
-    private Task HandleRadiusChangedAsync(double radiusKm)
-    {
-        _radiusKm = radiusKm;
-        return _searchCenter.HasValue ? LoadAsync(1) : Task.CompletedTask;
-    }
-
-    private async Task HandleMapFocusAsync(int placeId)
-    {
-        _focusedPlaceId = placeId;
-        var placeIndex = -1;
-        for (var index = 0; index < _result.MapItems.Count; index++)
-        {
-            if (_result.MapItems[index].Id == placeId)
-            {
-                placeIndex = index;
-                break;
-            }
-        }
-
-        if (placeIndex < 0)
-        {
-            return;
-        }
-
-        var targetPage = (placeIndex / PageSize) + 1;
-        if (targetPage != _result.Page)
-        {
-            await LoadAsync(targetPage);
-        }
-
-        await (_mapPanel?.ScrollToPlaceCardAsync(placeId) ?? Task.CompletedTask);
-    }
-
-    private async Task FocusPlaceOnMapAsync(int placeId)
-    {
-        _focusedPlaceId = placeId;
-        await JS.InvokeVoidAsync("hueFoodMap.focus", "hue-food-map", placeId);
-    }
-
-    private async Task HighlightMapMarkerAsync(int placeId)
-    {
-        _focusedPlaceId = placeId;
-        await (_mapPanel?.HighlightPlaceAsync(placeId) ?? Task.CompletedTask);
-    }
-
-    private async Task ShowListAsync()
-    {
-        _mobileMapMode = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task ShowMapAsync()
-    {
-        _mobileMapMode = true;
-        await Task.Yield();
-        await (_mapPanel?.RefreshSizeAsync() ?? Task.CompletedTask);
-    }
-
-    private Task ResetSpatialFiltersAsync()
-    {
-        _searchCenter = null;
-        _viewport = null;
-        _lastQueriedViewport = null;
-        _focusedPlaceId = null;
-        return LoadAsync(1);
     }
 
     private Task HandleSearchAsync()
@@ -421,9 +298,6 @@
     {
         _keyword = null;
         _categoryCode = null;
-        _searchCenter = null;
-        _viewport = null;
-        _lastQueriedViewport = null;
         return LoadAsync(1);
     }
 

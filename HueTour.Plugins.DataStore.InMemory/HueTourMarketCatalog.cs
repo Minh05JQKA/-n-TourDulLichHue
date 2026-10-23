@@ -9,7 +9,7 @@ internal static class HueTourMarketCatalog
 
     public static IEnumerable<Tour> Create()
     {
-        yield return CreateTour(24, "HT-MARKET-THANHTAN24",
+        yield return CreateTour(1002, "HT-MARKET-THANHTAN24",
             "[Huế] Huế – Suối khoáng nóng Thanh Tân – Huế",
             "Thiên nhiên & Nghỉ dưỡng", "1 Ngày", 950000,
             "Công ty CP Du lịch Đại Bàng", HueTripOUrl, "/images/thien-mu-2025.jpg",
@@ -17,7 +17,7 @@ internal static class HueTourMarketCatalog
             "Suối khoáng nóng Thanh Tân; khởi hành từ Huế; tour ghép; giá tham khảo từ 950.000đ/khách.",
             "Huế -> Khu suối khoáng nóng Thanh Tân -> Huế. Hoạt động và dịch vụ cụ thể theo xác nhận của đơn vị tổ chức.", "Huế");
 
-        yield return CreateTour(25, "HT-MARKET-BACHMA25",
+        yield return CreateTour(1003, "HT-MARKET-BACHMA25",
             "Huế – Vườn Quốc gia Bạch Mã – Hải Vọng Đài – Ngũ Hồ – Thác Đỗ Quyên",
             "Sinh thái & Đầm phá", "1 Ngày", 1050000,
             "Công ty CP Du lịch Đại Bàng", HueTripOUrl, "/images/bach-ma-waterfall.jpg",
@@ -25,7 +25,7 @@ internal static class HueTourMarketCatalog
             "Vườn Quốc gia Bạch Mã; Hải Vọng Đài; Ngũ Hồ; thác Đỗ Quyên; giá tham khảo từ 1.050.000đ/khách.",
             "Huế -> Vườn Quốc gia Bạch Mã -> Hải Vọng Đài -> Ngũ Hồ -> Thác Đỗ Quyên -> Huế. Thứ tự và hoạt động theo chương trình nhà cung cấp.", "Huế");
 
-        yield return CreateTour(26, "HT-MARKET-TAMGIANG3D26",
+        yield return CreateTour(1004, "HT-MARKET-TAMGIANG3D26",
             "Hoàng hôn trên phá Tam Giang – Vườn Quốc gia Bạch Mã",
             "Sinh thái & Đầm phá", "3 Ngày", 3990000,
             "Công ty TNHH Lữ hành An Tường Travel", HueTripOUrl, "/images/tam-giang-2024.jpg",
@@ -33,7 +33,7 @@ internal static class HueTourMarketCatalog
             "Phá Tam Giang; Vườn Quốc gia Bạch Mã; tour ghép 3 ngày; giá tham khảo từ 3.990.000đ/khách.",
             "Sân bay Phú Bài / Ga Huế / Bến xe -> Phá Tam Giang -> Vườn Quốc gia Bạch Mã -> Kết thúc theo chương trình An Tường Travel.", "Sân bay Phú Bài / Ga Huế / Bến xe");
 
-        yield return CreateTour(27, "HT-MARKET-TAMGIANG2D27",
+        yield return CreateTour(1005, "HT-MARKET-TAMGIANG2D27",
             "Cố đô Huế – Hoàng hôn trên phá Tam Giang – Hoàng cung – Lăng Khải Định – Chùa Thiên Mụ – Chợ Đông Ba",
             "Di tích Cố Đô", "2 Ngày 1 Đêm", 2890000,
             "Công ty TNHH Lữ hành An Tường Travel", HueTripOUrl, "/images/imperial-city-2025.jpg",
@@ -41,7 +41,7 @@ internal static class HueTourMarketCatalog
             "Hoàng cung; lăng Khải Định; chùa Thiên Mụ; chợ Đông Ba; hoàng hôn phá Tam Giang; giá tham khảo từ 2.890.000đ/khách.",
             "Sân bay Phú Bài / Ga Huế / Bến xe -> Hoàng cung -> Lăng Khải Định -> Chùa Thiên Mụ -> Chợ Đông Ba -> Phá Tam Giang ngắm hoàng hôn. Lịch từng ngày theo đơn vị tổ chức.", "Sân bay Phú Bài / Ga Huế / Bến xe");
 
-        yield return CreateTour(28, "HT-MARKET-TAMGIANG-SUNSET28",
+        yield return CreateTour(1006, "HT-MARKET-TAMGIANG-SUNSET28",
             "Trải nghiệm trên phá Tam Giang – Ngắm hoàng hôn",
             "Sinh thái & Đầm phá", "Nửa Ngày", 850000,
             "Công ty TNHH MTV Restour", HueTripOUrl, "/images/tam-giang-2024.jpg",
@@ -49,7 +49,7 @@ internal static class HueTourMarketCatalog
             "Phá Tam Giang; trải nghiệm ngắm hoàng hôn; tour ghép nửa ngày; giá tham khảo từ 850.000đ/khách.",
             "Thành phố Huế -> Phá Tam Giang -> Ngắm hoàng hôn -> Trở về Huế. Chi tiết theo chương trình Restour.", "Thành phố Huế");
 
-        yield return CreateTour(29, "HT-MARKET-SONGHUONG-TEA29",
+        yield return CreateTour(1007, "HT-MARKET-SONGHUONG-TEA29",
             "Trà chiều trên sông Hương – Du thuyền ngắm hoàng hôn",
             "Sông Hương & Làng nghề", "Nửa Ngày", 450000,
             "Công ty TNHH MTV Restour", HueTripOUrl, "/images/thien-mu-2025.jpg",
@@ -57,7 +57,7 @@ internal static class HueTourMarketCatalog
             "Du thuyền sông Hương; trà chiều; ngắm hoàng hôn; giá tham khảo từ 450.000đ/khách.",
             "Thành phố Huế -> Du thuyền trên sông Hương -> Trải nghiệm trà chiều và ngắm hoàng hôn -> Kết thúc theo chương trình Restour.", "Thành phố Huế");
 
-        yield return CreateTour(30, "HT-MARKET-THUYBIEU30",
+        yield return CreateTour(1008, "HT-MARKET-THUYBIEU30",
             "Khám phá Thủy Biều",
             "Sông Hương & Làng nghề", "Nửa Ngày", 850000,
             "Công ty TNHH MTV Restour", HueTripOUrl, "/images/thien-mu-2025.jpg",
@@ -65,7 +65,7 @@ internal static class HueTourMarketCatalog
             "Thủy Biều; tour ghép nửa ngày; khởi hành từ thành phố Huế; giá tham khảo từ 850.000đ/khách.",
             "Thành phố Huế -> Khám phá Thủy Biều -> Trở về Huế. Các điểm dừng theo chương trình Restour.", "Thành phố Huế");
 
-        yield return CreateTour(31, "HT-MARKET-FOODTOUR31",
+        yield return CreateTour(1009, "HT-MARKET-FOODTOUR31",
             "Khám phá ẩm thực xứ Huế – Hue Food Tour",
             "Văn hóa & Ẩm thực", "Nửa Ngày", 850000,
             "Công ty TNHH MTV Restour", HueTripOUrl, "/images/bun-bo-hue-2024.jpg",
@@ -73,7 +73,7 @@ internal static class HueTourMarketCatalog
             "Ẩm thực Huế; tour tự chọn; thời lượng nửa ngày; giá tham khảo từ 850.000đ/khách.",
             "Thành phố Huế -> Các trải nghiệm ẩm thực theo chương trình Hue Food Tour -> Kết thúc tại Huế.", "Thành phố Huế");
 
-        yield return CreateTour(32, "HT-MARKET-VIETRAVEL32",
+        yield return CreateTour(1010, "HT-MARKET-VIETRAVEL32",
             "Huế – Đại Nội – Lăng Khải Định",
             "Di tích Cố Đô", "1 Ngày", 890000,
             "Công ty TNHH MTV Du lịch Vietravel Huế", HueTripOUrl, "/images/imperial-city-2025.jpg",
@@ -81,7 +81,7 @@ internal static class HueTourMarketCatalog
             "Đại Nội Huế; lăng Khải Định; tour ghép một ngày; điểm khởi hành 01 Hùng Vương; giá tham khảo từ 890.000đ/khách.",
             "01 Hùng Vương, TP Huế -> Đại Nội Huế -> Lăng Khải Định -> Kết thúc theo lịch trình Vietravel Huế.", "01 Hùng Vương, TP Huế");
 
-        yield return CreateTour(33, "HT-MARKET-BAOVINH33",
+        yield return CreateTour(1011, "HT-MARKET-BAOVINH33",
             "Huế – Phố cổ Bao Vinh – Tranh làng Sình – Làng hoa giấy Thanh Tiên – Bữa trưa dân dã",
             "Văn hóa & Ẩm thực", "Nửa Ngày", 750000,
             "Công ty CP Du lịch Đại Bàng", HueTripOUrl, "/images/dong-ba-market-2024.jpg",
@@ -89,7 +89,7 @@ internal static class HueTourMarketCatalog
             "Phố cổ Bao Vinh; tranh làng Sình; làng hoa giấy Thanh Tiên; bữa trưa dân dã; giá tham khảo từ 750.000đ/khách.",
             "Thành phố Huế -> Phố cổ Bao Vinh -> Tranh làng Sình -> Làng hoa giấy Thanh Tiên -> Bữa trưa dân dã. Thứ tự theo chương trình đơn vị tổ chức.", "Thành phố Huế");
 
-        yield return CreateTour(34, "HT-MARKET-HITOUR1D34",
+        yield return CreateTour(1012, "HT-MARKET-HITOUR1D34",
             "Tour du lịch Huế trong ngày – Thiên Mụ, Đại Nội, hai lăng và làng nghề",
             "Di tích Cố Đô", "1 Ngày", 850000,
             "Hitour", "https://hitour.vn/tour-du-lich-hue/tour-du-lich-hue-1-ngay-tu-thua-thien-hue", "/images/imperial-city-2025.jpg",

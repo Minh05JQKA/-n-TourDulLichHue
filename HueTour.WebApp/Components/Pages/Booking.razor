@@ -31,7 +31,7 @@ else if (departure == null || departure.Tour == null)
 }
 else
 {
-    <div class="container py-4">
+    <div class="container py-4 booking-page-shell">
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-3">
@@ -94,7 +94,7 @@ else
         <div class="row g-4">
             <!-- Cột trái: Form thông tin liên hệ và danh sách hành khách động -->
             <div class="col-lg-8 col-12">
-                <EditForm Model="@formModel" OnValidSubmit="HandleValidSubmit">
+                <EditForm Model="@formModel" OnValidSubmit="HandleValidSubmit" @ref="bookingForm">
                     <DataAnnotationsValidator />
                     <ValidationSummary class="validation-message mb-3" />
 
@@ -188,10 +188,114 @@ else
                         </div>
                     </div>
 
-                    <!-- 3. Phương thức thanh toán -->
+                    <!-- 3. Yêu cầu hỗ trợ lưu trú (tùy chọn) -->
+                    <div class="card border-0 shadow-sm p-4 mb-4 stay-support-card" style="border-radius: 16px;">
+                        <h5 class="fw-bold text-purple border-bottom pb-2 mb-3">
+                            <i class="bi bi-building-check text-gold me-2"></i>3. Yêu Cầu Hỗ Trợ Lưu Trú
+                            <span class="badge bg-light text-muted border ms-1 fw-normal">Tùy chọn</span>
+                        </h5>
+
+                        <label class="stay-support-toggle @(formModel.NeedsAccommodationSupport ? "is-active" : "")"
+                               for="accommodationSupport">
+                            <InputCheckbox class="form-check-input mt-1" id="accommodationSupport"
+                                           @bind-Value="formModel.NeedsAccommodationSupport" />
+                            <span class="stay-support-icon">
+                                <i class="bi @(formModel.NeedsAccommodationSupport ? "bi-check2-circle" : "bi-building")"></i>
+                            </span>
+                            <span class="stay-support-copy">
+                                <strong>Tôi muốn Hue Tour hỗ trợ tư vấn và đặt khách sạn</strong>
+                                <span class="d-block text-muted mt-1">
+                                    Miễn phí tư vấn • Chưa phải đặt phòng • Không cộng vào tổng tiền tour.
+                                    Nhân viên sẽ liên hệ xác nhận tình trạng phòng và giá trước khi giữ chỗ.
+                                </span>
+                            </span>
+                            <span class="stay-support-state">@(formModel.NeedsAccommodationSupport ? "Đã bật" : "Đang tắt")</span>
+                        </label>
+
+                        @if (formModel.NeedsAccommodationSupport)
+                        {
+                            <div class="stay-support-panel mt-3">
+                                <div class="stay-panel-heading">
+                                    <span><i class="bi bi-sliders me-1"></i>Thông tin lưu trú mong muốn</span>
+                                    <span class="stay-panel-badge">Không bắt buộc đặt phòng ngay</span>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold text-muted">Khu vực / khách sạn mong muốn <span class="text-danger">*</span></label>
+                                        <InputText class="form-control" placeholder="VD: Gần sông Hương, khu Đại Nội, khách sạn 3 sao..."
+                                                   @bind-Value="formModel.AccommodationArea" />
+                                        <ValidationMessage For="@(() => formModel.AccommodationArea)" class="validation-message" />
+                                        <div class="stay-quick-picks" aria-label="Gợi ý khu vực lưu trú">
+                                            @foreach (var area in AccommodationAreaSuggestions)
+                                            {
+                                                <button type="button"
+                                                        class="stay-chip @(formModel.AccommodationArea == area ? "is-selected" : "")"
+                                                        @onclick="() => formModel.AccommodationArea = area">
+                                                    <i class="bi bi-geo-alt me-1"></i>@area
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-5 col-12">
+                                        <label class="form-label small fw-bold text-muted">Số phòng dự kiến <span class="text-danger">*</span></label>
+                                        <div class="stay-room-stepper">
+                                            <button type="button" class="stay-room-btn"
+                                                    aria-label="Giảm số phòng"
+                                                    disabled="@((formModel.AccommodationRoomCount ?? 1) <= 1)"
+                                                    @onclick="() => ChangeRoomCount(-1)">
+                                                <i class="bi bi-dash-lg"></i>
+                                            </button>
+                                            <InputNumber class="form-control stay-room-input" min="1" max="10"
+                                                         @bind-Value="formModel.AccommodationRoomCount" />
+                                            <button type="button" class="stay-room-btn"
+                                                    aria-label="Tăng số phòng"
+                                                    disabled="@((formModel.AccommodationRoomCount ?? 1) >= 10)"
+                                                    @onclick="() => ChangeRoomCount(1)">
+                                                <i class="bi bi-plus-lg"></i>
+                                            </button>
+                                        </div>
+                                        <ValidationMessage For="@(() => formModel.AccommodationRoomCount)" class="validation-message" />
+                                    </div>
+
+                                    <div class="col-md-7 col-12">
+                                        <div class="stay-date-summary">
+                                            <i class="bi bi-moon-stars me-1"></i>
+                                            @GetAccommodationDurationText()
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 col-12">
+                                        <label class="form-label small fw-bold text-muted">Ngày nhận phòng <span class="text-danger">*</span></label>
+                                        <InputDate class="form-control" @bind-Value="formModel.AccommodationCheckIn" />
+                                        <ValidationMessage For="@(() => formModel.AccommodationCheckIn)" class="validation-message" />
+                                    </div>
+
+                                    <div class="col-md-6 col-12">
+                                        <label class="form-label small fw-bold text-muted">Ngày trả phòng <span class="text-danger">*</span></label>
+                                        <InputDate class="form-control"
+                                                   min="@(formModel.AccommodationCheckIn?.AddDays(1).ToString("yyyy-MM-dd"))"
+                                                   @bind-Value="formModel.AccommodationCheckOut" />
+                                        <ValidationMessage For="@(() => formModel.AccommodationCheckOut)" class="validation-message" />
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold text-muted">Ghi chú thêm cho lưu trú</label>
+                                        <InputTextArea class="form-control" rows="2"
+                                                       placeholder="VD: Phòng gia đình, cần chỗ đậu xe, ăn sáng cho trẻ em..."
+                                                       @bind-Value="formModel.AccommodationNotes" />
+                                        <ValidationMessage For="@(() => formModel.AccommodationNotes)" class="validation-message" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- 4. Phương thức thanh toán -->
                     <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
                         <h5 class="fw-bold text-purple border-bottom pb-2 mb-3">
-                            <i class="bi bi-credit-card-2-front text-gold me-2"></i>3. Phương Thức Thanh Toán
+                            <i class="bi bi-credit-card-2-front text-gold me-2"></i>4. Phương Thức Thanh Toán
                         </h5>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6 col-12">
@@ -203,10 +307,14 @@ else
                                                checked="@(formModel.PaymentMethod == "Chuyển khoản VietQR")"
                                                @onchange='() => formModel.PaymentMethod = "Chuyển khoản VietQR"' />
                                         <label for="pay1" class="small fw-bold mb-0" style="cursor: pointer;">
-                                            <i class="bi bi-qr-code-scan text-purple me-1"></i>Chuyển khoản VietQR (demo)
+                                            <i class="bi bi-qr-code-scan text-purple me-1"></i>Chuyển khoản VietQR @(VietQrOptions.Value.IsDemo ? "(demo)" : "")
                                         </label>
                                     </div>
-                                    <small class="text-muted d-block mt-1 ps-4">Thông tin thanh toán minh họa, không tạo giao dịch thật.</small>
+                                    <small class="text-muted d-block mt-1 ps-4">
+                                        @(VietQrOptions.Value.IsDemo
+                                            ? "Thông tin thanh toán minh họa, không tạo giao dịch thật."
+                                            : $"Chuyển khoản đến tài khoản {VietQrOptions.Value.BankName} của Hue Tour.")
+                                    </small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-12">
@@ -234,9 +342,21 @@ else
                                     {
                                         <div class="col-sm-5 text-center">
                                         <div class="p-2 border rounded-3 bg-light d-inline-block shadow-sm">
-                                            <img src="@VietQrOptions.Value.QrImagePath" alt="Mã QR minh họa, không dùng để chuyển tiền" class="img-fluid rounded-2" style="max-width: 190px;" />
+                                            <img src="@VietQrOptions.Value.QrImagePath"
+                                                 alt="@(VietQrOptions.Value.IsDemo ? "Mã QR minh họa, không dùng để chuyển tiền" : $"Mã QR chuyển khoản {VietQrOptions.Value.BankName} đến {VietQrOptions.Value.AccountHolder}")"
+                                                 class="img-fluid rounded-2" style="max-width: 190px;" />
                                         </div>
-                                        <div class="small text-danger fw-semibold mt-1">Mã QR minh họa phục vụ demo, không dùng để chuyển tiền.</div>
+                                        @if (VietQrOptions.Value.IsDemo)
+                                        {
+                                            <div class="small text-danger fw-semibold mt-1">Mã QR minh họa phục vụ demo, không dùng để chuyển tiền.</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="small text-success fw-semibold mt-1">
+                                                <i class="bi bi-shield-check me-1"></i>Quét mã bằng ứng dụng ngân hàng và kiểm tra đúng người nhận trước khi chuyển.
+                                            </div>
+                                            <div class="small text-muted mt-1">Mã QR chứa thông tin tài khoản; vui lòng nhập đúng số tiền và nội dung chuyển khoản bên cạnh.</div>
+                                        }
                                         </div>
                                     }
                                     <div class="@(string.IsNullOrWhiteSpace(VietQrOptions.Value.QrImagePath) ? "col-12" : "col-sm-7")">
@@ -268,6 +388,28 @@ else
 
                     <!-- Hidden submit button triggered by summary component -->
                     <button type="submit" id="hiddenSubmitBtn" style="display: none;"></button>
+
+                    <!-- Thanh đặt tour cố định trên mobile -->
+                    <div class="booking-mobile-bar d-lg-none">
+                        <div class="booking-mobile-total">
+                            <span>Tổng tiền tour</span>
+                            <strong>@currentTotalAmount.ToString("N0") VNĐ</strong>
+                        </div>
+                        <button type="button" class="btn btn-royal rounded-pill px-3 fw-bold"
+                                disabled="@(isSubmitting || currentTotalAmount <= 0)"
+                                @onclick="TriggerFormSubmit">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                <span>Đang xử lý...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-shield-check me-1"></i>
+                                <span>Đặt Tour</span>
+                            }
+                        </button>
+                    </div>
                 </EditForm>
             </div>
 
@@ -277,6 +419,11 @@ else
                                             Departure="@departure"
                                             Passengers="@formModel.Passengers"
                                             TotalAmount="@currentTotalAmount"
+                                            NeedsAccommodationSupport="@formModel.NeedsAccommodationSupport"
+                                            AccommodationArea="@formModel.AccommodationArea"
+                                            AccommodationCheckIn="@formModel.AccommodationCheckIn"
+                                            AccommodationCheckOut="@formModel.AccommodationCheckOut"
+                                            AccommodationRoomCount="@formModel.AccommodationRoomCount"
                                             IsSubmitting="@isSubmitting"
                                             OnSubmitBooking="TriggerFormSubmit" />
             </div>
@@ -289,6 +436,7 @@ else
     public int DepartureId { get; set; }
 
     private Departure? departure;
+    private EditForm? bookingForm;
     private IEnumerable<PriceRule> priceRules = Enumerable.Empty<PriceRule>();
     private BookingFormViewModel formModel = new();
     private decimal currentTotalAmount = 0;
@@ -297,7 +445,16 @@ else
     private string? ruleErrorMessage = null;
     private bool isWithinCutoff = false;
 
-    public class BookingFormViewModel
+    private static readonly string[] AccommodationAreaSuggestions =
+    {
+        "Gần sông Hương",
+        "Khu Đại Nội",
+        "Gần chợ Đông Ba",
+        "Khu Phú Hội",
+        "Gần ga Huế"
+    };
+
+    public class BookingFormViewModel : IValidatableObject
     {
         [Required(ErrorMessage = "Vui lòng nhập họ và tên người đặt tour")]
         public string CustomerFullName { get; set; } = string.Empty;
@@ -316,7 +473,58 @@ else
         public string? Notes { get; set; }
         public string PaymentMethod { get; set; } = "Chuyển khoản VietQR";
 
+        public bool NeedsAccommodationSupport { get; set; }
+
+        [StringLength(90, ErrorMessage = "Khu vực hoặc khách sạn mong muốn tối đa 90 ký tự")]
+        public string? AccommodationArea { get; set; }
+
+        [Range(1, 10, ErrorMessage = "Số phòng dự kiến phải từ 1 đến 10")]
+        public int? AccommodationRoomCount { get; set; } = 1;
+
+        public DateTime? AccommodationCheckIn { get; set; }
+        public DateTime? AccommodationCheckOut { get; set; }
+
+        [StringLength(220, ErrorMessage = "Ghi chú lưu trú tối đa 220 ký tự")]
+        public string? AccommodationNotes { get; set; }
+
         public List<PassengerTicket> Passengers { get; set; } = new();
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (!NeedsAccommodationSupport)
+            {
+                yield break;
+            }
+
+            if (string.IsNullOrWhiteSpace(AccommodationArea))
+            {
+                yield return new ValidationResult(
+                    "Vui lòng nhập khu vực hoặc khách sạn mong muốn để Hue Tour hỗ trợ lưu trú.",
+                    new[] { nameof(AccommodationArea) });
+            }
+
+            if (!AccommodationCheckIn.HasValue)
+            {
+                yield return new ValidationResult(
+                    "Vui lòng chọn ngày nhận phòng.",
+                    new[] { nameof(AccommodationCheckIn) });
+            }
+
+            if (!AccommodationCheckOut.HasValue)
+            {
+                yield return new ValidationResult(
+                    "Vui lòng chọn ngày trả phòng.",
+                    new[] { nameof(AccommodationCheckOut) });
+            }
+
+            if (AccommodationCheckIn.HasValue && AccommodationCheckOut.HasValue
+                && AccommodationCheckOut.Value.Date <= AccommodationCheckIn.Value.Date)
+            {
+                yield return new ValidationResult(
+                    "Ngày trả phòng phải sau ngày nhận phòng.",
+                    new[] { nameof(AccommodationCheckOut) });
+            }
+        }
     }
 
     protected override async Task OnInitializedAsync()
@@ -350,6 +558,13 @@ else
                     formModel.CustomerPhone = savedCustomer.PhoneNumber;
                     formModel.CustomerEmail = savedCustomer.Email;
                     formModel.CustomerAddress = savedCustomer.Address;
+
+                    // Gợi ý thời gian lưu trú theo lịch chuyến; khách vẫn có thể sửa khi gửi yêu cầu.
+                    formModel.AccommodationCheckIn = departure.DepartureDate.Date;
+                    formModel.AccommodationCheckOut = departure.ReturnDate.Date > departure.DepartureDate.Date
+                        ? departure.ReturnDate.Date
+                        : departure.DepartureDate.Date.AddDays(1);
+                    formModel.AccommodationRoomCount ??= 1;
                 }
 
                 await RecalculateTotal();
@@ -398,7 +613,14 @@ else
     {
         ruleErrorMessage = null;
 
-        // Gọi form validation
+        // Nút tóm tắt và thanh mobile nằm ngoài vùng submit native, nên phải gọi
+        // EditContext.Validate() trước khi chạy nghiệp vụ để không bỏ qua DataAnnotations.
+        if (bookingForm?.EditContext is not null && !bookingForm.EditContext.Validate())
+        {
+            StateHasChanged();
+            return;
+        }
+
         await HandleValidSubmit();
     }
 
@@ -427,7 +649,8 @@ else
                 customer: customer,
                 passengers: formModel.Passengers,
                 notes: formModel.Notes,
-                paymentMethod: formModel.PaymentMethod
+                paymentMethod: formModel.PaymentMethod,
+                specialRequests: BuildSpecialRequests()
             );
 
             if (result.IsSuccess && !string.IsNullOrEmpty(result.BookingCode))
@@ -453,6 +676,49 @@ else
         {
             isSubmitting = false;
         }
+    }
+
+    private void ChangeRoomCount(int delta)
+    {
+        var current = formModel.AccommodationRoomCount ?? 1;
+        formModel.AccommodationRoomCount = Math.Clamp(current + delta, 1, 10);
+    }
+
+    private string GetAccommodationDurationText()
+    {
+        if (!formModel.AccommodationCheckIn.HasValue || !formModel.AccommodationCheckOut.HasValue)
+        {
+            return "Chọn ngày nhận và trả phòng để xem số đêm lưu trú.";
+        }
+
+        var nights = (formModel.AccommodationCheckOut.Value.Date - formModel.AccommodationCheckIn.Value.Date).Days;
+        return nights > 0
+            ? $"{nights} đêm lưu trú • {formModel.AccommodationRoomCount ?? 1} phòng dự kiến"
+            : "Ngày trả phòng cần sau ngày nhận phòng.";
+    }
+
+    private string? BuildSpecialRequests()
+    {
+        if (!formModel.NeedsAccommodationSupport)
+        {
+            return null;
+        }
+
+        var lines = new List<string>
+        {
+            "[Yêu cầu hỗ trợ lưu trú]",
+            $"Khu vực/khách sạn mong muốn: {formModel.AccommodationArea?.Trim()}",
+            $"Ngày nhận phòng: {formModel.AccommodationCheckIn:dd/MM/yyyy}",
+            $"Ngày trả phòng: {formModel.AccommodationCheckOut:dd/MM/yyyy}",
+            $"Số phòng dự kiến: {formModel.AccommodationRoomCount ?? 1}"
+        };
+
+        if (!string.IsNullOrWhiteSpace(formModel.AccommodationNotes))
+        {
+            lines.Add($"Ghi chú lưu trú: {formModel.AccommodationNotes.Trim()}");
+        }
+
+        return string.Join(Environment.NewLine, lines);
     }
 
     private void SyncCartPassengers()

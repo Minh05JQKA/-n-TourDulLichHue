@@ -30,6 +30,37 @@
         </div>
     }
 
+    @if (NeedsAccommodationSupport)
+    {
+        <div class="summary-stay-card mb-3">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div class="small fw-bold text-purple">
+                    <i class="bi bi-building-check me-1"></i>Yêu cầu hỗ trợ lưu trú
+                </div>
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Tư vấn miễn phí</span>
+            </div>
+            <div class="small text-dark mt-2">
+                <i class="bi bi-geo-alt me-1 text-muted"></i>@(string.IsNullOrWhiteSpace(AccommodationArea) ? "Chưa chọn khu vực" : AccommodationArea)
+            </div>
+            <div class="small text-muted mt-1">
+                <i class="bi bi-calendar3 me-1"></i>
+                @(AccommodationCheckIn?.ToString("dd/MM/yyyy") ?? "--/--/----")
+                <span class="mx-1">→</span>
+                @(AccommodationCheckOut?.ToString("dd/MM/yyyy") ?? "--/--/----")
+            </div>
+            <div class="small text-muted mt-1">
+                <i class="bi bi-door-open me-1"></i>@(AccommodationRoomCount ?? 1) phòng
+                @if (AccommodationNights > 0)
+                {
+                    <span>• @AccommodationNights đêm</span>
+                }
+            </div>
+            <div class="small text-muted border-top mt-2 pt-2">
+                Chưa gồm tiền phòng. Nhân viên sẽ báo giá trước khi xác nhận.
+            </div>
+        </div>
+    }
+
     <!-- Chi tiết hành khách (Luật 2: tổng booking = Sigma vé) -->
     <div class="border-top pt-3 mb-3">
         <div class="d-flex justify-content-between small text-muted mb-1">
@@ -119,6 +150,26 @@
 
     [Parameter]
     public bool IsSubmitting { get; set; }
+
+    [Parameter]
+    public bool NeedsAccommodationSupport { get; set; }
+
+    [Parameter]
+    public string? AccommodationArea { get; set; }
+
+    [Parameter]
+    public DateTime? AccommodationCheckIn { get; set; }
+
+    [Parameter]
+    public DateTime? AccommodationCheckOut { get; set; }
+
+    [Parameter]
+    public int? AccommodationRoomCount { get; set; }
+
+    private int AccommodationNights =>
+        AccommodationCheckIn.HasValue && AccommodationCheckOut.HasValue
+            ? Math.Max(0, (AccommodationCheckOut.Value.Date - AccommodationCheckIn.Value.Date).Days)
+            : 0;
 
     private async Task SubmitBooking()
     {

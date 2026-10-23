@@ -1,6 +1,6 @@
 @page "/kham-pha"
 @using System.Globalization
-@implements IAsyncDisposable
+@using Microsoft.AspNetCore.Components
 @inject ITravelDiscoveryService DiscoveryService
 @inject ITravelAssistantService AssistantService
 @inject IViewToursUseCase ViewToursUseCase
@@ -72,7 +72,11 @@
                     <span class="discovery-live-badge"><span></span>Dữ liệu cập nhật từ Open-Meteo</span>
                 </div>
 
-                @if (weather is not null)
+                @if (weatherLoading && weather is null)
+                {
+                    <div class="discovery-empty-state" role="status"><span class="spinner-border spinner-border-sm me-2"></span><span>Đang tải dự báo thời tiết...</span></div>
+                }
+                else if (weather is not null)
                 {
                     <div class="weather-overview">
                         <div class="weather-current-card">
@@ -232,12 +236,13 @@
                     </div>
                     <a class="discovery-map-external" href="@OpenStreetMapSearchUrl()" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right me-2"></i>Mở OpenStreetMap</a>
                 </div>
-                <div id="hue-discovery-map" class="discovery-map-canvas" role="application" aria-label="Bản đồ địa điểm du lịch"></div>
-                @if (!string.IsNullOrWhiteSpace(mapError))
-                {
-                    <p class="discovery-map-error"><i class="bi bi-info-circle me-1"></i>@mapError</p>
-                }
-                <p class="discovery-map-attribution">Bản đồ © OpenStreetMap contributors · Hiển thị địa điểm từ OpenStreetMap. Hãy kiểm tra thông tin trực tiếp trước khi đi.</p>
+                <UnifiedMapExplorerComponent @ref="mapExplorer"
+                                             InitialLatitude="@(searchCenter?.Latitude ?? destination.Coordinate.Latitude)"
+                                             InitialLongitude="@(searchCenter?.Longitude ?? destination.Coordinate.Longitude)"
+                                             InitialRadiusKm="10"
+                                             InitialKeyword="@placeKeyword"
+                                             ShowRadiusPicker="false"
+                                             OnUserLocated="HandleMapUserLocatedAsync" />
             </section>
 
             <section id="guide" class="discovery-guide-section" aria-labelledby="guide-title">
@@ -419,13 +424,14 @@
     private string? pageNotice;
     private string? placeError;
     private string? weatherError;
-    private string? mapError;
+    private bool weatherLoading;
+    private int _weatherLoadVersion;
+    private int _placesLoadVersion;
     private bool isError;
     private bool isLoading;
     private bool isAsking;
     private bool itineraryGenerated;
-    private bool disposed;
-    private string? renderedMapSignature;
+    private UnifiedMapExplorerComponent? mapExplorer;
     private string assistantQuestion = string.Empty;
     private TravelAssistantAnswer? answer;
     private int tripDays = 1;
@@ -434,6 +440,11 @@
     private string tripInterest = "Di sản";
     private DateTime? tripStartDate = DateTime.Today.AddDays(1);
     private TimeOnly? tripStartTime = new(8, 0);
+
+    [Parameter, SupplyParameterFromQuery(Name = "category")]
+    public string? CategoryQuery { get; set; }
+
+    private static readonly string[] DiscoveryCategories = ["all", "food", "cafe", "stay", "attraction"];
 
     private IEnumerable<DiscoveryPlace> VisiblePlaces => places.Where(place =>
         string.IsNullOrWhiteSpace(placeKeyword)
@@ -456,38 +467,23 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (disposed || destination is null)
+        if (!firstRender || destination is not null || isLoading)
             return;
 
-        var center = searchCenter ?? destination.Coordinate;
-        var signature = $"{center.Latitude:F4}:{center.Longitude:F4}:{string.Join(',', places.Select(place => place.Id))}";
-        if (signature == renderedMapSignature)
+        var category = CategoryQuery?.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(category) || !DiscoveryCategories.Contains(category))
             return;
 
-        renderedMapSignature = signature;
+        selectedCategory = category;
+        isLoading = true;
         try
         {
-            var points = places.Select(place => new
-            {
-                id = place.Id,
-                name = place.Name,
-                category = place.Category,
-                lat = place.Latitude,
-                lon = place.Longitude,
-                distance = place.DistanceKm,
-                detailsUrl = place.MapDetailsUrl
-            }).ToArray();
-            await JS.InvokeVoidAsync("hueDiscoveryMap.render", "hue-discovery-map", center.Latitude, center.Longitude, points);
-            mapError = null;
+            await LoadDestinationDataAsync(new TravelDestination("Huế", new TravelCoordinate(16.4637, 107.5909)));
         }
-        catch (JSException)
+        finally
         {
-            mapError = "Không tải được thư viện bản đồ. Bạn vẫn có thể mở OpenStreetMap hoặc dùng nút chỉ đường trên từng địa điểm.";
-        }
-        catch (InvalidOperationException)
-        {
-            // JS interop is unavailable during prerendering; the interactive render will retry.
-            renderedMapSignature = null;
+            isLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -506,6 +502,9 @@
         pageNotice = null;
         placeError = null;
         weatherError = null;
+        _weatherLoadVersion++;
+        _placesLoadVersion++;
+        weatherLoading = false;
         destination = null;
         places.Clear();
         availableLandmarks.Clear();
@@ -543,6 +542,9 @@
         pageNotice = null;
         placeError = null;
         weatherError = null;
+        _weatherLoadVersion++;
+        _placesLoadVersion++;
+        weatherLoading = false;
         places.Clear();
         availableLandmarks.Clear();
         weather = null;
@@ -550,7 +552,7 @@
         itineraryGenerated = false;
         try
         {
-            var coordinate = await JS.InvokeAsync<TravelCoordinate>("hueDiscoveryMap.getCurrentPosition");
+            var coordinate = await JS.InvokeAsync<TravelCoordinate>("hueUnifiedMap.getCurrentPosition");
             destinationQuery = "Vị trí hiện tại";
             await LoadDestinationDataAsync(new TravelDestination("Vị trí hiện tại", coordinate, IsCurrentPosition: true));
         }
@@ -579,31 +581,76 @@
         searchAnchorName = resolved.Name;
         nearPlaceId = string.Empty;
         destinationQuery = resolved.IsCurrentPosition ? "Vị trí hiện tại" : resolved.Name;
-        var placeTask = DiscoveryService.SearchPlacesAsync(resolved.Coordinate, selectedCategory);
-        var weatherTask = DiscoveryService.GetWeatherAsync(resolved.Coordinate);
-        try
-        {
-            places.AddRange(await placeTask);
-            if (selectedCategory is "all" or "attraction")
-                availableLandmarks.AddRange(places.Where(IsAttraction));
-        }
-        catch (Exception ex)
-        {
-            placeError = ex is InvalidOperationException ? ex.Message : "Không tải được địa điểm từ bản đồ lúc này. Hãy thử lại sau.";
-        }
+        // Show the map section immediately; the map has its own loading state while
+        // weather and live Overpass results are still in flight.
+        await InvokeAsync(StateHasChanged);
 
+        // Weather and live places are independent. Each one paints as soon as it
+        // arrives, so a slow Overpass mirror never holds up the forecast.
+        await Task.WhenAll(
+            LoadWeatherAsync(resolved.Coordinate),
+            LoadPlacesAsync(resolved.Coordinate));
+    }
+
+    private async Task LoadWeatherAsync(TravelCoordinate coordinate)
+    {
+        var version = ++_weatherLoadVersion;
+        weatherLoading = true;
+        weatherError = null;
+        await InvokeAsync(StateHasChanged);
         try
         {
-            weather = await weatherTask;
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(6));
+            var result = await DiscoveryService.GetWeatherAsync(coordinate, timeout.Token);
+            if (version != _weatherLoadVersion)
+                return;
+            weather = result;
         }
-        catch
+        catch (OperationCanceledException) when (version == _weatherLoadVersion)
+        {
+            weatherError = "Nguồn thời tiết phản hồi chậm. Bạn có thể thử lại; bản đồ và cẩm nang vẫn dùng được.";
+        }
+        catch when (version == _weatherLoadVersion)
         {
             weatherError = "Không kết nối được Open-Meteo. Cẩm nang và kết quả bản đồ vẫn dùng được.";
         }
+        finally
+        {
+            if (version == _weatherLoadVersion)
+            {
+                weatherLoading = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
 
-        if (places.Count == 0 && string.IsNullOrWhiteSpace(placeError))
-            pageNotice ??= "Nguồn bản đồ chưa có kết quả trong vùng tìm kiếm này. Thử danh mục khác hoặc đổi điểm xuất phát.";
-        renderedMapSignature = null;
+    private async Task LoadPlacesAsync(TravelCoordinate coordinate)
+    {
+        var version = ++_placesLoadVersion;
+        places.Clear();
+        availableLandmarks.Clear();
+        placeError = null;
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            var result = await DiscoveryService.SearchPlacesAsync(coordinate, selectedCategory);
+            if (version != _placesLoadVersion)
+                return;
+            places.AddRange(result);
+            if (selectedCategory is "all" or "attraction")
+                availableLandmarks.AddRange(places.Where(IsAttraction));
+            if (places.Count == 0)
+                pageNotice ??= "Nguồn bản đồ chưa có kết quả trong vùng tìm kiếm này. Thử danh mục khác hoặc đổi điểm xuất phát.";
+        }
+        catch (Exception ex) when (version == _placesLoadVersion)
+        {
+            placeError = ex is InvalidOperationException ? ex.Message : "Không tải được địa điểm từ bản đồ lúc này. Hãy thử lại sau.";
+        }
+        finally
+        {
+            if (version == _placesLoadVersion)
+                await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task RefreshPlacesAsync()
@@ -617,24 +664,13 @@
         var anchor = availableLandmarks.FirstOrDefault(place => place.Id == nearPlaceId);
         searchCenter = anchor is null ? destination.Coordinate : new TravelCoordinate(anchor.Latitude, anchor.Longitude);
         searchAnchorName = anchor?.Name ?? destination.Name;
-        places.Clear();
         try
         {
-            places.AddRange(await DiscoveryService.SearchPlacesAsync(searchCenter, selectedCategory));
-            if (selectedCategory is "all" or "attraction")
-            {
-                availableLandmarks.Clear();
-                availableLandmarks.AddRange(places.Where(IsAttraction));
-            }
-        }
-        catch (Exception ex)
-        {
-            placeError = ex is InvalidOperationException ? ex.Message : "Không tải được địa điểm từ bản đồ lúc này. Hãy thử lại sau.";
+            await LoadPlacesAsync(searchCenter);
         }
         finally
         {
             isLoading = false;
-            renderedMapSignature = null;
         }
     }
 
@@ -725,7 +761,31 @@
 
     private async Task ShowPlaceOnMap(DiscoveryPlace place)
     {
-        await JS.InvokeVoidAsync("hueDiscoveryMap.focus", place.Latitude, place.Longitude, place.Id);
+        await (mapExplorer?.FocusPlaceAsync("osm/" + place.Id) ?? Task.CompletedTask);
+    }
+
+    private async Task HandleMapUserLocatedAsync((double Lat, double Lng) location)
+    {
+        if (isLoading)
+            return;
+
+        isLoading = true;
+        isError = false;
+        pageNotice = null;
+        placeError = null;
+        weatherError = null;
+        answer = null;
+        itineraryGenerated = false;
+        try
+        {
+            destinationQuery = "Vị trí hiện tại";
+            await LoadDestinationDataAsync(new TravelDestination(
+                "Vị trí hiện tại", new TravelCoordinate(location.Lat, location.Lng), IsCurrentPosition: true));
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task SetSearchCategory(string category)
@@ -784,12 +844,6 @@
     private string OpenStreetMapSearchUrl() => destination is null
         ? "https://www.openstreetmap.org"
         : $"https://www.openstreetmap.org/?mlat={destination.Coordinate.Latitude.ToString(CultureInfo.InvariantCulture)}&mlon={destination.Coordinate.Longitude.ToString(CultureInfo.InvariantCulture)}#map=14/{destination.Coordinate.Latitude.ToString(CultureInfo.InvariantCulture)}/{destination.Coordinate.Longitude.ToString(CultureInfo.InvariantCulture)}";
-
-    public ValueTask DisposeAsync()
-    {
-        disposed = true;
-        return ValueTask.CompletedTask;
-    }
 
     private sealed record ItineraryActivity(string Time, string Title, string Description);
     private sealed record ItineraryDay(int DayNumber, string DateLabel, int WeatherCode, string WeatherLabel, bool RainPlan, IReadOnlyList<ItineraryActivity> Activities);
