@@ -71,6 +71,10 @@ else
                     <h6 class="fw-bold text-danger mb-1">Cảnh Báo Vi Phạm Quy Định Đặt Tour</h6>
                     <div class="small">@ruleErrorMessage</div>
                     <div class="small text-muted mt-1">
+                        @if (!string.IsNullOrWhiteSpace(ruleErrorCode))
+                        {
+                            <span>Mã lỗi: <code>@ruleErrorCode</code> • </span>
+                        }
                         <em>(Được kiểm tra bởi BookingBusinessRules ở tầng CoreBusiness / UseCases - Tiêu chuẩn K1.3 &amp; K3.3)</em>
                     </div>
                 </div>
@@ -443,6 +447,7 @@ else
     private bool isLoading = true;
     private bool isSubmitting = false;
     private string? ruleErrorMessage = null;
+    private string? ruleErrorCode = null;
     private bool isWithinCutoff = false;
 
     private static readonly string[] AccommodationAreaSuggestions =
@@ -612,6 +617,7 @@ else
     private async Task TriggerFormSubmit()
     {
         ruleErrorMessage = null;
+        ruleErrorCode = null;
 
         // Nút tóm tắt và thanh mobile nằm ngoài vùng submit native, nên phải gọi
         // EditContext.Validate() trước khi chạy nghiệp vụ để không bỏ qua DataAnnotations.
@@ -629,6 +635,7 @@ else
         if (departure == null || departure.Tour == null) return;
 
         ruleErrorMessage = null;
+        ruleErrorCode = null;
         isSubmitting = true;
 
         try
@@ -665,6 +672,7 @@ else
             {
                 // Báo lỗi thân thiện khi vi phạm Luật 1 hoặc Luật 2 (K3.3)
                 ruleErrorMessage = result.ErrorMessage;
+                ruleErrorCode = result.RuleCode;
             }
         }
         catch (Exception ex)
