@@ -1880,6 +1880,37 @@ html[data-theme="dark"] .tour-filter-card .input-group-text {
     height: 260px;
 }
 
+.chart-canvas-container.chart-canvas-compact {
+    height: 270px;
+    min-height: 240px;
+}
+
+.dash-chart-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 1.25rem;
+    color: var(--hue-text-muted);
+    text-align: center;
+    background: linear-gradient(145deg, rgba(88, 44, 131, 0.035), rgba(193, 139, 47, 0.04));
+    border: 1px dashed var(--hue-border);
+    border-radius: 14px;
+}
+
+.dash-chart-empty i {
+    color: var(--hue-primary);
+    font-size: 1.75rem;
+}
+
+.dash-chart-empty span {
+    max-width: 28rem;
+    font-size: 0.88rem;
+}
+
 /* Time Range Filter Buttons */
 .dash-filter-pill {
     background: transparent;
@@ -2032,6 +2063,10 @@ html[data-theme="dark"] .booking-quick-modal {
     border-color: #2c1a42 !important;
 }
 
+html[data-theme="dark"] .dash-chart-empty {
+    background: linear-gradient(145deg, rgba(145, 105, 188, 0.08), rgba(193, 139, 47, 0.06));
+}
+
 html[data-theme="dark"] .dash-table thead th {
     background-color: rgba(255, 255, 255, 0.04);
     border-bottom-color: #2c1a42;
@@ -2078,5 +2113,21 @@ html[data-theme="dark"] .dash-action-bar {
         box-shadow: none !important;
         border: 1px solid #ccc !important;
         break-inside: avoid;
+    }
+}
+
+@media (max-width: 576px) {
+    .dash-chart-card {
+        padding: 18px;
+    }
+
+    .chart-canvas-container {
+        height: 275px;
+        min-height: 240px;
+    }
+
+    .chart-canvas-container.chart-canvas-compact {
+        height: 250px;
+        min-height: 230px;
     }
 }

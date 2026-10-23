@@ -6,10 +6,12 @@
 @using HueTour.UseCases.Tours
 @using HueTour.UseCases.Departures
 @using HueTour.UseCases.Booking
+@using HueTour.UseCases.Reports
 @inject IViewToursUseCase ViewToursUseCase
 @inject IManageDeparturesUseCase ManageDeparturesUseCase
 @inject IManageBookingsUseCase ManageBookingsUseCase
 @inject ITourBookingRepository TourBookingRepository
+@inject IBuildAdminDashboardChartDataUseCase BuildAdminDashboardChartDataUseCase
 @inject IJSRuntime JS
 
 <PageTitle>Bảng Điều Khiển Tổng Quan - Cổng Quản Trị Huế Tour</PageTitle>
@@ -70,10 +72,10 @@
     <div class="dash-action-bar d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 no-print">
         <div class="d-flex align-items-center gap-2">
             <span class="small fw-bold text-muted text-uppercase me-1"><i class="bi bi-funnel me-1"></i>Kỳ báo cáo:</span>
-            <button class="dash-filter-pill @(timeFilter == "all" ? "active" : "")" @onclick='() => ChangeTimeFilter("all")'>Tất cả</button>
-            <button class="dash-filter-pill @(timeFilter == "month" ? "active" : "")" @onclick='() => ChangeTimeFilter("month")'>Tháng này</button>
-            <button class="dash-filter-pill @(timeFilter == "week" ? "active" : "")" @onclick='() => ChangeTimeFilter("week")'>7 ngày qua</button>
-            <button class="dash-filter-pill @(timeFilter == "today" ? "active" : "")" @onclick='() => ChangeTimeFilter("today")'>Hôm nay</button>
+            <button class="dash-filter-pill @(timeFilter == DashboardTimeRange.All ? "active" : "")" @onclick="() => ChangeTimeFilter(DashboardTimeRange.All)">Tất cả</button>
+            <button class="dash-filter-pill @(timeFilter == DashboardTimeRange.Month ? "active" : "")" @onclick="() => ChangeTimeFilter(DashboardTimeRange.Month)">Tháng này</button>
+            <button class="dash-filter-pill @(timeFilter == DashboardTimeRange.Week ? "active" : "")" @onclick="() => ChangeTimeFilter(DashboardTimeRange.Week)">7 ngày qua</button>
+            <button class="dash-filter-pill @(timeFilter == DashboardTimeRange.Today ? "active" : "")" @onclick="() => ChangeTimeFilter(DashboardTimeRange.Today)">Hôm nay</button>
         </div>
 
         <div class="d-flex align-items-center gap-2 small text-muted">
@@ -96,6 +98,13 @@
     }
     else
     {
+        @if (!string.IsNullOrWhiteSpace(chartLoadWarning))
+        {
+            <div class="alert alert-warning rounded-4 py-2 mb-4" role="status">
+                <i class="bi bi-exclamation-triangle me-2"></i>@chartLoadWarning
+            </div>
+        }
+
         <!-- 3. KPI Cards -->
         <div class="row g-4 mb-4">
             <div class="col-xl-3 col-md-6 col-12">
@@ -176,7 +185,8 @@
                         <div>
                             <span class="badge bg-purple text-gold small mb-1">SƠ ĐỒ 1</span>
                             <h5 class="fw-bold text-purple mb-0">
-                                <i class="bi bi-graph-up me-2 text-gold"></i>Xu Hướng Doanh Thu &amp; Lượng Đơn Đặt Tour
+                                <i class="bi bi-graph-up me-2 text-gold"></i>Doanh Thu Xác Nhận &amp; Đơn Đặt Theo Thời Gian
+                                <span class="d-block text-muted small mt-1">@trendPeriodCaption</span>
                             </h5>
                         </div>
                         <div class="btn-group btn-group-sm mt-2 mt-sm-0" role="group">
@@ -193,12 +203,22 @@
                     </div>
 
                     <div class="chart-canvas-container">
-                        <canvas id="hue-revenue-chart"></canvas>
+                        @if (HasTrendChartData)
+                        {
+                            <canvas id="hue-revenue-chart" aria-label="Biểu đồ doanh thu xác nhận và số đơn theo thời gian"></canvas>
+                        }
+                        else
+                        {
+                            <div class="dash-chart-empty">
+                                <i class="bi bi-graph-down-arrow"></i>
+                                <span>Chưa có đơn đặt tour trong kỳ này.</span>
+                            </div>
+                        }
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top small text-muted">
-                        <span><i class="bi bi-info-circle me-1"></i>Thống kê tổng hợp từ các giao dịch thanh toán thành công và chờ duyệt.</span>
-                        <span class="fw-bold text-purple">Tổng doanh thu kỳ: @filteredRevenue.ToString("N0") đ</span>
+                        <span><i class="bi bi-info-circle me-1"></i>Doanh thu chỉ tính đơn đã xác nhận hoặc hoàn thành; số đơn tính mọi trạng thái.</span>
+                        <span class="fw-bold text-purple">Doanh thu đã ghi nhận: @chartData.TrendRevenue.Sum().ToString("N0") đ</span>
                     </div>
                 </div>
             </div>
@@ -214,20 +234,42 @@
                     </div>
 
                     <div class="chart-canvas-donut">
-                        <canvas id="hue-status-chart"></canvas>
+                        @if (HasStatusChartData)
+                        {
+                            <canvas id="hue-status-chart" aria-label="Biểu đồ cơ cấu trạng thái đơn đặt tour"></canvas>
+                        }
+                        else
+                        {
+                            <div class="dash-chart-empty">
+                                <i class="bi bi-inbox"></i>
+                                <span>Chưa có dữ liệu đơn đặt.</span>
+                            </div>
+                        }
                     </div>
 
                     <div class="row g-2 text-center mt-2 pt-2 border-top small">
-                        <div class="col-6">
+                        <div class="col-6 col-sm-3">
                             <div class="p-2 rounded bg-light border">
-                                <span class="text-success fw-bold d-block fs-6">@confirmedBookingsCount</span>
+                                <span class="text-warning fw-bold d-block fs-6">@StatusCount(0)</span>
+                                <span class="text-muted">Chờ xử lý</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <div class="p-2 rounded bg-light border">
+                                <span class="text-success fw-bold d-block fs-6">@StatusCount(1)</span>
                                 <span class="text-muted">Đã xác nhận</span>
                             </div>
                         </div>
-                        <div class="col-6">
+                        <div class="col-6 col-sm-3">
                             <div class="p-2 rounded bg-light border">
-                                <span class="text-warning fw-bold d-block fs-6">@pendingBookingsCount</span>
-                                <span class="text-muted">Chờ xử lý</span>
+                                <span class="text-primary fw-bold d-block fs-6">@StatusCount(2)</span>
+                                <span class="text-muted">Hoàn thành</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <div class="p-2 rounded bg-light border">
+                                <span class="text-danger fw-bold d-block fs-6">@StatusCount(3)</span>
+                                <span class="text-muted">Đã hủy</span>
                             </div>
                         </div>
                     </div>
@@ -235,24 +277,61 @@
             </div>
         </div>
 
-        <!-- Biểu đồ 3: Top Tour & Tỷ Lệ Lấp Đầy Ghế (Bar Chart) -->
+        <!-- Biểu đồ 3: Công suất các chuyến sắp khởi hành -->
         <div class="row g-4 mb-4">
-            <div class="col-12">
+            <div class="col-xl-7 col-12">
                 <div class="dash-chart-card">
                     <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-3">
                         <div>
                             <span class="badge bg-purple text-gold small mb-1">SƠ ĐỒ 3</span>
                             <h5 class="fw-bold text-purple mb-0">
-                                <i class="bi bi-bar-chart-steps me-2 text-gold"></i>Tỷ Lệ Lấp Đầy Chỗ Của Các Tuyến Tour Điển Hình
+                                <i class="bi bi-bar-chart-steps me-2 text-gold"></i>Công Suất Chuyến Sắp Khởi Hành
                             </h5>
+                            <span class="d-block text-muted small mt-1">6 chuyến gần nhất · số ghế đã đặt và còn trống</span>
                         </div>
                         <span class="badge bg-light text-dark border">
                             <i class="bi bi-people-fill text-gold me-1"></i>Công suất ghế thực tế
                         </span>
                     </div>
 
-                    <div class="chart-canvas-container" style="height: 240px; min-height: 220px;">
-                        <canvas id="hue-occupancy-chart"></canvas>
+                    <div class="chart-canvas-container chart-canvas-compact">
+                        @if (HasOccupancyChartData)
+                        {
+                            <canvas id="hue-occupancy-chart" aria-label="Số ghế đã đặt và còn trống trên các tour sắp khởi hành"></canvas>
+                        }
+                        else
+                        {
+                            <div class="dash-chart-empty">
+                                <i class="bi bi-calendar2-x"></i>
+                                <span>Chưa có chuyến sắp khởi hành để thống kê.</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Biểu đồ 4: Doanh thu đã xác nhận theo danh mục -->
+            <div class="col-xl-5 col-12">
+                <div class="dash-chart-card">
+                    <div class="border-bottom pb-3 mb-3">
+                        <span class="badge bg-purple text-gold small mb-1">SƠ ĐỒ 4</span>
+                        <h5 class="fw-bold text-purple mb-0">
+                            <i class="bi bi-tags-fill me-2 text-gold"></i>Doanh Thu Theo Danh Mục
+                        </h5>
+                        <span class="d-block text-muted small mt-1">Chỉ tính đơn đã xác nhận hoặc hoàn thành.</span>
+                    </div>
+                    <div class="chart-canvas-container chart-canvas-compact">
+                        @if (HasCategoryRevenueData)
+                        {
+                            <canvas id="hue-category-revenue-chart" aria-label="Doanh thu đã xác nhận theo danh mục tour"></canvas>
+                        }
+                        else
+                        {
+                            <div class="dash-chart-empty">
+                                <i class="bi bi-currency-exchange"></i>
+                                <span>Chưa có doanh thu đã xác nhận trong kỳ này.</span>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -750,7 +829,7 @@
     private int infantTicketCount = 0;
 
     // Filters and Display
-    private string timeFilter = "all";
+    private DashboardTimeRange timeFilter = DashboardTimeRange.All;
     private string chartViewMode = "all";
     private string bookingStatusFilter = "All";
     private string tourSearchText = "";
@@ -761,6 +840,7 @@
     private List<TourBooking> displayedRecentBookings = new();
     private List<Departure> upcomingDepartures = new();
     private List<TourReportItem> tourReports = new();
+    private AdminDashboardChartData chartData = new();
 
     // Quick View Modal
     private TourBooking? selectedBooking;
@@ -769,7 +849,9 @@
     // State
     private bool isLoading = true;
     private bool isRefreshing = false;
+    private bool chartsNeedRender = true;
     private string? actionMessage;
+    private string? chartLoadWarning;
     private string actionMessageType = "alert-success";
     private DateTime lastUpdated = DateTime.Now;
 
@@ -780,8 +862,9 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!isLoading)
+        if (!isLoading && chartsNeedRender)
         {
+            chartsNeedRender = false;
             await RenderAllChartsAsync();
         }
     }
@@ -822,14 +905,14 @@
         // 1. Time filtering
         DateTime cutoffDate = timeFilter switch
         {
-            "today" => DateTime.Today,
-            "week" => DateTime.Now.AddDays(-7),
-            "month" => new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
+            DashboardTimeRange.Today => DateTime.Today,
+            DashboardTimeRange.Week => DateTime.Today.AddDays(-6),
+            DashboardTimeRange.Month => new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
             _ => DateTime.MinValue
         };
 
         var currentBookings = allBookings
-            .Where(b => timeFilter == "all" || b.BookingDate >= cutoffDate)
+            .Where(b => timeFilter == DashboardTimeRange.All || b.BookingDate >= cutoffDate)
             .ToList();
 
         filteredToursCount = allTours.Count;
@@ -848,7 +931,7 @@
         confirmedBookingsCount = currentBookings.Count(b => b.Status == TourBookingStatus.Confirmed);
 
         filteredRevenue = currentBookings
-            .Where(b => b.Status != TourBookingStatus.Cancelled)
+            .Where(b => b.Status is TourBookingStatus.Confirmed or TourBookingStatus.Completed)
             .Sum(b => b.TotalAmount);
 
         // 2. Recent Bookings list with status filter
@@ -866,7 +949,8 @@
             int totalCap = deps.Sum(d => d.MaxCapacity);
             int booked = deps.Sum(d => d.BookedSeats);
             decimal rev = currentBookings
-                .Where(b => b.Departure?.TourId == t.Id && b.Status != TourBookingStatus.Cancelled)
+                .Where(b => b.Departure?.TourId == t.Id &&
+                            b.Status is TourBookingStatus.Confirmed or TourBookingStatus.Completed)
                 .Sum(b => b.TotalAmount);
 
             return new TourReportItem
@@ -886,6 +970,14 @@
 
         // 4. Passenger Breakdown (Rule 2) Estimation from bookings
         CalculateTicketBreakdown(currentBookings);
+
+        chartData = BuildAdminDashboardChartDataUseCase.Execute(
+            allTours,
+            allDepartures,
+            allBookings,
+            timeFilter,
+            DateTime.Now);
+        chartsNeedRender = true;
     }
 
     private void CalculateTicketBreakdown(List<TourBooking> bookings)
@@ -923,46 +1015,88 @@
 
     private async Task RenderAllChartsAsync()
     {
+        var previousWarning = chartLoadWarning;
         try
         {
-            // 1. Revenue & Bookings Trend Chart Data
-            // Group by recent 5 months or time points
-            var months = new List<string> { "T07/2026", "T08/2026", "T09/2026", "T10/2026", "T11/2026" };
-            var revenues = new List<decimal> { 1850000, 3200000, 2900000, filteredRevenue > 0 ? filteredRevenue : 4485000, 2100000 };
-            var orders = new List<int> { 3, 5, 4, filteredBookingsCount > 0 ? filteredBookingsCount : 6, 3 };
+            bool chartsRendered = true;
 
-            await JS.InvokeVoidAsync("hueDashboardCharts.renderRevenueChart",
-                "hue-revenue-chart", months, revenues, orders, chartViewMode);
-
-            // 2. Order Status Doughnut Chart Data
-            var statusLabels = new List<string> { "Đã xác nhận", "Chờ xử lý", "Đã hủy" };
-            var statusData = new List<int>
+            if (HasTrendChartData)
             {
-                confirmedBookingsCount > 0 ? confirmedBookingsCount : 4,
-                pendingBookingsCount > 0 ? pendingBookingsCount : 1,
-                allBookings.Count(b => b.Status == TourBookingStatus.Cancelled)
-            };
-            var statusColors = new List<string> { "#16a34a", "#f59e0b", "#e11d48" };
+                chartsRendered &= await JS.InvokeAsync<bool>("hueDashboardCharts.renderRevenueChart",
+                    "hue-revenue-chart", chartData.TrendLabels, chartData.TrendRevenue, chartData.TrendBookings, chartViewMode);
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("hueDashboardCharts.destroyChart", "hue-revenue-chart");
+            }
 
-            await JS.InvokeVoidAsync("hueDashboardCharts.renderStatusChart",
-                "hue-status-chart", statusLabels, statusData, statusColors);
+            if (HasStatusChartData)
+            {
+                chartsRendered &= await JS.InvokeAsync<bool>("hueDashboardCharts.renderStatusChart",
+                    "hue-status-chart", chartData.StatusLabels, chartData.StatusCounts,
+                    new[] { "#f59e0b", "#16a34a", "#0284c7", "#e11d48" });
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("hueDashboardCharts.destroyChart", "hue-status-chart");
+            }
 
-            // 3. Tour Occupancy Chart Data (Top 5 Tours)
-            var topTours = tourReports.Take(5).ToList();
-            var tourLabels = topTours.Select(t => t.TourTitle.Length > 24 ? t.TourTitle.Substring(0, 22) + "..." : t.TourTitle).ToList();
-            var tourBooked = topTours.Select(t => t.BookedSeats).ToList();
-            var tourCaps = topTours.Select(t => t.TotalCapacity > 0 ? t.TotalCapacity : 25).ToList();
+            if (HasOccupancyChartData)
+            {
+                chartsRendered &= await JS.InvokeAsync<bool>("hueDashboardCharts.renderOccupancyChart",
+                    "hue-occupancy-chart", chartData.OccupancyLabels,
+                    chartData.OccupancyBookedSeats, chartData.OccupancyAvailableSeats);
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("hueDashboardCharts.destroyChart", "hue-occupancy-chart");
+            }
 
-            await JS.InvokeVoidAsync("hueDashboardCharts.renderOccupancyChart",
-                "hue-occupancy-chart", tourLabels, tourBooked, tourCaps);
+            if (HasCategoryRevenueData)
+            {
+                chartsRendered &= await JS.InvokeAsync<bool>("hueDashboardCharts.renderCategoryRevenueChart",
+                    "hue-category-revenue-chart", chartData.CategoryLabels, chartData.CategoryRevenue);
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("hueDashboardCharts.destroyChart", "hue-category-revenue-chart");
+            }
+
+            chartLoadWarning = chartsRendered
+                ? null
+                : "Không tải được thư viện biểu đồ. Vui lòng tải lại trang để thử lại.";
+        }
+        catch (JSDisconnectedException)
+        {
+            return;
         }
         catch (JSException)
         {
-            // Charts will fail gracefully if JSInterop is running in background or testing
+            chartLoadWarning = "Biểu đồ chưa thể hiển thị. Vui lòng làm mới trang hoặc thử lại sau.";
+        }
+
+        if (!string.Equals(previousWarning, chartLoadWarning, StringComparison.Ordinal))
+        {
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    private void ChangeTimeFilter(string filter)
+    private string trendPeriodCaption => timeFilter switch
+    {
+        DashboardTimeRange.Month => "Từ đầu tháng đến hiện tại",
+        DashboardTimeRange.Week => "7 ngày gần nhất",
+        DashboardTimeRange.Today => "Hôm nay · chia theo khung 2 giờ",
+        _ => "6 tháng gần nhất"
+    };
+
+    private bool HasTrendChartData => chartData.TrendBookings.Any(count => count > 0);
+    private bool HasStatusChartData => chartData.StatusCounts.Any(count => count > 0);
+    private bool HasOccupancyChartData => chartData.OccupancyLabels.Count > 0;
+    private bool HasCategoryRevenueData => chartData.CategoryRevenue.Any(revenue => revenue > 0);
+
+    private int StatusCount(int index) => chartData.StatusCounts.Count > index ? chartData.StatusCounts[index] : 0;
+
+    private void ChangeTimeFilter(DashboardTimeRange filter)
     {
         timeFilter = filter;
         ComputeMetrics();
@@ -971,6 +1105,7 @@
     private void ChangeChartViewMode(string mode)
     {
         chartViewMode = mode;
+        chartsNeedRender = true;
     }
 
     private void FilterBookingsByStatus(string status)

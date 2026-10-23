@@ -2,6 +2,13 @@
 window.hueDashboardCharts = {
     instances: {},
 
+    destroyChart: function (canvasId) {
+        if (this.instances[canvasId]) {
+            this.instances[canvasId].destroy();
+            delete this.instances[canvasId];
+        }
+    },
+
     renderRevenueChart: function (canvasId, labels, revenueData, orderData, viewMode) {
         if (typeof Chart === 'undefined') {
             console.warn('Chart.js not loaded yet');
@@ -11,9 +18,7 @@ window.hueDashboardCharts = {
         var canvas = document.getElementById(canvasId);
         if (!canvas) return false;
 
-        if (this.instances[canvasId]) {
-            this.instances[canvasId].destroy();
-        }
+        this.destroyChart(canvasId);
 
         var isDark = document.documentElement.dataset.theme === 'dark';
         var textColor = isDark ? '#d6ded8' : '#263331';
@@ -21,7 +26,8 @@ window.hueDashboardCharts = {
 
         var datasets = [];
 
-        if (viewMode === 'all' || viewMode === 'revenue') {
+        var showRevenue = viewMode === 'all' || viewMode === 'revenue';
+        if (showRevenue) {
             datasets.push({
                 type: 'bar',
                 label: 'Doanh thu (VNĐ)',
@@ -49,7 +55,7 @@ window.hueDashboardCharts = {
                 pointRadius: 5,
                 fill: false,
                 tension: 0.35,
-                yAxisID: viewMode === 'orders' ? 'yRevenue' : 'yOrders',
+                yAxisID: viewMode === 'all' ? 'yOrders' : 'yOrdersOnly',
                 order: 1
             });
         }
@@ -61,7 +67,7 @@ window.hueDashboardCharts = {
             },
             yRevenue: {
                 type: 'linear',
-                display: true,
+                display: showRevenue,
                 position: 'left',
                 grid: { color: gridColor },
                 ticks: {
@@ -86,6 +92,20 @@ window.hueDashboardCharts = {
                     stepSize: 1,
                     callback: function (val) { return val + ' đơn'; }
                 }
+            };
+        }
+        else if (viewMode === 'orders') {
+            scalesConfig.yOrdersOnly = {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                beginAtZero: true,
+                ticks: {
+                    color: textColor,
+                    precision: 0,
+                    callback: function (value) { return value + ' đơn'; }
+                },
+                grid: { color: gridColor }
             };
         }
 
@@ -142,9 +162,7 @@ window.hueDashboardCharts = {
         var canvas = document.getElementById(canvasId);
         if (!canvas) return false;
 
-        if (this.instances[canvasId]) {
-            this.instances[canvasId].destroy();
-        }
+        this.destroyChart(canvasId);
 
         var isDark = document.documentElement.dataset.theme === 'dark';
         var textColor = isDark ? '#d6ded8' : '#263331';
@@ -203,15 +221,13 @@ window.hueDashboardCharts = {
         return true;
     },
 
-    renderOccupancyChart: function (canvasId, labels, bookedData, capacityData) {
+    renderOccupancyChart: function (canvasId, labels, bookedData, availableData) {
         if (typeof Chart === 'undefined') return false;
 
         var canvas = document.getElementById(canvasId);
         if (!canvas) return false;
 
-        if (this.instances[canvasId]) {
-            this.instances[canvasId].destroy();
-        }
+        this.destroyChart(canvasId);
 
         var isDark = document.documentElement.dataset.theme === 'dark';
         var textColor = isDark ? '#d6ded8' : '#263331';
@@ -230,9 +246,9 @@ window.hueDashboardCharts = {
                         borderRadius: 6
                     },
                     {
-                        label: 'Tổng sức chứa (ghế)',
-                        data: capacityData,
-                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(24, 95, 87, 0.18)',
+                        label: 'Còn chỗ',
+                        data: availableData,
+                        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(24, 95, 87, 0.24)',
                         borderRadius: 6
                     }
                 ]
@@ -243,10 +259,13 @@ window.hueDashboardCharts = {
                 maintainAspectRatio: false,
                 scales: {
                     x: {
+                        stacked: true,
+                        beginAtZero: true,
                         grid: { color: gridColor },
                         ticks: { color: textColor, font: { family: 'Plus Jakarta Sans' } }
                     },
                     y: {
+                        stacked: true,
                         grid: { display: false },
                         ticks: {
                             color: textColor,
@@ -269,11 +288,78 @@ window.hueDashboardCharts = {
                         callbacks: {
                             afterLabel: function (context) {
                                 if (context.datasetIndex === 0) {
-                                    var cap = capacityData[context.dataIndex] || 1;
-                                    var pct = ((context.parsed.x / cap) * 100).toFixed(1);
+                                    var cap = bookedData[context.dataIndex] + availableData[context.dataIndex];
+                                    var pct = cap > 0 ? ((bookedData[context.dataIndex] / cap) * 100).toFixed(1) : '0.0';
                                     return 'Tỷ lệ lấp đầy: ' + pct + '%';
                                 }
                                 return '';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        return true;
+    },
+
+    renderCategoryRevenueChart: function (canvasId, labels, revenueData) {
+        if (typeof Chart === 'undefined') return false;
+
+        var canvas = document.getElementById(canvasId);
+        if (!canvas) return false;
+
+        this.destroyChart(canvasId);
+
+        var isDark = document.documentElement.dataset.theme === 'dark';
+        var textColor = isDark ? '#d6ded8' : '#263331';
+        var gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+        var colors = ['#582c83', '#c18b2f', '#185f57', '#0284c7', '#db6b37', '#7c3aed'];
+
+        this.instances[canvasId] = new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu đã ghi nhận',
+                    data: revenueData,
+                    backgroundColor: labels.map(function (_, index) { return colors[index % colors.length]; }),
+                    borderRadius: 7,
+                    maxBarThickness: 28
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: gridColor },
+                        ticks: {
+                            color: textColor,
+                            callback: function (value) {
+                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                if (value >= 1000) return Math.round(value / 1000) + 'k';
+                                return value;
+                            }
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600' } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(16, 62, 58, 0.95)',
+                        titleColor: '#efd17f',
+                        bodyColor: '#fff',
+                        padding: 10,
+                        callbacks: {
+                            label: function (context) {
+                                return ' ' + Number(context.parsed.x).toLocaleString('vi-VN') + ' đ';
                             }
                         }
                     }

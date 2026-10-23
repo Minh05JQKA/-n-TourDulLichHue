@@ -99,6 +99,7 @@ builder.Services.AddHttpClient<ITravelDiscoveryService, TravelDiscoveryService>(
 });
 builder.Services.AddScoped<ITravelAssistantService, TravelAssistantService>();
 builder.Services.AddScoped<IExportBookingReportUseCase, ExportBookingReportUseCase>();
+builder.Services.AddScoped<IBuildAdminDashboardChartDataUseCase, BuildAdminDashboardChartDataUseCase>();
 builder.Services.AddScoped<IFoodPlaceCatalogUseCase, FoodPlaceCatalogUseCase>();
 builder.Services.AddScoped<IDiscoveryMapDataSource, TravelDiscoveryMapDataSource>();
 builder.Services.AddScoped<IMapPoiCatalogUseCase, MapPoiCatalogUseCase>();
