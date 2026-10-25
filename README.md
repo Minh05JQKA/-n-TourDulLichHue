@@ -16,6 +16,25 @@ Website đặt tour du lịch Huế bằng Blazor Server và .NET 8 LTS, tổ ch
 | Ngày hoàn thành / nộp bài | 23/10/2026 (bản hiện tại) |
 | GitHub | [Minh05JQKA](https://github.com/Minh05JQKA) · [Repository Hue Tour](https://github.com/Minh05JQKA/-n-TourDulLichHue) |
 
+## Công nghệ sử dụng
+
+| Nhóm | Công nghệ | Vai trò trong dự án |
+|---|---|---|
+| Ngôn ngữ và nền tảng | C#, .NET 8, ASP.NET Core | Toàn bộ solution nhắm `net8.0`; ASP.NET Core khởi chạy website và quản lý cấu hình, dependency injection, HTTP client, xác thực và các endpoint báo cáo. |
+| Giao diện ứng dụng | Blazor Server, Razor Components, Interactive Server | Trang được xây bằng component `.razor`; tương tác chạy qua Blazor Server, gồm trang chủ, tour, đặt chỗ, khám phá, ẩm thực và quản trị. |
+| Kiến trúc | Clean Architecture, dependency injection | Tách mô hình nghiệp vụ (`HueTour.CoreBusiness`), ca sử dụng và interface (`HueTour.UseCases`), các plugin lưu trữ (`HueTour.Plugins.*`) và giao diện (`HueTour.WebApp`). |
+| Cơ sở dữ liệu | Microsoft SQL Server, Dapper `2.1.89`, Microsoft.Data.SqlClient `7.1.1` | Plugin SQL truy vấn và ghi dữ liệu bằng Dapper/SqlClient; script SQL tạo schema, view tương thích, seed và migration. Dự án không dùng Entity Framework Core. |
+| Lưu trữ khi phát triển | In-memory repositories | Plugin `HueTour.Plugins.DataStore.InMemory` cung cấp dữ liệu mẫu để chạy giao diện khi chưa cấu hình SQL Server; chọn SQL bằng `UseSqlDatabase=true`. |
+| Giao diện và bố cục | HTML, CSS, JavaScript, Bootstrap `5.3.3`, Bootstrap Icons `1.11.3` | Bootstrap và icon được tải từ CDN; CSS riêng tạo giao diện Huế, bố cục responsive, giao diện sáng/tối và các trang đặt tour/khám phá. Font Playfair Display và Plus Jakarta Sans được tải từ Google Fonts. |
+| Biểu đồ | Chart.js `4.4.3`, JavaScript interop | `admin-charts.js` vẽ biểu đồ doanh thu, số booking, trạng thái đơn, công suất chuyến và doanh thu theo danh mục từ dữ liệu do Blazor tổng hợp. |
+| Bản đồ và dữ liệu địa điểm | Leaflet `1.9.4`, OpenStreetMap, Nominatim, Overpass API | Leaflet hiển thị bản đồ và marker; Nominatim tìm tọa độ theo tên địa điểm, Overpass lấy các điểm được cộng đồng OpenStreetMap đóng góp. Dữ liệu địa điểm Huế đã biên tập trong SQL được giữ làm nguồn dự phòng khi dịch vụ công cộng không phản hồi. |
+| Thời tiết | Open-Meteo REST API, `HttpClient`, `MemoryCache` | Lấy thời tiết hiện tại và dự báo; cache kết quả trong bộ nhớ để giảm yêu cầu lặp lại. |
+| Trợ lý hành trình | Microsoft.Extensions.AI `9.0.1-preview.1.24570.5`, Ollama hoặc API tương thích OpenAI | Trợ lý hỗ trợ Ollama chạy tại máy, endpoint mô hình đám mây có thể cấu hình, và bộ suy luận Huế tích hợp làm phương án dự phòng. Khóa API lấy từ cấu hình bảo mật hoặc biến môi trường, không lưu trong Git. |
+| Đăng nhập và an toàn cơ bản | ASP.NET Core Cookie Authentication, role-based authorization, PBKDF2 | Cookie xác thực và quyền `Admin`/`Customer` bảo vệ các trang; mật khẩu được băm PBKDF2-SHA256 với salt riêng. |
+| Báo cáo | Endpoint ASP.NET Core, XLSX và CSV | Quản trị viên có thể xuất dữ liệu booking/chuyến qua endpoint báo cáo. |
+
+Bootstrap, Bootstrap Icons, Chart.js, Leaflet và Google Fonts hiện được tải từ CDN; website cần kết nối tới các CDN này để tải đủ thư viện giao diện. SQL Server chỉ bắt buộc khi muốn lưu dữ liệu qua plugin SQL; chế độ In-memory dùng cho phát triển và xem giao diện.
+
 ## Mở và chạy
 
 1. Cài .NET 8 SDK và mở `HueTourApp.sln` bằng Visual Studio 2022.
