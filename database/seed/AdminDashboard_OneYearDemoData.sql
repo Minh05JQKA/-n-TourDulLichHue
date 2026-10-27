@@ -8,10 +8,12 @@ GO
 
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
+SET QUOTED_IDENTIFIER ON;
 GO
 
 DECLARE @Today date = CONVERT(date, GETDATE());
 DECLARE @CurrentMonth date = DATEFROMPARTS(YEAR(@Today), MONTH(@Today), 1);
+DECLARE @StartDate date = DATEADD(YEAR, -1, @Today);
 DECLARE @FirstMonth date = DATEADD(MONTH, -11, @CurrentMonth);
 DECLARE @CustomerCount int = 120;
 DECLARE @TourCount int;
@@ -62,11 +64,11 @@ DELETE ticket
 FROM dbo.PassengerTicket AS ticket
 INNER JOIN dbo.TourBooking AS booking ON booking.Id = ticket.BookingId
 WHERE booking.BookingCode LIKE N'HUEDEMO-1Y-%'
-  AND booking.BookingDate < CONVERT(datetime2(0), @FirstMonth);
+  AND booking.BookingDate < CONVERT(datetime2(0), @StartDate);
 
 DELETE FROM dbo.TourBooking
 WHERE BookingCode LIKE N'HUEDEMO-1Y-%'
-  AND BookingDate < CONVERT(datetime2(0), @FirstMonth);
+  AND BookingDate < CONVERT(datetime2(0), @StartDate);
 
 -- Don demo da het han va khong con booking nao duoc giu lai cung chuyen.
 DELETE departure
@@ -130,8 +132,8 @@ SELECT @TourCount = COUNT(*) FROM @Tours;
 IF @TourCount = 0
     THROW 52001, N'Khong tim thay tour dang mo ban de tao du lieu dashboard.', 1;
 
--- Bao phu 12 thang lich, tu thang hien tai lui 11 thang.
--- Luong dat tour tang vao mua xuan/he va ha vao cuoi nam, tao duong xu huong de doc.
+-- Tao 12 moc thang tren bieu do, nhung chi giu don trong 12 thang gan nhat.
+-- So don o thang dau/cuoi duoc tinh theo phan thang nam trong khoang du lieu.
 ;WITH MonthNumbers AS
 (
     SELECT Number - 1 AS MonthOffset
@@ -142,18 +144,41 @@ MonthStarts AS
 (
     SELECT MonthOffset, DATEADD(MONTH, MonthOffset, @FirstMonth) AS MonthStart
     FROM MonthNumbers
+), SeasonalTargets AS
+(
+    SELECT
+        MonthOffset,
+        MonthStart,
+        CASE MONTH(MonthStart)
+            WHEN 1 THEN 14 WHEN 2 THEN 12 WHEN 3 THEN 16 WHEN 4 THEN 20
+            WHEN 5 THEN 22 WHEN 6 THEN 24 WHEN 7 THEN 22 WHEN 8 THEN 19
+            WHEN 9 THEN 15 WHEN 10 THEN 14 WHEN 11 THEN 10 WHEN 12 THEN 12
+        END AS MonthlyTarget
+    FROM MonthStarts
 )
 INSERT INTO @Months (MonthOffset, MonthStart, BookingCount, DepartureAt)
 SELECT
     MonthOffset,
     MonthStart,
-    CASE MONTH(MonthStart)
-        WHEN 1 THEN 14 WHEN 2 THEN 12 WHEN 3 THEN 16 WHEN 4 THEN 20
-        WHEN 5 THEN 22 WHEN 6 THEN 24 WHEN 7 THEN 22 WHEN 8 THEN 19
-        WHEN 9 THEN 15 WHEN 10 THEN 14 WHEN 11 THEN 10 WHEN 12 THEN 12
+    CASE
+        WHEN MonthStart = @FirstMonth OR MonthStart = @CurrentMonth
+            THEN CONVERT(int, CEILING(MonthlyTarget * PartialMonth.AvailableDays * 1.0 / PartialMonth.MonthDays))
+        ELSE MonthlyTarget
     END,
     DATEADD(MINUTE, 450, CONVERT(datetime2(0), DATEADD(DAY, 19, DATEADD(MONTH, 1, MonthStart))) )
-FROM MonthStarts;
+FROM SeasonalTargets
+CROSS APPLY
+(
+    SELECT
+        CASE WHEN MonthStart = @FirstMonth THEN @StartDate ELSE MonthStart END AS FirstBookingDay,
+        CASE WHEN MonthStart = @CurrentMonth THEN @Today ELSE EOMONTH(MonthStart) END AS LastBookingDay,
+        DAY(EOMONTH(MonthStart)) AS MonthDays
+) AS Bounds
+CROSS APPLY
+(
+    SELECT DATEDIFF(DAY, Bounds.FirstBookingDay, Bounds.LastBookingDay) + 1 AS AvailableDays,
+           Bounds.MonthDays
+) AS PartialMonth;
 
 -- Moi tour co mot chuyen trong thang, khoi hanh ngay 20 thang tiep theo.
 -- Dat gio giua cac thang giup don duoc ghi nhan truoc ngay di va tranh qua han 24 gio.
@@ -263,6 +288,10 @@ INNER JOIN @Tours AS tour ON tour.TourOrdinal = selectedTour.TourOrdinal
 INNER JOIN @DepartureMap AS departureMap ON departureMap.MonthStart = period.MonthStart AND departureMap.TourId = tour.TourId
 CROSS APPLY
 (
+    SELECT CASE WHEN period.MonthStart = @FirstMonth THEN @StartDate ELSE period.MonthStart END AS FirstBookingDay
+) AS bookingWindow
+CROSS APPLY
+(
     SELECT CASE
         WHEN period.MonthStart = @CurrentMonth AND number.Number <= @RecentBookingCount
             THEN CONVERT(date, DATEADD(DAY, 1 - number.Number, @Today))
@@ -270,7 +299,11 @@ CROSS APPLY
             THEN DATEADD(DAY,
                 (number.Number * 7 + period.MonthOffset * 11) % (CASE WHEN DAY(@Today) > 5 THEN DAY(@Today) - 5 ELSE 1 END),
                 period.MonthStart)
-        ELSE DATEADD(DAY, (number.Number * 7 + period.MonthOffset * 11) % 20, period.MonthStart)
+        ELSE DATEADD(DAY,
+            DATEDIFF(DAY, period.MonthStart, bookingWindow.FirstBookingDay)
+                + ((number.Number * 7 + period.MonthOffset * 11)
+                    % (DATEDIFF(DAY, bookingWindow.FirstBookingDay, EOMONTH(period.MonthStart)) + 1)),
+            period.MonthStart)
     END AS BookingDay
 ) AS bookingDay
 INNER JOIN dbo.Customer AS customer
@@ -400,12 +433,12 @@ SELECT
     SUM(CASE WHEN Status IN (N'Confirmed', N'Completed') THEN TotalAmount ELSE 0 END) AS RecognizedRevenue
 FROM dbo.TourBooking
 WHERE BookingCode LIKE N'HUEDEMO-1Y-%'
-  AND BookingDate >= CONVERT(datetime2(0), @FirstMonth);
+  AND BookingDate >= CONVERT(datetime2(0), @StartDate);
 
 SELECT Status, COUNT(*) AS BookingCount
 FROM dbo.TourBooking
 WHERE BookingCode LIKE N'HUEDEMO-1Y-%'
-  AND BookingDate >= CONVERT(datetime2(0), @FirstMonth)
+  AND BookingDate >= CONVERT(datetime2(0), @StartDate)
 GROUP BY Status
 ORDER BY Status;
 GO
