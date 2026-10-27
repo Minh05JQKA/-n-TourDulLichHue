@@ -1,5 +1,6 @@
 @page "/admin"
 @attribute [Authorize(Roles = "Admin")]
+@using System.Globalization
 @using HueTour.CoreBusiness
 @using HueTour.CoreBusiness.BusinessRules
 @using HueTour.UseCases.PluginInterfaces.DataStore
@@ -38,7 +39,7 @@
             <button class="btn btn-outline-royal rounded-pill btn-sm px-3" @onclick="PrintReportAsync" title="In báo cáo này">
                 <i class="bi bi-printer me-1"></i>In báo cáo
             </button>
-            <a href="/api/reports/bookings-csv" class="btn btn-success rounded-pill btn-sm px-3 shadow-sm" target="_blank" download>
+            <a href="@BookingCsvExportUrl" class="btn btn-success rounded-pill btn-sm px-3 shadow-sm" target="_blank" download>
                 <i class="bi bi-file-earmark-excel-fill me-1"></i>Xuất Excel (CSV)
             </a>
             <div class="btn-group">
@@ -76,6 +77,27 @@
             <button class="dash-filter-pill @(timeFilter == DashboardTimeRange.Month ? "active" : "")" @onclick="() => ChangeTimeFilter(DashboardTimeRange.Month)">Tháng này</button>
             <button class="dash-filter-pill @(timeFilter == DashboardTimeRange.Week ? "active" : "")" @onclick="() => ChangeTimeFilter(DashboardTimeRange.Week)">7 ngày qua</button>
             <button class="dash-filter-pill @(timeFilter == DashboardTimeRange.Today ? "active" : "")" @onclick="() => ChangeTimeFilter(DashboardTimeRange.Today)">Hôm nay</button>
+            <button class="dash-filter-pill @(timeFilter == DashboardTimeRange.Custom ? "active" : "")" @onclick="() => ChangeTimeFilter(DashboardTimeRange.Custom)">Khoảng ngày</button>
+            @if (timeFilter == DashboardTimeRange.Custom)
+            {
+                <div class="d-flex flex-wrap align-items-end gap-2 ms-sm-2">
+                    <div>
+                        <label for="report-from-date" class="form-label small text-muted mb-1">Từ ngày</label>
+                        <input id="report-from-date" type="date" class="form-control form-control-sm" value="@reportStartDateText" @onchange="UpdateReportStartDate" max="@reportDateInputMax" />
+                    </div>
+                    <div>
+                        <label for="report-to-date" class="form-label small text-muted mb-1">Đến ngày</label>
+                        <input id="report-to-date" type="date" class="form-control form-control-sm" value="@reportEndDateText" @onchange="UpdateReportEndDate" max="@reportDateInputMax" />
+                    </div>
+                    <button type="button" class="btn btn-royal btn-sm rounded-pill px-3" @onclick="ApplyCustomDateFilter">
+                        <i class="bi bi-funnel me-1"></i>Áp dụng
+                    </button>
+                    @if (!string.IsNullOrWhiteSpace(dateFilterError))
+                    {
+                        <span class="text-danger small w-100" role="alert">@dateFilterError</span>
+                    }
+                </div>
+            }
         </div>
 
         <div class="d-flex align-items-center gap-2 small text-muted">
@@ -830,6 +852,11 @@
 
     // Filters and Display
     private DashboardTimeRange timeFilter = DashboardTimeRange.All;
+    private string reportStartDateText = DateTime.Today.AddDays(-6).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    private string reportEndDateText = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    private DateTime? appliedReportStartDate;
+    private DateTime? appliedReportEndDate;
+    private string? dateFilterError;
     private string chartViewMode = "all";
     private string bookingStatusFilter = "All";
     private string tourSearchText = "";
@@ -902,17 +929,9 @@
 
     private void ComputeMetrics()
     {
-        // 1. Time filtering
-        DateTime cutoffDate = timeFilter switch
-        {
-            DashboardTimeRange.Today => DateTime.Today,
-            DashboardTimeRange.Week => DateTime.Today.AddDays(-6),
-            DashboardTimeRange.Month => new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
-            _ => DateTime.MinValue
-        };
-
+        var now = DateTime.Now;
         var currentBookings = allBookings
-            .Where(b => timeFilter == DashboardTimeRange.All || b.BookingDate >= cutoffDate)
+            .Where(b => IsBookingInSelectedPeriod(b, now))
             .ToList();
 
         filteredToursCount = allTours.Count;
@@ -976,8 +995,26 @@
             allDepartures,
             allBookings,
             timeFilter,
-            DateTime.Now);
+            now,
+            appliedReportStartDate,
+            appliedReportEndDate);
         chartsNeedRender = true;
+    }
+
+    private bool IsBookingInSelectedPeriod(TourBooking booking, DateTime now)
+    {
+        return timeFilter switch
+        {
+            DashboardTimeRange.All => true,
+            DashboardTimeRange.Today => booking.BookingDate >= now.Date && booking.BookingDate <= now,
+            DashboardTimeRange.Week => booking.BookingDate >= now.Date.AddDays(-6) && booking.BookingDate <= now,
+            DashboardTimeRange.Month => booking.BookingDate >= new DateTime(now.Year, now.Month, 1) && booking.BookingDate <= now,
+            DashboardTimeRange.Custom => appliedReportStartDate.HasValue && appliedReportEndDate.HasValue &&
+                                         booking.BookingDate.Date >= appliedReportStartDate.Value.Date &&
+                                         booking.BookingDate.Date <= appliedReportEndDate.Value.Date &&
+                                         booking.BookingDate <= now,
+            _ => true
+        };
     }
 
     private void CalculateTicketBreakdown(List<TourBooking> bookings)
@@ -1086,8 +1123,17 @@
         DashboardTimeRange.Month => "Từ đầu tháng đến hiện tại",
         DashboardTimeRange.Week => "7 ngày gần nhất",
         DashboardTimeRange.Today => "Hôm nay · chia theo khung 2 giờ",
+        DashboardTimeRange.Custom when appliedReportStartDate.HasValue && appliedReportEndDate.HasValue =>
+            $"Từ {appliedReportStartDate.Value:dd/MM/yyyy} đến {appliedReportEndDate.Value:dd/MM/yyyy}",
         _ => "6 tháng gần nhất"
     };
+
+    private string reportDateInputMax => DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private string BookingCsvExportUrl =>
+        timeFilter == DashboardTimeRange.Custom && appliedReportStartDate.HasValue && appliedReportEndDate.HasValue
+            ? $"/api/reports/bookings-csv?fromDate={appliedReportStartDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}&toDate={appliedReportEndDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}"
+            : "/api/reports/bookings-csv";
 
     private bool HasTrendChartData => chartData.TrendBookings.Any(count => count > 0);
     private bool HasStatusChartData => chartData.StatusCounts.Any(count => count > 0);
@@ -1099,6 +1145,55 @@
     private void ChangeTimeFilter(DashboardTimeRange filter)
     {
         timeFilter = filter;
+        dateFilterError = null;
+
+        if (filter == DashboardTimeRange.Custom && !appliedReportStartDate.HasValue)
+        {
+            reportStartDateText = DateTime.Today.AddDays(-6).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            reportEndDateText = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            ApplyCustomDateFilter();
+            return;
+        }
+
+        ComputeMetrics();
+    }
+
+    private void UpdateReportStartDate(ChangeEventArgs args)
+    {
+        reportStartDateText = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private void UpdateReportEndDate(ChangeEventArgs args)
+    {
+        reportEndDateText = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private void ApplyCustomDateFilter()
+    {
+        if (!DateTime.TryParseExact(reportStartDateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var startDate) ||
+            !DateTime.TryParseExact(reportEndDateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var endDate))
+        {
+            dateFilterError = "Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.";
+            return;
+        }
+
+        startDate = startDate.Date;
+        endDate = endDate.Date;
+        if (startDate > endDate)
+        {
+            dateFilterError = "Ngày bắt đầu phải trước hoặc trùng ngày kết thúc.";
+            return;
+        }
+
+        if (endDate > DateTime.Today)
+        {
+            dateFilterError = "Ngày kết thúc không thể ở tương lai.";
+            return;
+        }
+
+        appliedReportStartDate = startDate;
+        appliedReportEndDate = endDate;
+        dateFilterError = null;
         ComputeMetrics();
     }
 

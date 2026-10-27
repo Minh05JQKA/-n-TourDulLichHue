@@ -8,7 +8,8 @@ public enum DashboardTimeRange
     All,
     Month,
     Week,
-    Today
+    Today,
+    Custom
 }
 
 public sealed class AdminDashboardChartData
@@ -32,7 +33,9 @@ public interface IBuildAdminDashboardChartDataUseCase
         IEnumerable<Departure> departures,
         IEnumerable<TourBooking> bookings,
         DashboardTimeRange timeRange,
-        DateTime currentTime);
+        DateTime currentTime,
+        DateTime? customStartDate = null,
+        DateTime? customEndDate = null);
 }
 
 /// <summary>
@@ -48,24 +51,31 @@ public sealed class BuildAdminDashboardChartDataUseCase : IBuildAdminDashboardCh
         IEnumerable<Departure> departures,
         IEnumerable<TourBooking> bookings,
         DashboardTimeRange timeRange,
-        DateTime currentTime)
+        DateTime currentTime,
+        DateTime? customStartDate = null,
+        DateTime? customEndDate = null)
     {
         var tourList = tours.ToList();
         var departureList = departures.ToList();
         var bookingList = bookings.ToList();
         var periodBookings = bookingList
-            .Where(booking => IsInSelectedPeriod(booking.BookingDate, timeRange, currentTime))
+            .Where(booking => IsInSelectedPeriod(booking.BookingDate, timeRange, currentTime, customStartDate, customEndDate))
             .ToList();
 
         var chartData = new AdminDashboardChartData();
-        AddTrendData(chartData, periodBookings, timeRange, currentTime);
+        AddTrendData(chartData, periodBookings, timeRange, currentTime, customStartDate, customEndDate);
         AddStatusData(chartData, periodBookings);
         AddOccupancyData(chartData, tourList, departureList, currentTime);
         AddCategoryRevenueData(chartData, tourList, departureList, periodBookings);
         return chartData;
     }
 
-    private static bool IsInSelectedPeriod(DateTime bookingDate, DashboardTimeRange timeRange, DateTime currentTime)
+    private static bool IsInSelectedPeriod(
+        DateTime bookingDate,
+        DashboardTimeRange timeRange,
+        DateTime currentTime,
+        DateTime? customStartDate,
+        DateTime? customEndDate)
     {
         if (timeRange == DashboardTimeRange.All)
         {
@@ -75,6 +85,13 @@ public sealed class BuildAdminDashboardChartDataUseCase : IBuildAdminDashboardCh
         if (bookingDate > currentTime)
         {
             return false;
+        }
+
+        if (timeRange == DashboardTimeRange.Custom)
+        {
+            return customStartDate.HasValue && customEndDate.HasValue &&
+                   bookingDate.Date >= customStartDate.Value.Date &&
+                   bookingDate.Date <= customEndDate.Value.Date;
         }
 
         var start = timeRange switch
@@ -92,7 +109,9 @@ public sealed class BuildAdminDashboardChartDataUseCase : IBuildAdminDashboardCh
         AdminDashboardChartData chartData,
         IReadOnlyCollection<TourBooking> bookings,
         DashboardTimeRange timeRange,
-        DateTime currentTime)
+        DateTime currentTime,
+        DateTime? customStartDate,
+        DateTime? customEndDate)
     {
         var today = currentTime.Date;
         DateTime start;
@@ -118,6 +137,30 @@ public sealed class BuildAdminDashboardChartDataUseCase : IBuildAdminDashboardCh
                 chartData.TrendLabels.AddRange(Enumerable.Range(0, bucketCount)
                     .Select(bucket => $"{bucket * 2:00}–{(bucket + 1) * 2:00}h"));
                 break;
+            case DashboardTimeRange.Custom:
+            {
+                var rangeStart = customStartDate?.Date ?? today;
+                var rangeEnd = customEndDate?.Date ?? rangeStart;
+                var dailyBuckets = (rangeEnd - rangeStart).TotalDays <= 30;
+
+                if (dailyBuckets)
+                {
+                    start = rangeStart;
+                    bucketCount = (rangeEnd - rangeStart).Days + 1;
+                    chartData.TrendLabels.AddRange(Enumerable.Range(0, bucketCount)
+                        .Select(offset => rangeStart.AddDays(offset).ToString("dd/MM", VietnameseCulture)));
+                }
+                else
+                {
+                    start = new DateTime(rangeStart.Year, rangeStart.Month, 1);
+                    var lastMonth = new DateTime(rangeEnd.Year, rangeEnd.Month, 1);
+                    bucketCount = (lastMonth.Year - start.Year) * 12 + lastMonth.Month - start.Month + 1;
+                    chartData.TrendLabels.AddRange(Enumerable.Range(0, bucketCount)
+                        .Select(offset => start.AddMonths(offset).ToString("MM/yyyy", VietnameseCulture)));
+                }
+
+                break;
+            }
             default:
                 start = new DateTime(today.Year, today.Month, 1).AddMonths(-5);
                 bucketCount = 6;
@@ -131,7 +174,14 @@ public sealed class BuildAdminDashboardChartDataUseCase : IBuildAdminDashboardCh
 
         foreach (var booking in bookings)
         {
-            int? bucket = GetBucketIndex(booking.BookingDate, start, currentTime, timeRange, bucketCount);
+            int? bucket = GetBucketIndex(
+                booking.BookingDate,
+                start,
+                currentTime,
+                timeRange,
+                bucketCount,
+                customStartDate,
+                customEndDate);
             if (bucket is null)
             {
                 continue;
@@ -153,7 +203,9 @@ public sealed class BuildAdminDashboardChartDataUseCase : IBuildAdminDashboardCh
         DateTime start,
         DateTime currentTime,
         DashboardTimeRange timeRange,
-        int bucketCount)
+        int bucketCount,
+        DateTime? customStartDate,
+        DateTime? customEndDate)
     {
         if (bookingDate > currentTime)
         {
@@ -165,10 +217,27 @@ public sealed class BuildAdminDashboardChartDataUseCase : IBuildAdminDashboardCh
             DashboardTimeRange.Month => bookingDate.Date < start ? -1 : bookingDate.Day - 1,
             DashboardTimeRange.Week => (bookingDate.Date - start.Date).Days,
             DashboardTimeRange.Today => bookingDate.Date != start.Date ? -1 : bookingDate.Hour / 2,
+            DashboardTimeRange.Custom => GetCustomBucketIndex(bookingDate, start, customStartDate, customEndDate),
             _ => (bookingDate.Year - start.Year) * 12 + bookingDate.Month - start.Month
         };
 
         return index >= 0 && index < bucketCount ? index : null;
+    }
+
+    private static int GetCustomBucketIndex(
+        DateTime bookingDate,
+        DateTime start,
+        DateTime? customStartDate,
+        DateTime? customEndDate)
+    {
+        if (!customStartDate.HasValue || !customEndDate.HasValue)
+        {
+            return -1;
+        }
+
+        return (customEndDate.Value.Date - customStartDate.Value.Date).TotalDays <= 30
+            ? (bookingDate.Date - customStartDate.Value.Date).Days
+            : (bookingDate.Year - start.Year) * 12 + bookingDate.Month - start.Month;
     }
 
     private static void AddStatusData(AdminDashboardChartData chartData, IReadOnlyCollection<TourBooking> bookings)

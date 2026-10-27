@@ -182,9 +182,14 @@ app.MapGet("/api/reports/bookings.xlsx", async (IExportBookingReportUseCase repo
         fileName);
 }).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
-app.MapGet("/api/reports/bookings-csv", async (IExportBookingReportUseCase reportUseCase) =>
+app.MapGet("/api/reports/bookings-csv", async (DateTime? fromDate, DateTime? toDate, IExportBookingReportUseCase reportUseCase) =>
 {
-    var csvBytes = await reportUseCase.ExportBookingsToCsvAsync();
+    if (fromDate.HasValue && toDate.HasValue && fromDate.Value.Date > toDate.Value.Date)
+    {
+        return Results.BadRequest("Ngày bắt đầu phải trước hoặc trùng ngày kết thúc.");
+    }
+
+    var csvBytes = await reportUseCase.ExportBookingsToCsvAsync(fromDate, toDate);
     string fileName = $"HueTour_BaoCaoDatTour_{DateTime.Now:yyyyMMdd_HHmm}.csv";
     return Results.File(csvBytes, "text/csv; charset=utf-8", fileName);
 }).RequireAuthorization(policy => policy.RequireRole("Admin"));

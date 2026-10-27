@@ -5,7 +5,7 @@ namespace HueTour.UseCases.Reports;
 
 public interface IExportBookingReportUseCase
 {
-    Task<byte[]> ExportBookingsToCsvAsync();
+    Task<byte[]> ExportBookingsToCsvAsync(DateTime? fromDate = null, DateTime? toDate = null);
     Task<byte[]> ExportBookingsToExcelAsync();
     Task<byte[]> ExportDeparturePassengersToCsvAsync(int departureId);
 }
@@ -27,9 +27,12 @@ public class ExportBookingReportUseCase : IExportBookingReportUseCase
         _departureRepository = departureRepository;
     }
 
-    public async Task<byte[]> ExportBookingsToCsvAsync()
+    public async Task<byte[]> ExportBookingsToCsvAsync(DateTime? fromDate = null, DateTime? toDate = null)
     {
-        var bookings = (await _bookingRepository.GetAllBookingsAsync()).ToList();
+        var bookings = (await _bookingRepository.GetAllBookingsAsync())
+            .Where(booking => (!fromDate.HasValue || booking.BookingDate.Date >= fromDate.Value.Date) &&
+                              (!toDate.HasValue || booking.BookingDate.Date <= toDate.Value.Date))
+            .ToList();
 
         var sb = new StringBuilder();
         // UTF-8 BOM giúp Microsoft Excel mở file CSV hiển thị đúng 100% tiếng Việt có dấu
